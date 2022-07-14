@@ -48,6 +48,7 @@
 
 // stuff i added. i also added line 1057
 function mergeClonedRows(table, nthType) {
+    console.log("insanity")
     const tbody = table.querySelector("tbody")
     const rows = [...tbody.querySelectorAll("tr")]
     const groups = []
