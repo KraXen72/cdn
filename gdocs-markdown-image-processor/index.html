@@ -1,257 +1,416 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Markdown Image Extractor</title>
-  <style>
-    :root {
-        /* Flexoki Dark Palette */
-        --flexoki-bg:      #100F0F;
-        --flexoki-bg-2:    #1C1B1A;
-        --flexoki-ui:      #282726;
-        --flexoki-ui-2:    #343331;
-        --flexoki-ui-3:    #403E3C;
-        --flexoki-tx-3:    #575653;
-        --flexoki-tx-2:    #878580;
-        --flexoki-tx:      #CECDC3;
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Markdown Image Extractor</title>
+	<style>
+		:root {
+			/* Flexoki Dark Palette */
+			--flexoki-bg: #100F0F;
+			--flexoki-bg-2: #1C1B1A;
+			--flexoki-ui: #282726;
+			--flexoki-ui-2: #343331;
+			--flexoki-ui-3: #403E3C;
+			--flexoki-tx-3: #575653;
+			--flexoki-tx-2: #878580;
+			--flexoki-tx: #CECDC3;
 
-        --flexoki-red:     #D14D41;
-        --flexoki-orange:  #DA702C;
-        --flexoki-yellow:  #D0A215;
-        --flexoki-green:   #879A39;
-        --flexoki-cyan:    #3AA99F;
-        --flexoki-blue:    #4385BE;
-        --flexoki-purple:  #8B7EC8;
-        --flexoki-magenta: #CE5D97;
+			--flexoki-red: #D14D41;
+			--flexoki-orange: #DA702C;
+			--flexoki-yellow: #D0A215;
+			--flexoki-green: #879A39;
+			--flexoki-cyan: #3AA99F;
+			--flexoki-blue: #4385BE;
+			--flexoki-purple: #8B7EC8;
+			--flexoki-magenta: #CE5D97;
 
-        /* Theme Mappings */
-        --bg: var(--flexoki-bg);
-        --card: var(--flexoki-bg-2);
-        --border: var(--flexoki-ui);
-        --text: var(--flexoki-tx);
-        --text-light: var(--flexoki-tx-2);
-        --primary: var(--flexoki-blue);
-        --success: var(--flexoki-green);
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.5; background: var(--bg); color: var(--text); padding: 1rem; }
-    .container { max-width: 1200px; margin: 0 auto; }
-    header { text-align: center; margin-bottom: 1.5rem; }
-    h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
-    .subtitle { color: var(--text-light); font-size: 0.9rem; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-    @media (min-width: 768px) { .grid { grid-template-columns: 1fr 1fr; } }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.25rem; }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .card-header-buttons { display: flex; gap: 1rem; }
-    h2 { font-size: 1.25rem; font-weight: 600; }
-    .btn { padding: 0.5rem 1rem; font-size: 0.875rem; border-radius: 0.5rem; cursor: pointer; }
-    .btn-primary { background: var(--primary); color: white; border: none; }
-    .btn-success { background: var(--success); color: white; border: none; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    textarea {
-      width: 100%;
-      height: 20rem;
-      padding: 0.75rem;
-      background: var(--bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      font-family: monospace;
-      font-size: 0.875rem;
-      resize: vertical;
-      overflow: auto;
-    }
-    pre { white-space: pre-wrap; word-break: break-word; }
-    .images { margin-top: 1.5rem; }
-    .images-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
-    .image-card { border: 1px solid var(--border); border-radius: 0.5rem; overflow: hidden; background: var(--card); }
-    .image-label { padding: 0.5rem; font-size: 0.75rem; background: var(--border); color: var(--text-light); }
-    .image-preview { height: 120px; display: flex; align-items: center; justify-content: center; background: var(--flexoki-ui); }
-    .image-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
-    .error { background: var(--flexoki-ui); color: var(--flexoki-red); border: 1px solid var(--flexoki-red); padding: 0.75rem; border-radius: 0.5rem; margin-top: 0.5rem; font-size: 0.875rem; }
-    .spinner { width: 1rem; height: 1rem; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .placeholder { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-light); }
+			/* Theme Mappings */
+			--bg: var(--flexoki-bg);
+			--card: var(--flexoki-bg-2);
+			--border: var(--flexoki-ui);
+			--text: var(--flexoki-tx);
+			--text-light: var(--flexoki-tx-2);
+			--primary: var(--flexoki-blue);
+			--success: var(--flexoki-green);
+		}
 
-    /* Additional overrides for dark theme inputs */
-    button { color: var(--text); background: var(--flexoki-ui); border: 1px solid var(--border); }
-    button:hover { background: var(--flexoki-ui-2); }
-    .btn-primary:hover, .btn-success:hover { opacity: 0.9; }
-  </style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+			line-height: 1.5;
+			background: var(--bg);
+			color: var(--text);
+			padding: 1rem;
+		}
+
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+		}
+
+		header {
+			text-align: center;
+			margin-bottom: 1.5rem;
+		}
+
+		h1 {
+			font-size: 1.75rem;
+			font-weight: 700;
+			margin-bottom: 0.5rem;
+		}
+
+		.subtitle {
+			color: var(--text-light);
+			font-size: 0.9rem;
+		}
+
+		.grid {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 1rem;
+		}
+
+		@media (min-width: 768px) {
+			.grid {
+				grid-template-columns: 1fr 1fr;
+			}
+		}
+
+		.card {
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 0.75rem;
+			padding: 1.25rem;
+		}
+
+		.card-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 1rem;
+		}
+
+		.card-header-buttons {
+			display: flex;
+			gap: 1rem;
+		}
+
+		h2 {
+			font-size: 1.25rem;
+			font-weight: 600;
+		}
+
+		.btn {
+			padding: 0.5rem 1rem;
+			font-size: 0.875rem;
+			border-radius: 0.5rem;
+			cursor: pointer;
+		}
+
+		.btn-primary {
+			background: var(--primary);
+			color: white;
+			border: none;
+		}
+
+		.btn-success {
+			background: var(--success);
+			color: white;
+			border: none;
+		}
+
+		.btn:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+
+		textarea {
+			width: 100%;
+			height: 20rem;
+			padding: 0.75rem;
+			background: var(--bg);
+			color: var(--text);
+			border: 1px solid var(--border);
+			border-radius: 0.5rem;
+			font-family: monospace;
+			font-size: 0.875rem;
+			resize: vertical;
+			overflow: auto;
+		}
+
+		pre {
+			white-space: pre-wrap;
+			word-break: break-word;
+		}
+
+		.images {
+			margin-top: 1.5rem;
+		}
+
+		.images-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+			gap: 1rem;
+		}
+
+		.image-card {
+			border: 1px solid var(--border);
+			border-radius: 0.5rem;
+			overflow: hidden;
+			background: var(--card);
+		}
+
+		.image-label {
+			padding: 0.5rem;
+			font-size: 0.75rem;
+			background: var(--border);
+			color: var(--text-light);
+		}
+
+		.image-preview {
+			height: 120px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: var(--flexoki-ui);
+		}
+
+		.image-preview img {
+			max-width: 100%;
+			max-height: 100%;
+			object-fit: contain;
+		}
+
+		.error {
+			background: var(--flexoki-ui);
+			color: var(--flexoki-red);
+			border: 1px solid var(--flexoki-red);
+			padding: 0.75rem;
+			border-radius: 0.5rem;
+			margin-top: 0.5rem;
+			font-size: 0.875rem;
+		}
+
+		.spinner {
+			width: 1rem;
+			height: 1rem;
+			border: 2px solid currentColor;
+			border-top-color: transparent;
+			border-radius: 50%;
+			animation: spin 1s linear infinite;
+		}
+
+		@keyframes spin {
+			to {
+				transform: rotate(360deg);
+			}
+		}
+
+		.placeholder {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100%;
+			color: var(--text-light);
+		}
+
+		/* Additional overrides for dark theme inputs */
+		button {
+			color: var(--text);
+			background: var(--flexoki-ui);
+			border: 1px solid var(--border);
+		}
+
+		button:hover {
+			background: var(--flexoki-ui-2);
+		}
+
+		.btn-primary:hover,
+		.btn-success:hover {
+			opacity: 0.9;
+		}
+	</style>
 </head>
-<body>
-  <div class="container">
-    <header>
-      <h1>Markdown Image Extractor</h1>
-      <p class="subtitle">Paste markdown with base64 images to extract and clean</p>
-    </header>
 
-    <div class="grid">
-      <div class="card">
-        <div class="card-header">
-          <h2>Input Markdown</h2>
-          <div class="card-header-buttons">
-<!--             <button id="paste-btn" class="btn btn-primary">Paste</button> -->
-            <button id="clear" class="btn">Clear</button>
-          </div>
-        </div>
-        <textarea id="input" placeholder="Paste markdown with images like:
+<body>
+	<div class="container">
+		<header>
+			<h1>Markdown Image Extractor</h1>
+			<p class="subtitle">Paste markdown with base64 images to extract and clean</p>
+		</header>
+
+		<div class="grid">
+			<div class="card">
+				<div class="card-header">
+					<h2>Input Markdown</h2>
+					<div class="card-header-buttons">
+						<!--             <button id="paste-btn" class="btn btn-primary">Paste</button> -->
+						<button id="clear" class="btn">Clear</button>
+					</div>
+				</div>
+				<textarea id="input" placeholder="Paste markdown with images like:
 ![][image1]
 
 [image1]: <image/png;base64,iVBORw0KG...>"></textarea>
-        <div id="error" class="error" style="display:none;"></div>
-      </div>
+				<div id="error" class="error" style="display:none;"></div>
+			</div>
 
-      <div class="card">
-        <div class="card-header">
-          <h2>Cleaned Markdown</h2>
-          <button id="copy-cleaned" class="btn btn-success">📋 Copy</button>
-        </div>
-        <div id="output" class="card" style="height: 20rem; overflow: auto; background: var(--bg); padding: 0.75rem; font-family: monospace; font-size: 0.875rem;"></div>
-      </div>
-    </div>
+			<div class="card">
+				<div class="card-header">
+					<h2>Cleaned Markdown</h2>
+					<button id="copy-cleaned" class="btn btn-success">📋 Copy</button>
+				</div>
+				<div id="output" class="card" style="height: 20rem; overflow: auto; background: var(--bg); padding: 0.75rem; font-family: monospace; font-size: 0.875rem;"></div>
+			</div>
+		</div>
 
-    <div id="images" class="images" style="display:none;">
-      <h2 class="card-header">Extracted Images</h2>
-      <div id="images-grid" class="images-grid"></div>
-    </div>
-  </div>
+		<div id="images" class="images" style="display:none;">
+			<h2 class="card-header">Extracted Images</h2>
+			<div id="images-grid" class="images-grid"></div>
+		</div>
+	</div>
 
-  <script>
-    const input = document.getElementById('input');
-    const output = document.getElementById('output');
-    const errorEl = document.getElementById('error');
-    const imagesSection = document.getElementById('images');
-    const imagesGrid = document.getElementById('images-grid');
-    const clearBtn = document.getElementById('clear');
-    const copyCleanedBtn = document.getElementById('copy-cleaned');
+	<script>
+		const input = document.getElementById('input');
+		const output = document.getElementById('output');
+		const errorEl = document.getElementById('error');
+		const imagesSection = document.getElementById('images');
+		const imagesGrid = document.getElementById('images-grid');
+		const clearBtn = document.getElementById('clear');
+		const copyCleanedBtn = document.getElementById('copy-cleaned');
 
-    function showError(msg) {
-      errorEl.textContent = msg;
-      errorEl.style.display = 'block';
-    }
+		function showError(msg) {
+			errorEl.textContent = msg;
+			errorEl.style.display = 'block';
+		}
 
-    function hideError() {
-      errorEl.style.display = 'none';
-    }
+		function hideError() {
+			errorEl.style.display = 'none';
+		}
 
-    function extractImages(markdown) {
-      const images = [];
-      let cleaned = markdown;
+		function extractImages(markdown) {
+			const images = [];
+			let cleaned = markdown;
 
-      // Remove reference definitions: [label]: <...base64...>
-      const refDefRegex = /\[([^\]]+)\]:\s*<[^>]*base64,[^>]+>/g;
-      let match;
-      while ((match = refDefRegex.exec(markdown)) !== null) {
-        const [fullMatch, label] = match;
-        // Extract base64 data
-        const base64Match = fullMatch.match(/base64,([A-Za-z0-9+/=]+)/);
-        if (base64Match) {
-          images.push({ label, base64Data: base64Match[1] });
-        }
-        cleaned = cleaned.replace(fullMatch, '');
-      }
+			// Remove reference definitions: [label]: <...base64...>
+			const refDefRegex = /\[([^\]]+)\]:\s*<[^>]*base64,[^>]+>/g;
+			let match;
+			while ((match = refDefRegex.exec(markdown)) !== null) {
+				const [fullMatch, label] = match;
+				// Extract base64 data
+				const base64Match = fullMatch.match(/base64,([A-Za-z0-9+/=]+)/);
+				if (base64Match) {
+					images.push({ label, base64Data: base64Match[1] });
+				}
+				cleaned = cleaned.replace(fullMatch, '');
+			}
 
-      // Remove inline image references: ![][label] and ![alt][label]
-      const inlineRefRegex = /!\[[^\]]*\]\[[^\]]*\]\s*/g;
-      cleaned = cleaned.replace(inlineRefRegex, '');
+			// Remove inline image references: ![][label] and ![alt][label]
+			const inlineRefRegex = /!\[[^\]]*\]\[[^\]]*\]\s*/g;
+			cleaned = cleaned.replace(inlineRefRegex, '');
 
-      // Remove empty lines that might remain
-      cleaned = cleaned.replace(/^\s*[\r\n]/gm, '');
+			// Remove empty lines that might remain
+			cleaned = cleaned.replace(/^\s*[\r\n]/gm, '');
 
-      return { images, cleaned: cleaned.trim() };
-    }
+			return { images, cleaned: cleaned.trim() };
+		}
 
-    function createImageBlob(base64Data) {
-      try {
-        const cleanBase64 = base64Data.replace(/\s+/g, '');
-        const binaryString = atob(cleanBase64);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        // Auto-detect image type
-        let mimeType = 'image/png';
-        if (cleanBase64.startsWith('/9j/')) mimeType = 'image/jpeg';
-        else if (cleanBase64.startsWith('R0lGOD')) mimeType = 'image/gif';
-        return new Blob([bytes], { type: mimeType });
-      } catch (e) {
-        return null;
-      }
-    }
+		function createImageBlob(base64Data) {
+			try {
+				const cleanBase64 = base64Data.replace(/\s+/g, '');
+				const binaryString = atob(cleanBase64);
+				const bytes = new Uint8Array(binaryString.length);
+				for (let i = 0; i < binaryString.length; i++) {
+					bytes[i] = binaryString.charCodeAt(i);
+				}
+				// Auto-detect image type
+				let mimeType = 'image/png';
+				if (cleanBase64.startsWith('/9j/')) mimeType = 'image/jpeg';
+				else if (cleanBase64.startsWith('R0lGOD')) mimeType = 'image/gif';
+				return new Blob([bytes], { type: mimeType });
+			} catch (e) {
+				return null;
+			}
+		}
 
-    async function processInput() {
-      hideError();
-      const text = input.value.trim();
-      if (!text) {
-        output.innerHTML = '';
-        imagesSection.style.display = 'none';
-        return;
-      }
+		async function processInput() {
+			hideError();
+			const text = input.value.trim();
+			if (!text) {
+				output.innerHTML = '';
+				imagesSection.style.display = 'none';
+				return;
+			}
 
-      const { images, cleaned } = extractImages(text);
-      output.innerHTML = cleaned ? `<pre>${cleaned}</pre>` : '<div class="placeholder">No content</div>';
+			const { images, cleaned } = extractImages(text);
+			output.innerHTML = cleaned ? `<pre>${cleaned}</pre>` : '<div class="placeholder">No content</div>';
 
-      if (images.length === 0) {
-        imagesSection.style.display = 'none';
-        return;
-      }
+			if (images.length === 0) {
+				imagesSection.style.display = 'none';
+				return;
+			}
 
-      imagesGrid.innerHTML = '';
-      imagesSection.style.display = 'block';
+			imagesGrid.innerHTML = '';
+			imagesSection.style.display = 'block';
 
-      for (const img of images) {
-        const blob = createImageBlob(img.base64Data);
-        if (!blob) continue;
+			for (const img of images) {
+				const blob = createImageBlob(img.base64Data);
+				if (!blob) continue;
 
-        const url = URL.createObjectURL(blob);
-        const card = document.createElement('div');
-        card.className = 'image-card';
-        card.innerHTML = `
+				const url = URL.createObjectURL(blob);
+				const card = document.createElement('div');
+				card.className = 'image-card';
+				card.innerHTML = `
           <div class="image-label">${img.label}</div>
           <div class="image-preview">
             <img src="${url}" alt="${img.label}">
           </div>
         `;
-        // Add error handling for image loading
-        card.querySelector('img').onerror = function() {
-          this.parentElement.innerHTML = '<div class="placeholder">Invalid image</div>';
-        };
-        imagesGrid.appendChild(card);
-      }
-    }
+				// Add error handling for image loading
+				card.querySelector('img').onerror = function () {
+					this.parentElement.innerHTML = '<div class="placeholder">Invalid image</div>';
+				};
+				imagesGrid.appendChild(card);
+			}
+		}
 
-    input.addEventListener('paste', () => {
-      setTimeout(processInput, 10);
-    });
+		input.addEventListener('paste', () => {
+			setTimeout(processInput, 10);
+		});
 
-    input.addEventListener('input', () => {
-      if (!input.value.trim()) {
-        output.innerHTML = '';
-        imagesSection.style.display = 'none';
-      }
-    });
+		input.addEventListener('input', () => {
+			if (!input.value.trim()) {
+				output.innerHTML = '';
+				imagesSection.style.display = 'none';
+			}
+		});
 
-    clearBtn.addEventListener('click', () => {
-      input.value = '';
-      output.innerHTML = '';
-      imagesSection.style.display = 'none';
-      hideError();
-    });
+		clearBtn.addEventListener('click', () => {
+			input.value = '';
+			output.innerHTML = '';
+			imagesSection.style.display = 'none';
+			hideError();
+		});
 
-    copyCleanedBtn.addEventListener('click', async () => {
-      try {
-        const text = output.textContent || output.innerText;
-        await navigator.clipboard.writeText(text);
-        const original = copyCleanedBtn.innerHTML;
-        copyCleanedBtn.innerHTML = '✓ Copied!';
-        setTimeout(() => copyCleanedBtn.innerHTML = original, 2000);
-      } catch (e) {
-        showError('Failed to copy');
-      }
-    });
-  </script>
+		copyCleanedBtn.addEventListener('click', async () => {
+			try {
+				const text = output.textContent || output.innerText;
+				await navigator.clipboard.writeText(text);
+				const original = copyCleanedBtn.innerHTML;
+				copyCleanedBtn.innerHTML = '✓ Copied!';
+				setTimeout(() => copyCleanedBtn.innerHTML = original, 2000);
+			} catch (e) {
+				showError('Failed to copy');
+			}
+		});
+	</script>
 </body>
+
 </html>
