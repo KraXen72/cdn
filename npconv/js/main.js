@@ -15,6 +15,7 @@ window.onload = async () => {
 		log("Error loading SQL.js: " + (e.message || e.toString()), "err");
 	}
 	updateUI();
+	setupDropZones();
 };
 
 // --- UI Logic ---
@@ -69,3 +70,59 @@ async function processBackup(direction) {
 // Expose to global for HTML bindings
 window.processBackup = processBackup;
 window.updateUI = updateUI;
+
+// Setup clickable + drag-and-drop behavior for .drop-zone elements
+function setupDropZones() {
+	document.querySelectorAll('.drop-zone').forEach(zone => {
+		const input = zone.querySelector('input[type="file"]');
+		const nameEl = zone.querySelector('.file-name');
+		if (!input) return;
+
+		// Click anywhere in zone to open file picker
+		zone.addEventListener('click', (e) => {
+			// allow native file input clicks to pass through
+			if (e.target === input) return;
+			input.click();
+		});
+
+		// Keyboard accessible (Enter / Space)
+		zone.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				input.click();
+			}
+		});
+
+		// Drag & Drop
+		zone.addEventListener('dragover', (e) => {
+			e.preventDefault();
+			zone.classList.add('active');
+		});
+		zone.addEventListener('dragleave', () => {
+			zone.classList.remove('active');
+		});
+		zone.addEventListener('drop', (e) => {
+			e.preventDefault();
+			zone.classList.remove('active');
+			const files = e.dataTransfer && e.dataTransfer.files;
+			if (files && files.length) {
+				// Use DataTransfer to assign files to input.files
+				try {
+					const dt = new DataTransfer();
+					for (let i = 0; i < files.length; i++) dt.items.add(files[i]);
+					input.files = dt.files;
+					input.dispatchEvent(new Event('change', { bubbles: true }));
+				} catch (err) {
+					// fallback: if unable to set files, call handlers directly or inform user
+					console.warn('Could not set input.files programmatically', err);
+				}
+			}
+		});
+
+		// Reflect selected filename in UI
+		input.addEventListener('change', () => {
+			const f = input.files && input.files[0];
+			if (nameEl) nameEl.textContent = f ? f.name : '';
+		});
+	});
+}

@@ -5,7 +5,7 @@
 	--secondary: #03dac6;
 	--error: #cf6679;
 	--text: #e0e0e0;
-	--border: #333;
+	--border: #3a3a3a; /* thin gray border color */
 }
 
 body {
@@ -26,7 +26,8 @@ body {
 	background: var(--surface);
 	padding: 20px;
 	border-radius: 12px;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.18);
+	border: 1px solid var(--border);
 }
 
 h1 {
@@ -42,34 +43,42 @@ h3 {
 
 /* Mode Selection */
 .mode-selector {
-	display: flex;
-	gap: 20px;
-	justify-content: center;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 12px;
+	justify-items: center;
 	margin-bottom: 20px;
-	flex-wrap: wrap;
+	align-items: center;
 }
 
 .radio-label {
 	display: flex;
 	align-items: center;
 	cursor: pointer;
-	padding: 10px 20px;
+	padding: 10px 14px;
 	background: #2c2c2c;
 	border-radius: 8px;
-	transition: background 0.2s;
+	transition: background 0.18s, border-color 0.18s;
+	border: 1px solid var(--border);
+	width: 100%;
+	box-sizing: border-box;
+	gap: 8px;
 }
-.radio-label:hover {
-	background: #3a3a3a;
+.radio-label:hover,
+.radio-label:focus-within {
+	background: #2f2f2f;
+	outline: none;
+	border-color: var(--primary);
 }
-input[type="radio"] {
-	margin-right: 10px;
+.radio-label input[type="radio"] {
+	margin-right: 8px;
 }
 
 /* File Inputs */
 .file-area {
 	display: flex;
 	flex-direction: column;
-	gap: 20px;
+	gap: 16px;
 }
 
 @media (min-width: 768px) {
@@ -80,12 +89,16 @@ input[type="radio"] {
 
 .drop-zone {
 	flex: 1;
-	border: 2px dashed var(--border);
+	border: 1px dashed var(--border);
 	padding: 20px;
 	border-radius: 8px;
 	text-align: center;
-	transition: border-color 0.2s;
+	transition: border-color 0.14s, background 0.14s;
 	position: relative;
+	min-height: 120px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
 }
 
 .drop-zone:hover,
@@ -98,9 +111,26 @@ input[type="radio"] {
 	color: var(--secondary);
 }
 
+.drop-zone p {
+	margin: 0;
+	color: #bbb;
+}
+
+/* hide native file input to make whole zone clickable */
 input[type="file"] {
+	position: absolute;
+	left: 0;
+	top: 0;
 	width: 100%;
-	margin-top: 10px;
+	height: 100%;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.drop-zone .file-name {
+	margin-top: 8px;
+	font-size: 13px;
+	color: #9ea3a8;
 }
 
 /* Controls */
