@@ -1,242 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="theme-preload">
 
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Markdown Image Extractor</title>
-	<style>
-		:root {
-			/* Flexoki Dark Palette */
-			--flexoki-bg: #100F0F;
-			--flexoki-bg-2: #1C1B1A;
-			--flexoki-ui: #282726;
-			--flexoki-ui-2: #343331;
-			--flexoki-ui-3: #403E3C;
-			--flexoki-tx-3: #575653;
-			--flexoki-tx-2: #878580;
-			--flexoki-tx: #CECDC3;
-
-			--flexoki-red: #D14D41;
-			--flexoki-orange: #DA702C;
-			--flexoki-yellow: #D0A215;
-			--flexoki-green: #879A39;
-			--flexoki-cyan: #3AA99F;
-			--flexoki-blue: #4385BE;
-			--flexoki-purple: #8B7EC8;
-			--flexoki-magenta: #CE5D97;
-
-			/* Theme Mappings */
-			--bg: var(--flexoki-bg);
-			--card: var(--flexoki-bg-2);
-			--border: var(--flexoki-ui);
-			--text: var(--flexoki-tx);
-			--text-light: var(--flexoki-tx-2);
-			--primary: var(--flexoki-blue);
-			--success: var(--flexoki-green);
-		}
-
-		* {
-			margin: 0;
-			padding: 0;
-			box-sizing: border-box;
-		}
-
-		body {
-			font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-			line-height: 1.5;
-			background: var(--bg);
-			color: var(--text);
-			padding: 1rem;
-		}
-
-		.container {
-			max-width: 1200px;
-			margin: 0 auto;
-		}
-
-		header {
-			text-align: center;
-			margin-bottom: 1.5rem;
-		}
-
-		h1 {
-			font-size: 1.75rem;
-			font-weight: 700;
-			margin-bottom: 0.5rem;
-		}
-
-		.subtitle {
-			color: var(--text-light);
-			font-size: 0.9rem;
-		}
-
-		.grid {
-			display: grid;
-			grid-template-columns: 1fr;
-			gap: 1rem;
-		}
-
-		@media (min-width: 768px) {
-			.grid {
-				grid-template-columns: 1fr 1fr;
-			}
-		}
-
-		.card {
-			background: var(--card);
-			border: 1px solid var(--border);
-			border-radius: 0.75rem;
-			padding: 1.25rem;
-		}
-
-		.card-header {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			margin-bottom: 1rem;
-		}
-
-		.card-header-buttons {
-			display: flex;
-			gap: 1rem;
-		}
-
-		h2 {
-			font-size: 1.25rem;
-			font-weight: 600;
-		}
-
-		.btn {
-			padding: 0.5rem 1rem;
-			font-size: 0.875rem;
-			border-radius: 0.5rem;
-			cursor: pointer;
-		}
-
-		.btn-primary {
-			background: var(--primary);
-			color: white;
-			border: none;
-		}
-
-		.btn-success {
-			background: var(--success);
-			color: white;
-			border: none;
-		}
-
-		.btn:disabled {
-			opacity: 0.5;
-			cursor: not-allowed;
-		}
-
-		textarea {
-			width: 100%;
-			height: 20rem;
-			padding: 0.75rem;
-			background: var(--bg);
-			color: var(--text);
-			border: 1px solid var(--border);
-			border-radius: 0.5rem;
-			font-family: monospace;
-			font-size: 0.875rem;
-			resize: vertical;
-			overflow: auto;
-		}
-
-		pre {
-			white-space: pre-wrap;
-			word-break: break-word;
-		}
-
-		.images {
-			margin-top: 1.5rem;
-		}
-
-		.images-grid {
-			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-			gap: 1rem;
-		}
-
-		.image-card {
-			border: 1px solid var(--border);
-			border-radius: 0.5rem;
-			overflow: hidden;
-			background: var(--card);
-		}
-
-		.image-label {
-			padding: 0.5rem;
-			font-size: 0.75rem;
-			background: var(--border);
-			color: var(--text-light);
-		}
-
-		.image-preview {
-			height: 120px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			background: var(--flexoki-ui);
-		}
-
-		.image-preview img {
-			max-width: 100%;
-			max-height: 100%;
-			object-fit: contain;
-		}
-
-		.error {
-			background: var(--flexoki-ui);
-			color: var(--flexoki-red);
-			border: 1px solid var(--flexoki-red);
-			padding: 0.75rem;
-			border-radius: 0.5rem;
-			margin-top: 0.5rem;
-			font-size: 0.875rem;
-		}
-
-		.spinner {
-			width: 1rem;
-			height: 1rem;
-			border: 2px solid currentColor;
-			border-top-color: transparent;
-			border-radius: 50%;
-			animation: spin 1s linear infinite;
-		}
-
-		@keyframes spin {
-			to {
-				transform: rotate(360deg);
-			}
-		}
-
-		.placeholder {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			height: 100%;
-			color: var(--text-light);
-		}
-
-		/* Additional overrides for dark theme inputs */
-		button {
-			color: var(--text);
-			background: var(--flexoki-ui);
-			border: 1px solid var(--border);
-		}
-
-		button:hover {
-			background: var(--flexoki-ui-2);
-		}
-
-		.btn-primary:hover,
-		.btn-success:hover {
-			opacity: 0.9;
-		}
-	</style>
+	<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -244,6 +13,11 @@
 		<header>
 			<h1>Markdown Image Extractor</h1>
 			<p class="subtitle">Paste markdown with base64 images to extract and clean</p>
+			<div class="header-controls">
+				<button id="theme-toggle" class="btn" aria-label="Toggle theme">
+					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Lucide by Lucide Contributors - https://github.com/lucide-icons/lucide/blob/main/LICENSE --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 18a6 6 0 0 0 0-12z"/></g></svg>
+				</button>
+			</div>
 		</header>
 
 		<div class="grid">
@@ -277,8 +51,72 @@
 		</div>
 	</div>
 
-	<script>
-		const input = document.getElementById('input');
+		<script>
+			/* Theme initialization: use system by default, persist user's choice in localStorage.
+			   Prevent flash by keeping `html.theme-preload` until the theme is applied,
+			   then add `theme-ready` to fade in the main content. */
+			(function () {
+				const THEME_KEY = 'gmdip-theme';
+				const doc = document.documentElement;
+				const mq = window.matchMedia('(prefers-color-scheme: light)');
+
+				function applyPref(pref) {
+					if (pref === 'light') doc.classList.add('skin-theme-clientpref-day');
+					else if (pref === 'dark') doc.classList.remove('skin-theme-clientpref-day');
+					else {
+						if (mq.matches) doc.classList.add('skin-theme-clientpref-day');
+						else doc.classList.remove('skin-theme-clientpref-day');
+					}
+				}
+
+				// React to system changes only when no explicit preference is stored
+				if (mq.addEventListener) {
+					mq.addEventListener('change', () => {
+						if (!localStorage.getItem(THEME_KEY)) applyPref('system');
+					});
+				} else {
+					mq.addListener(() => { if (!localStorage.getItem(THEME_KEY)) applyPref('system'); });
+				}
+
+				let stored = localStorage.getItem(THEME_KEY) || 'system';
+				applyPref(stored);
+
+				// Reveal and fade-in
+				doc.classList.remove('theme-preload');
+				void document.body.offsetWidth; // force reflow
+				doc.classList.add('theme-ready');
+
+				// Toggle button wiring
+				const btn = document.getElementById('theme-toggle');
+				if (btn) {
+					const updateButton = () => {
+						const s = localStorage.getItem(THEME_KEY);
+						const effective = s || (mq.matches ? 'light' : 'dark');
+						btn.setAttribute('aria-pressed', effective === 'light');
+					};
+
+					btn.addEventListener('click', () => {
+						const s = localStorage.getItem(THEME_KEY);
+						const effective = s || (mq.matches ? 'light' : 'dark');
+						const newPref = effective === 'light' ? 'dark' : 'light';
+						localStorage.setItem(THEME_KEY, newPref);
+						applyPref(newPref);
+						updateButton();
+					});
+
+					// Right-click resets to system preference (convenience)
+					btn.addEventListener('contextmenu', (e) => {
+						e.preventDefault();
+						localStorage.removeItem(THEME_KEY);
+						applyPref('system');
+						updateButton();
+					});
+
+					updateButton();
+				}
+			})();
+
+			const input = document.getElementById('input');
 		const output = document.getElementById('output');
 		const errorEl = document.getElementById('error');
 		const imagesSection = document.getElementById('images');

@@ -1,0 +1,277 @@
+:root {
+			/* Flexoki Dark Palette */
+			--flexoki-bg: #100F0F;
+			--flexoki-bg-2: #1C1B1A;
+			--flexoki-ui: #282726;
+			--flexoki-ui-2: #343331;
+			--flexoki-ui-3: #403E3C;
+			--flexoki-tx-3: #575653;
+			--flexoki-tx-2: #878580;
+			--flexoki-tx: #CECDC3;
+
+			--flexoki-red: #D14D41;
+			--flexoki-orange: #DA702C;
+			--flexoki-yellow: #D0A215;
+			--flexoki-green: #879A39;
+			--flexoki-cyan: #3AA99F;
+			--flexoki-blue: #4385BE;
+			--flexoki-purple: #8B7EC8;
+			--flexoki-magenta: #CE5D97;
+
+			/* Theme Mappings */
+			--bg: var(--flexoki-bg);
+			--card: var(--flexoki-bg-2);
+			--border: var(--flexoki-ui);
+			--text: var(--flexoki-tx);
+			--text-light: var(--flexoki-tx-2);
+			--primary: var(--flexoki-blue);
+			--success: var(--flexoki-green);
+		}
+
+		/* Light theme variables (applies when html has `skin-theme-clientpref-day`) */
+		:root, html, html.skin-theme-clientpref-day {
+			--flexoki-bg:      #FFFCF0;
+			--flexoki-bg-2:    #F2F0E5;
+			--flexoki-ui:      #E6E4D9;
+			--flexoki-ui-2:    #DAD8CE;
+			--flexoki-ui-3:    #CECDC3;
+			--flexoki-tx-3:    #B7B5AC;
+			--flexoki-tx-2:    #6F6E69;
+			--flexoki-tx:      #100F0F;
+			
+			--flexoki-red:     #AF3029;
+			--flexoki-orange:  #BC5215;
+			--flexoki-yellow:  #AD8301;
+			--flexoki-green:   #66800B;
+			--flexoki-cyan:    #24837B;
+			--flexoki-blue:    #205EA6;
+			--flexoki-purple:  #5E409D;
+			--flexoki-magenta: #A02F6F;
+			
+			--p-normal: .5rem;
+			--p-small: .25rem;
+			--br: .3rem;
+		}
+
+		/* Prevent flash: hide content until theme is applied, then fade-in main content */
+		.container { opacity: 0; transition: opacity 0.125s ease; }
+		html.theme-ready .container { opacity: 1; }
+		html.theme-preload { visibility: hidden; }
+
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+			line-height: 1.5;
+			background: var(--bg);
+			color: var(--text);
+			padding: 1rem;
+		}
+
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+		}
+
+		header {
+			text-align: center;
+			margin-bottom: 1.5rem;
+		}
+
+		.header-controls {
+			display: flex;
+			justify-content: center;
+			margin-top: 0.5rem;
+			gap: 0.5rem;
+		}
+
+		#theme-toggle {
+			width: 40px;
+			height: 40px;
+			padding: 0;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 0.5rem;
+		}
+
+		h1 {
+			font-size: 1.75rem;
+			font-weight: 700;
+			margin-bottom: 0.5rem;
+		}
+
+		.subtitle {
+			color: var(--text-light);
+			font-size: 0.9rem;
+		}
+
+		.grid {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 1rem;
+		}
+
+		@media (min-width: 768px) {
+			.grid {
+				grid-template-columns: 1fr 1fr;
+			}
+		}
+
+		.card {
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 0.75rem;
+			padding: 1.25rem;
+		}
+
+		.card-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 1rem;
+		}
+
+		.card-header-buttons {
+			display: flex;
+			gap: 1rem;
+		}
+
+		h2 {
+			font-size: 1.25rem;
+			font-weight: 600;
+		}
+
+		.btn {
+			padding: 0.5rem 1rem;
+			font-size: 0.875rem;
+			border-radius: 0.5rem;
+			cursor: pointer;
+		}
+
+		.btn-primary {
+			background: var(--primary);
+			color: white;
+			border: none;
+		}
+
+		.btn-success {
+			background: var(--success);
+			color: white;
+			border: none;
+		}
+
+		.btn:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+
+		textarea {
+			width: 100%;
+			height: 20rem;
+			padding: 0.75rem;
+			background: var(--bg);
+			color: var(--text);
+			border: 1px solid var(--border);
+			border-radius: 0.5rem;
+			font-family: monospace;
+			font-size: 0.875rem;
+			resize: vertical;
+			overflow: auto;
+		}
+
+		pre {
+			white-space: pre-wrap;
+			word-break: break-word;
+		}
+
+		.images {
+			margin-top: 1.5rem;
+		}
+
+		.images-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+			gap: 1rem;
+		}
+
+		.image-card {
+			border: 1px solid var(--border);
+			border-radius: 0.5rem;
+			overflow: hidden;
+			background: var(--card);
+		}
+
+		.image-label {
+			padding: 0.5rem;
+			font-size: 0.75rem;
+			background: var(--border);
+			color: var(--text-light);
+		}
+
+		.image-preview {
+			height: 120px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: var(--flexoki-ui);
+		}
+
+		.image-preview img {
+			max-width: 100%;
+			max-height: 100%;
+			object-fit: contain;
+		}
+
+		.error {
+			background: var(--flexoki-ui);
+			color: var(--flexoki-red);
+			border: 1px solid var(--flexoki-red);
+			padding: 0.75rem;
+			border-radius: 0.5rem;
+			margin-top: 0.5rem;
+			font-size: 0.875rem;
+		}
+
+		.spinner {
+			width: 1rem;
+			height: 1rem;
+			border: 2px solid currentColor;
+			border-top-color: transparent;
+			border-radius: 50%;
+			animation: spin 1s linear infinite;
+		}
+
+		@keyframes spin {
+			to {
+				transform: rotate(360deg);
+			}
+		}
+
+		.placeholder {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100%;
+			color: var(--text-light);
+		}
+
+		/* Additional overrides for dark theme inputs */
+		button {
+			color: var(--text);
+			background: var(--flexoki-ui);
+			border: 1px solid var(--border);
+		}
+
+		button:hover {
+			background: var(--flexoki-ui-2);
+		}
+
+		.btn-primary:hover,
+		.btn-success:hover {
+			opacity: 0.9;
+		}
