@@ -153,17 +153,17 @@
 				if (base64Match) {
 					images.push({ label, base64Data: base64Match[1] });
 				}
-				cleaned = cleaned.replace(fullMatch, '');
+				// Replace the whole reference definition with a single newline to preserve paragraph breaks
+				cleaned = cleaned.replace(fullMatch, '\n');
 			}
 
 			// Remove inline image references: ![][label] and ![alt][label]
-			const inlineRefRegex = /!\[[^\]]*\]\[[^\]]*\]\s*/g;
-			cleaned = cleaned.replace(inlineRefRegex, '');
+			const inlineRefRegex = /!\[[^\]]*\]\[[^\]]*\]/g;
+			// Replace inline image refs with a newline so surrounding text doesn't get concatenated
+			cleaned = cleaned.replace(inlineRefRegex, '\n');
 
-			// Remove empty lines that might remain
-			cleaned = cleaned.replace(/^\s*[\r\n]/gm, '');
-
-			return { images, cleaned: cleaned.trim() };
+			// Trim only leading/trailing whitespace but preserve internal blank lines
+			return { images, cleaned: cleaned.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim() };
 		}
 
 		function createImageBlob(base64Data) {

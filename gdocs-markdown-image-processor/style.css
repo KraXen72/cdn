@@ -26,6 +26,11 @@
 	--text-light: var(--flexoki-tx-2);
 	--primary: var(--flexoki-blue);
 	--success: var(--flexoki-green);
+
+	/* Scrollbar variables (global) */
+	--sb-track-color: var(--flexoki-ui);
+	--sb-thumb-color: var(--flexoki-cyan);
+	--sb-size: 14px;
 }
 
 /* Light theme variables (applies when html has `skin-theme-clientpref-day`) */
@@ -56,7 +61,7 @@ html.skin-theme-clientpref-day {
 /* Prevent flash: hide content until theme is applied, then fade-in main content */
 .container {
 	opacity: 0;
-	transition: opacity 0.125s ease;
+	/* transition: opacity 0.125s ease; */
 }
 html.theme-ready .container {
 	opacity: 1;
@@ -78,6 +83,31 @@ body {
 	color: var(--text);
 	padding: 1rem;
 }
+
+/* Scrollbar styling: uses flexoki cyan for the thumb; applies to body and textareas */
+/* body::-webkit-scrollbar,
+textarea::-webkit-scrollbar {
+	width: var(--sb-size);
+}
+
+body::-webkit-scrollbar-track,
+textarea::-webkit-scrollbar-track {
+	background: var(--sb-track-color);
+	border-radius: 4px;
+}
+
+body::-webkit-scrollbar-thumb,
+textarea::-webkit-scrollbar-thumb {
+	background: var(--sb-thumb-color);
+	border-radius: 4px;
+	border: 2px solid var(--sb-track-color);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+	body, textarea {
+		scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+	}
+} */
 
 .container {
 	max-width: 1200px;
