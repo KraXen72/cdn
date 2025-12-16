@@ -92,7 +92,7 @@ export async function convertToNewPipe(npFile, ltFile, mode, SQL) {
 
     let subCount = 0;
     if (ltData.subscriptions) {
-      const stmt = db.prepare("INSERT INTO subscriptions (service_id, url, name, avatar_url, subscriber_count, notification_mode) VALUES (?, ?, ?, ?, ?, ?)");
+      const stmt = db.prepare("INSERT INTO subscriptions (service_id, url, name, avatar_url, subscriber_count, description, notification_mode) VALUES (?, ?, ?, ?, ?, ?, ?)");
       ltData.subscriptions.forEach(sub => {
         try {
           const url = sub.url || `https://www.youtube.com/channel/${sub.channelId}`;
@@ -108,8 +108,9 @@ export async function convertToNewPipe(npFile, ltFile, mode, SQL) {
             url,
             name,
             avatarUrl,
-            null,
-            1
+            0,
+            "",
+            0
           ]);
           subCount++;
         } catch (e) {
@@ -244,6 +245,64 @@ export async function convertToNewPipe(npFile, ltFile, mode, SQL) {
   } catch (e) {
     log(`FATAL ERROR during Remote Playlists phase: ${e.message || e.toString()}`, "err");
     throw e;
+  }
+
+  // --- History (Stream State) ---
+  try {
+    log("Processing Watch History...");
+    let histCount = 0;
+    if (ltData.history) {
+      const streamInsert = db.prepare("INSERT OR IGNORE INTO streams (service_id, url, title, stream_type, duration, uploader, upload_date, thumbnail_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+      const stateInsert = db.prepare("INSERT OR REPLACE INTO stream_state (stream_id, progress_time) VALUES (?, ?)");
+
+      for (const vid of ltData.history) {
+        try {
+            const vidUrl = `https://www.youtube.com/watch?v=${vid.videoId}`;
+            if (!vid.videoId) continue;
+
+            const streamTitle = vid.title || "Unknown";
+            const uploaderName = vid.uploader || "Unknown";
+            const durationSec = vid.duration || 0;
+            const uploadDateTs = vid.uploadDate ? new Date(vid.uploadDate).getTime() / 1000 : null;
+            const thumbnailUrl = vid.thumbnailUrl || null;
+            // LibreTube usually stores currentTime in seconds (float or int). NewPipe expects ms.
+            const progressTime = Math.floor((vid.currentTime || 0) * 1000);
+
+            streamInsert.run([
+                SERVICE_ID_YOUTUBE,
+                vidUrl,
+                streamTitle,
+                "VIDEO_STREAM",
+                durationSec,
+                uploaderName,
+                uploadDateTs,
+                thumbnailUrl
+            ]);
+
+            const streamIdRes = db.exec(`SELECT uid FROM streams WHERE service_id=${SERVICE_ID_YOUTUBE} AND url='${vidUrl.replace(/'/g, "''")}'`);
+            if (streamIdRes.length > 0 && streamIdRes[0].values.length > 0) {
+                const streamId = streamIdRes[0].values[0][0];
+                stateInsert.run([streamId, progressTime]);
+                histCount++;
+            }
+        } catch (e) {
+            log(`ERROR processing history item: ${e.message}`, "warn");
+        }
+      }
+      streamInsert.free();
+      stateInsert.free();
+    }
+    log(`Processed ${histCount} history items.`);
+  } catch (e) {
+    log(`Error processing history: ${e.message}`, "err");
+  }
+
+  // --- Room Master Table ---
+  try {
+      db.run("INSERT INTO room_master_table (id, identity_hash) VALUES (42, '7591e8039faa74d8c0517dc867af9d3e')");
+      log("Inserted room_master_table identity.");
+  } catch (e) {
+      log("Error inserting room_master_table: " + e.message, "warn");
   }
 
   // --- Finalize Transaction ---

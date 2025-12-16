@@ -26,6 +26,10 @@ export function createSchema(db) {
             CREATE UNIQUE INDEX ` + "`index_playlist_stream_join_playlist_id_join_index`" + ` ON ` + "`playlist_stream_join`" + ` (` + "`playlist_id`" + `,` + "`join_index`" + `);
             CREATE TABLE ` + "`playlists`" + ` (` + "`uid`" + ` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, ` + "`name`" + ` TEXT, ` + "`is_thumbnail_permanent`" + ` INTEGER NOT NULL, ` + "`thumbnail_stream_id`" + ` INTEGER NOT NULL, ` + "`display_index`" + ` INTEGER NOT NULL);
             CREATE TABLE ` + "`remote_playlists`" + ` (` + "`uid`" + ` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, ` + "`service_id`" + ` INTEGER NOT NULL, ` + "`name`" + ` TEXT, ` + "`url`" + ` TEXT, ` + "`thumbnail_url`" + ` TEXT, ` + "`uploader`" + ` TEXT, ` + "`display_index`" + ` INTEGER NOT NULL, ` + "`stream_count`" + ` INTEGER);
+            CREATE TABLE ` + "`feed`" + ` (` + "`stream_id`" + ` INTEGER, ` + "`subscription_id`" + ` INTEGER);
+            CREATE TABLE ` + "`feed_group_subscription_join`" + ` (` + "`group_id`" + ` INTEGER, ` + "`subscription_id`" + ` INTEGER);
+            CREATE TABLE ` + "`room_master_table`" + ` (` + "`id`" + ` INTEGER, ` + "`identity_hash`" + ` TEXT);
+            CREATE TABLE ` + "`feed_group`" + ` (` + "`uid`" + ` INTEGER, ` + "`name`" + ` TEXT, ` + "`icon_id`" + ` INTEGER, ` + "`sort_order`" + ` INTEGER);
             INSERT INTO android_metadata VALUES ('en_US');
         `;
   db.run(schema);
