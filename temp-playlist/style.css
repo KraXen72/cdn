@@ -1,5 +1,4 @@
 :root {
-	/* Flexoki Theme Definition */
 	--flexoki-bg: #100F0F;
 	--flexoki-bg-2: #1C1B1A;
 	--flexoki-ui: #282726;
@@ -18,7 +17,6 @@
 	--flexoki-purple: #8B7EC8;
 	--flexoki-magenta: #CE5D97;
 
-	--font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 * {
@@ -32,7 +30,7 @@
 body {
 	background: radial-gradient(1200px 600px at 50% -10%, #1b1a19 0%, var(--flexoki-bg) 60%);
 	color: var(--flexoki-tx);
-	font-family: var(--font-main);
+	font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -102,6 +100,43 @@ textarea {
 	font-size: 0.9rem;
 	resize: vertical;
 	outline: none;
+	--sb-track-color: var(--flexoki-ui);
+	--sb-thumb-color: var(--flexoki-cyan);
+	--sb-size: 12px;
+	--sb-border: 1px;
+}
+
+textarea::-webkit-resizer {
+	background: linear-gradient(135deg, transparent 0 55%, var(--flexoki-ui-3) 55% 100%);
+	border-radius: 3px;
+	width: calc(var(--sb-size) - 4px);
+	height: calc(var(--sb-size) - 4px);
+}
+
+textarea::-webkit-scrollbar-corner {
+	background: var(--flexoki-bg);
+}
+
+textarea::-webkit-scrollbar {
+	width: var(--sb-size);
+	height: var(--sb-size);
+}
+
+textarea::-webkit-scrollbar-track {
+	background: var(--sb-track-color);
+	border-radius: 5px;
+}
+
+textarea::-webkit-scrollbar-thumb {
+	background: var(--sb-thumb-color);
+	border-radius: 5px;
+	border: var(--sb-border) solid var(--sb-track-color);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+	textarea {
+		scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+	}
 }
 
 textarea:focus {
