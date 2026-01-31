@@ -25,82 +25,87 @@
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
+
+	font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
 }
 
 body {
-	background-color: var(--flexoki-bg);
+	background: radial-gradient(1200px 600px at 50% -10%, #1b1a19 0%, var(--flexoki-bg) 60%);
 	color: var(--flexoki-tx);
 	font-family: var(--font-main);
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	min-height: 100vh;
-	padding: 20px;
+	padding: 28px;
 }
 
 .container {
 	width: 100%;
-	max-width: 600px;
+	max-width: 700px;
 	background-color: var(--flexoki-bg-2);
 	border: 1px solid var(--flexoki-ui-2);
-	border-radius: 6px;
-	padding: 24px;
+	border-radius: 12px;
+	padding: 16px;
 	display: flex;
 	flex-direction: column;
-	gap: 20px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	gap: 16px;
+	box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
 }
 
 header {
-	border-bottom: 1px solid var(--flexoki-ui-2);
-	padding-bottom: 16px;
-	margin-bottom: 8px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding-bottom: 10px;
 }
 
 h1 {
-	font-size: 1.25rem;
+	font-size: 1.75rem;
 	font-weight: 600;
 	color: var(--flexoki-tx);
 	letter-spacing: -0.02em;
 }
 
 .description {
-	font-size: 0.875rem;
+	font-size: 0.95rem;
 	color: var(--flexoki-tx-2);
-	margin-top: 4px;
+	margin-top: 0;
 }
 
 .input-group {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 10px;
+	background: var(--flexoki-bg);
+	border: 1px solid var(--flexoki-ui-2);
+	border-radius: 6px;
+	padding: 14px 16px 12px;
 }
 
 label {
-	font-size: 0.75rem;
+	font-size: 0.72rem;
 	font-weight: 600;
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: 0.08em;
 	color: var(--flexoki-tx-2);
 }
 
 textarea {
 	width: 100%;
-	background-color: var(--flexoki-bg);
-	border: 1px solid var(--flexoki-ui-2);
-	border-radius: 4px;
-	padding: 12px;
+	background-color: transparent;
+	border: none;
+	padding: 10px 2px 2px;
 	color: var(--flexoki-tx);
-	font-family: monospace;
-	/* Better for URLs */
-	font-size: 0.85rem;
+	font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+	font-size: 0.9rem;
 	resize: vertical;
 	outline: none;
-	transition: border-color 0.2s ease;
 }
 
 textarea:focus {
-	border-color: var(--flexoki-tx-3);
+	outline: none;
 }
 
 textarea::placeholder {
@@ -108,12 +113,11 @@ textarea::placeholder {
 }
 
 #inputUrls {
-	min-height: 120px;
+	min-height: 300px;
 }
 
 #outputUrl {
-	min-height: 60px;
-	color: var(--flexoki-green);
+	min-height: 100px;
 }
 
 .status-bar {
@@ -130,52 +134,32 @@ textarea::placeholder {
 }
 
 button {
-	background-color: var(--flexoki-ui-2);
-	color: var(--flexoki-tx);
-	border: 1px solid var(--flexoki-ui-3);
-	border-radius: 4px;
-	padding: 10px 16px;
-	font-size: 0.9rem;
+	background-color: var(--flexoki-tx);
+	color: var(--flexoki-bg);
+	border: none;
+	border-radius: 6px;
+	padding: 12px 18px;
+	font-size: 0.95rem;
 	font-weight: 500;
 	cursor: pointer;
-	transition: all 0.2s ease;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	gap: 8px;
 }
 
-button:hover {
-	background-color: var(--flexoki-ui-3);
-	border-color: var(--flexoki-tx-3);
+button:not(:disabled):hover {
+	background-color: var(--flexoki-cyan);
 }
 
-button:active {
+button:not(:disabled):active {
 	transform: translateY(1px);
 }
 
-button.primary {
-	background-color: var(--flexoki-bg);
-	border-color: var(--flexoki-green);
-	color: var(--flexoki-green);
-	width: 100%;
-	margin-top: 10px;
-}
-
-button.primary:hover {
-	background-color: var(--flexoki-green);
-	color: var(--flexoki-bg);
-}
-
 button:disabled {
-	opacity: 0.5;
+	opacity: 0.7;
 	cursor: not-allowed;
 	border-color: var(--flexoki-ui-2);
 	color: var(--flexoki-tx-2);
 	background-color: transparent;
-}
-
-button.primary:disabled:hover {
-	background-color: transparent;
-	color: var(--flexoki-tx-2);
 }
