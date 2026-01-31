@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Playlist Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Playlist Creator</h1>
+            <p class="description">Paste YouTube links below to generate a playlist.</p>
+        </header>
+
+        <div class="input-group">
+            <label for="inputUrls">Input Videos (URLs or IDs)</label>
+            <textarea id="inputUrls" placeholder="Paste multiple YouTube links here...&#10;https://www.youtube.com/watch?v=...&#10;https://youtu.be/..."></textarea>
+            <div class="status-bar">
+                <span id="statusText">Waiting for input...</span>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="outputUrl">Generated Playlist Link</label>
+            <textarea id="outputUrl" readonly placeholder="Result will appear here..."></textarea>
+        </div>
+
+        <button id="openBtn" class="primary" disabled>
+            Open Playlist in New Tab
+        </button>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const inputArea = $("inputUrls");
+        const outputArea = $("outputUrl");
+        const openBtn = $("openBtn");
+        const statusText = $("statusText");
+
+        const ytRegex = /^(?:(?:https?:\/\/|\/\/)?(?:www\.|m\.|.+\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|shorts\/|feeds\/api\/videos\/|watch\?v=|watch\?.+&v=)))?([\w-]{11})(?![\w-])$/gim;
+
+        const processInput = () => {
+            const text = inputArea.value;
+            ytRegex.lastIndex = 0;
+            const ids = [...new Set([...text.matchAll(ytRegex)].map((m) => m[1]))];
+
+            if (ids.length) {
+                outputArea.value = `http://www.youtube.com/watch_videos?video_ids=${ids.join(",")}`;
+                openBtn.disabled = false;
+                statusText.innerHTML = `Found <span class="video-count">${ids.length}</span> unique video(s).`;
+                return;
+            }
+
+            outputArea.value = "";
+            openBtn.disabled = true;
+            statusText.innerText = text.trim() ? "No valid video IDs found." : "Waiting for input...";
+        };
+
+        inputArea.addEventListener("input", processInput);
+        openBtn.addEventListener("click", () => outputArea.value && window.open(outputArea.value, "_blank"));
+        outputArea.addEventListener("click", () => outputArea.select());
+    </script>
+</body>
+
+</html>
