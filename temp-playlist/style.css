@@ -181,10 +181,14 @@ button {
 	align-items: center;
 	justify-content: center;
 	gap: 8px;
+
+	border: 1px solid;
+	border-color: var(--flexoki-bg);
 }
 
 button:not(:disabled):hover {
 	background-color: var(--flexoki-cyan);
+	border-color: var(--flexoki-cyan);
 }
 
 button:not(:disabled):active {
