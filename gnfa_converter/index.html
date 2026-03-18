@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GNFA → Regular Expression</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+<style>
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f4f0;
+  --sidebar-bg: #1a1e2e;
+  --card-bg: #ffffff;
+  --border: #e0ddd6;
+  --text: #111827;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
+  --mono: 'IBM Plex Mono', monospace;
+  --serif: 'Newsreader', Georgia, serif;
+  --green: #166534; --green-bg: #dcfce7; --green-border: #86efac;
+  --red: #991b1b;   --red-bg: #fee2e2;   --red-border: #fca5a5;
+  --blue: #1e3a8a;  --blue-bg: #dbeafe;  --blue-border: #93c5fd;
+  --amber: #92400e; --amber-bg: #fef3c7; --amber-border: #fcd34d;
+  --qs-fill: #d1fae5; --qs-stroke: #059669;
+  --qa-fill: #dbeafe; --qa-stroke: #2563eb;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+}
+
+html, body { height: 100%; font-family: var(--serif); background: var(--bg); color: var(--text); }
+
+.app {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ─── SIDEBAR ─────────────────────────────────────────── */
+.sidebar {
+  background: var(--sidebar-bg);
+  color: #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 20px 20px;
+  scrollbar-width: thin;
+  scrollbar-color: #374151 transparent;
+}
+
+.app-brand {
+  margin-bottom: 20px;
+}
+
+.brand-title {
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #f9fafb;
+  letter-spacing: -0.5px;
+}
+
+.brand-title .arrow {
+  color: #6ee7b7;
+  margin: 0 4px;
+}
+
+.brand-desc {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  margin-top: 6px;
+  line-height: 1.5;
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+label.field-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin-bottom: 6px;
+}
+
+textarea#fsm-input {
+  width: 100%;
+  min-height: 240px;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  color: #d1fae5;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.7;
+  padding: 12px 14px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+textarea#fsm-input:focus { border-color: #4ade80; }
+
+.btn-convert {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: #065f46;
+  color: #d1fae5;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-convert:hover { background: #047857; }
+.btn-convert:active { transform: scale(0.98); }
+
+.error-box {
+  margin-top: 10px;
+  background: #7f1d1d;
+  border: 1px solid #991b1b;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: #fca5a5;
+  line-height: 1.5;
+}
+.error-box.hidden { display: none; }
+
+.format-section {
+  margin-top: 18px;
+  border-top: 1px solid #1f2937;
+  padding-top: 16px;
+}
+
+.format-pre {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: #6b7280;
+  line-height: 1.8;
+  white-space: pre;
+  margin-top: 6px;
+}
+.format-pre .comment { color: #4b5563; }
+.format-pre .keyword { color: #6ee7b7; }
+.format-pre .val { color: #d1fae5; }
+
+.sidebar-footer {
+  padding: 10px 20px;
+  border-top: 1px solid #1f2937;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: #4b5563;
+}
+
+/* ─── OUTPUT PANEL ─────────────────────────────────────── */
+.output-panel {
+  overflow-y: auto;
+  padding: 28px 30px 40px;
+  background: var(--bg);
+}
+
+/* welcome */
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 80%;
+  color: var(--text-muted);
+  text-align: center;
+  gap: 12px;
+}
+.welcome-glyph {
+  font-family: var(--mono);
+  font-size: 2.5rem;
+  color: #d1d5db;
+  letter-spacing: -2px;
+}
+.welcome p {
+  max-width: 320px;
+  font-style: italic;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* stage cards */
+.stage-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 22px 16px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow);
+  animation: cardIn 0.25s ease both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.badge {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 99px;
+  border: 1px solid;
+}
+.badge-setup { background: var(--green-bg);  color: var(--green); border-color: var(--green-border); }
+.badge-rip   { background: var(--red-bg);    color: var(--red);   border-color: var(--red-border); }
+.badge-final { background: var(--blue-bg);   color: var(--blue);  border-color: var(--blue-border); }
+
+.card-title {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.card-note {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.55;
+  font-style: italic;
+}
+.card-note code {
+  font-family: var(--mono);
+  font-size: 0.8em;
+  background: #f3f4f6;
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: #374151;
+  font-style: normal;
+}
+.card-note strong { color: var(--text); font-style: normal; font-weight: 600; }
+
+/* update table */
+.update-wrap {
+  overflow-x: auto;
+  margin-bottom: 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+table.update-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+
+table.update-table thead th {
+  background: #f9fafb;
+  border-bottom: 1px solid var(--border);
+  padding: 7px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+table.update-table tbody tr:not(:last-child) td {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+table.update-table td {
+  padding: 6px 12px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.row-changed { background: #f0fdf4; }
+.row-changed .result-cell { color: #166534; font-weight: 600; }
+.row-empty td { color: #d1d5db; }
+
+.arrow-col { color: var(--text); font-weight: 500; }
+
+td code {
+  background: #f3f4f6;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.92em;
+  max-width: 160px;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+td.result-cell code { background: #dcfce7; max-width: 220px; }
+
+/* mermaid container */
+.mermaid-container {
+  margin-top: 10px;
+  text-align: center;
+  min-height: 60px;
+  padding: 8px 0 4px;
+}
+.mermaid-container svg {
+  max-width: 100%;
+  height: auto;
+}
+.mermaid-error {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: #dc2626;
+  background: #fef2f2;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: left;
+  white-space: pre-wrap;
+}
+
+/* final block */
+.final-block {
+  background: var(--sidebar-bg);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin-top: 4px;
+  margin-bottom: 14px;
+}
+.final-block-label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+.final-regex {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  color: #6ee7b7;
+  line-height: 1.6;
+  word-break: break-all;
+}
+.copy-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 5px 12px;
+  background: #065f46;
+  color: #d1fae5;
+  border: none;
+  border-radius: 5px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.copy-btn:hover { background: #047857; }
+
+.components-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.component-item {
+  background: #111827;
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 1.6;
+}
+.component-item .clabel { color: #9ca3af; display: block; font-size: 0.65em; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+.component-item .cval   { color: #d1fae5; word-break: break-all; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ─── SIDEBAR ─────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-scroll">
+      <div class="app-brand">
+        <div class="brand-title">GNFA <span class="arrow">→</span> Regex</div>
+        <p class="brand-desc">State-ripping algorithm, step by step.</p>
+      </div>
+
+      <label class="field-label">FSM Definition</label>
+      <textarea id="fsm-input" spellcheck="false">#states
+qs
+q0
+q1
+q2
+qa
+#initial
+qs
+#accepting
+qa
+#alphabet
+a
+b
+#transitions
+qs:$>q0
+q0:b>q2
+q0:a>q1
+q1:b>q0
+q1:$>q2
+q1:$>qa
+q2:b>q1
+q2:a,b>q2
+q2:$>qa</textarea>
+
+      <button class="btn-convert" id="btn-convert">Convert →</button>
+      <div class="error-box hidden" id="error-box"></div>
+
+      <div class="format-section">
+        <label class="field-label">Format reference</label>
+        <pre class="format-pre"><span class="keyword">#states</span>   <span class="comment">(one per line)</span>
+<span class="keyword">#initial</span>  <span class="comment">(one state)</span>
+<span class="keyword">#accepting</span> <span class="comment">(one or more)</span>
+<span class="keyword">#alphabet</span> <span class="comment">(ignored)</span>
+<span class="keyword">#transitions</span>
+<span class="val">src:label,label>dst</span>
+<span class="comment">$ = ε (epsilon)</span></pre>
+      </div>
+    </div>
+    <div class="sidebar-footer">States ripped in #states order · ∅ edges omitted from diagrams</div>
+  </aside>
+
+  <!-- ─── OUTPUT ──────────────────────────── -->
+  <main class="output-panel" id="output-panel">
+    <div class="welcome" id="welcome">
+      <div class="welcome-glyph">⟨ M ⟩</div>
+      <p>Paste your FSM definition and click <em>Convert</em> to see each ripping step.</p>
+    </div>
+  </main>
+
+</div>
+
+<script>
+mermaid.initialize({ startOnLoad: false, theme: 'neutral', flowchart: { curve: 'linear' } });
+
+// ================================================================
+// LABEL ALGEBRA
+// ================================================================
+
+function hasTopLevelOr(s) {
+  let d = 0;
+  for (const c of s) {
+    if (c === '(') d++;
+    else if (c === ')') d--;
+    else if (c === '|' && d === 0) return true;
+  }
+  return false;
+}
+
+function isFullyParenthesized(s) {
+  if (!s || s[0] !== '(') return false;
+  let d = 0;
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === '(') d++;
+    else if (s[i] === ')') d--;
+    if (d === 0 && i < s.length - 1) return false;
+  }
+  return d === 0;
+}
+
+function applyKleene(s) {
+  if (s === '∅') return 'ε';
+  if (s === 'ε') return 'ε';
+  if (s.length === 1) return s + '*';
+  if (s.length === 2 && s[1] === '*') return s;            // a*
+  if (s[s.length - 1] === '*') {
+    if (isFullyParenthesized(s.slice(0, -1))) return s;    // (X)* already
+  }
+  if (isFullyParenthesized(s)) return s + '*';             // (X) → (X)*
+  return '(' + s + ')*';
+}
+
+function concatLabels(a, b) {
+  if (a === '∅' || b === '∅') return '∅';
+  if (a === 'ε') return b;
+  if (b === 'ε') return a;
+  const pa = hasTopLevelOr(a) ? `(${a})` : a;
+  const pb = hasTopLevelOr(b) ? `(${b})` : b;
+  return pa + pb;
+}
+
+function unionLabels(a, b) {
+  if (a === '∅') return b;
+  if (b === '∅') return a;
+  if (a === b) return a;
+  return `${a}|${b}`;
+}
+
+function ripFormula(R1, R2, R3, R4) {
+  const R2s = applyKleene(R2);
+  return unionLabels(concatLabels(concatLabels(R1, R2s), R3), R4);
+}
+
+// ================================================================
+// TRANSITION MAP  (key = src + \0 + dst)
+// ================================================================
+const SEP = '\x00';
+const mk  = (s, d) => `${s}${SEP}${d}`;
+const get = (m, s, d) => m.get(mk(s, d)) ?? '∅';
+const set = (m, s, d, v) => m.set(mk(s, d), v);
+const setUnion = (m, s, d, v) => set(m, s, d, unionLabels(get(m, s, d), v));
+
+// ================================================================
+// PARSER
+// ================================================================
+function parseFSM(text) {
+  const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean);
+  let section = null;
+  const out = { states: [], initial: null, accepting: [], transitions: [] };
+  for (const line of lines) {
+    if (line.startsWith('#')) { section = line.slice(1).toLowerCase(); continue; }
+    switch (section) {
+      case 'states':      out.states.push(line); break;
+      case 'initial':     if (!out.initial) out.initial = line; break;
+      case 'accepting':   out.accepting.push(line); break;
+      case 'transitions': {
+        const m = line.match(/^([^:]+):([^>]+)>(.+)$/);
+        if (m) {
+          const src = m[1].trim(), dst = m[3].trim();
+          const labels = m[2].split(',').map(l => l.trim() === '$' ? 'ε' : l.trim());
+          out.transitions.push({ src, labels, dst });
+        }
+        break;
+      }
+    }
+  }
+  if (!out.initial) throw new Error('No #initial state found.');
+  if (!out.accepting.length) throw new Error('No #accepting states found.');
+  if (!out.states.length) throw new Error('No #states found.');
+  return out;
+}
+
+// ================================================================
+// GNFA SETUP
+// ================================================================
+function freshName(base, set) {
+  let n = base, i = 1;
+  while (set.has(n)) n = base + (i++);
+  return n;
+}
+
+function setupGNFA(parsed) {
+  const { states, initial, accepting, transitions: raw } = parsed;
+  const stateSet = new Set(states);
+  const trans = new Map();
+
+  // Load raw transitions
+  for (const { src, labels, dst } of raw)
+    for (const lbl of labels) setUnion(trans, src, dst, lbl);
+
+  // Check constraints
+  const initHasIncoming = raw.some(t => t.dst === initial && t.src !== initial);
+  const initIsAccepting = accepting.includes(initial);
+  const accHasOutgoing  = accepting.some(acc => raw.some(t => t.src === acc));
+
+  let gnfaStates = [...states];
+
+  let qs;
+  const setupNotes = [];
+  if (initHasIncoming || initIsAccepting) {
+    qs = freshName('qs_new', stateSet);
+    gnfaStates.unshift(qs);
+    set(trans, qs, initial, 'ε');
+    setupNotes.push(`New start state <code>${qs}</code> added (old start had incoming transitions or was accepting).`);
+  } else {
+    qs = initial;
+  }
+
+  let qa;
+  if (accepting.length > 1 || accHasOutgoing) {
+    qa = freshName('qa_new', stateSet);
+    gnfaStates.push(qa);
+    for (const acc of accepting) setUnion(trans, acc, qa, 'ε');
+    setupNotes.push(`New accept state <code>${qa}</code> added (multiple accepts or accept had outgoing transitions).`);
+  } else {
+    qa = accepting[0];
+  }
+
+  // Fill missing arrows with ∅
+  for (const src of gnfaStates) {
+    if (src === qa) continue;
+    for (const dst of gnfaStates) {
+      if (dst === qs) continue;
+      if (!trans.has(mk(src, dst))) set(trans, src, dst, '∅');
+    }
+  }
+
+  return { states: gnfaStates, qs, qa, transitions: trans, setupNotes };
+}
+
+// ================================================================
+// RIP ONE STATE
+// ================================================================
+function ripState(gnfa, qrip) {
+  const { states, qs, qa, transitions } = gnfa;
+  const newStates = states.filter(s => s !== qrip);
+  const newTrans  = new Map();
+  const log = [];
+
+  const R2  = get(transitions, qrip, qrip);
+  const R2s = applyKleene(R2);
+
+  const sources = newStates.filter(s => s !== qa);
+  const dests   = newStates.filter(s => s !== qs);
+
+  for (const qi of sources) {
+    for (const qj of dests) {
+      const R1 = get(transitions, qi, qrip);
+      const R3 = get(transitions, qrip, qj);
+      const R4 = get(transitions, qi, qj);
+      const result = ripFormula(R1, R2, R3, R4);
+      set(newTrans, qi, qj, result);
+      log.push({ qi, qj, R1, R2, R2s, R3, R4, result });
+    }
+  }
+
+  return { states: newStates, qs, qa, transitions: newTrans, log, R2, R2s };
+}
+
+// ================================================================
+// BUILD ALL STAGES
+// ================================================================
+function buildStages(text) {
+  const parsed = parseFSM(text);
+  const stages = [];
+
+  let gnfa = setupGNFA(parsed);
+  stages.push({ type: 'setup', title: 'Initial GNFA', gnfa: cloneGNFA(gnfa), notes: gnfa.setupNotes });
+
+  const interior = gnfa.states.filter(s => s !== gnfa.qs && s !== gnfa.qa);
+  for (const qrip of interior) {
+    const r = ripState(gnfa, qrip);
+    gnfa = { states: r.states, qs: gnfa.qs, qa: gnfa.qa, transitions: r.transitions };
+    stages.push({ type: 'rip', title: `After ripping ${qrip}`, rippedState: qrip, R2: r.R2, R2s: r.R2s, log: r.log, gnfa: cloneGNFA(gnfa) });
+  }
+
+  const finalRegex = get(gnfa.transitions, gnfa.qs, gnfa.qa);
+  stages.push({ type: 'final', title: 'Regular Expression', regex: finalRegex, gnfa });
+
+  return stages;
+}
+
+function cloneGNFA(g) {
+  return { states: [...g.states], qs: g.qs, qa: g.qa, transitions: new Map(g.transitions) };
+}
+
+// ================================================================
+// MERMAID CODE BUILDER
+// ================================================================
+let diagramSeq = 0;
+
+function sanitizeId(s) { return s.replace(/[^a-zA-Z0-9_]/g, '_'); }
+
+function displayName(s) {
+  return s.replace(/([a-zA-Z_]+?)(\d+)$/g, (_, l, d) =>
+    l + d.split('').map(c => '₀₁₂₃₄₅₆₇₈₉'[c]).join('')
+  );
+}
+
+function buildMermaidCode(gnfa, labelOverride) {
+  const { states, qs, qa, transitions } = gnfa;
+  const qsId = sanitizeId(qs), qaId = sanitizeId(qa);
+  let code = 'graph LR\n';
+
+  for (const s of states)
+    code += `  ${sanitizeId(s)}(["${displayName(s)}"])\n`;
+
+  for (const [key, label] of transitions) {
+    if (label === '∅') continue;
+    const [src, dst] = key.split(SEP);
+    const display = labelOverride && src === qs && dst === qa
+      ? labelOverride
+      : label.length > 38 ? label.slice(0, 35) + '…' : label;
+    code += `  ${sanitizeId(src)} -- "${display.replace(/"/g, "'")}" --> ${sanitizeId(dst)}\n`;
+  }
+
+  code += `  style ${qsId} fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b\n`;
+  code += `  style ${qaId} fill:#dbeafe,stroke:#2563eb,stroke-width:3px,color:#1e3a8a\n`;
+  return code;
+}
+
+// ================================================================
+// DOM RENDERING
+// ================================================================
+async function renderStages(stages) {
+  const panel = document.getElementById('output-panel');
+  panel.innerHTML = '';
+
+  for (let i = 0; i < stages.length; i++) {
+    const stage = stages[i];
+    const card = document.createElement('div');
+    card.className = 'stage-card';
+    card.style.animationDelay = `${i * 60}ms`;
+    card.innerHTML = buildCardHTML(stage);
+    panel.appendChild(card);
+
+    // Wire copy button
+    const copyBtn = card.querySelector('.copy-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(stage.regex).then(() => {
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => copyBtn.textContent = 'Copy regex', 1500);
+        });
+      });
+    }
+
+    // Render Mermaid
+    const mContainer = card.querySelector('.mermaid-container');
+    if (mContainer && stage.gnfa) {
+      const labelOverride = stage.type === 'final'
+        ? 'R₁·R₂*·R₃ | R₄'
+        : undefined;
+      const mCode = buildMermaidCode(stage.gnfa, labelOverride);
+      try {
+        diagramSeq++;
+        const { svg } = await mermaid.render(`d${diagramSeq}`, mCode);
+        mContainer.innerHTML = svg;
+      } catch (e) {
+        mContainer.innerHTML = `<div class="mermaid-error">Diagram error: ${e.message}</div>`;
+      }
+    }
+  }
+}
+
+function buildCardHTML(stage) {
+  const badges = { setup: 'badge-setup', rip: 'badge-rip', final: 'badge-final' };
+  const labels = { setup: 'Setup', rip: `Rip ${stage.rippedState}`, final: 'Final' };
+
+  let html = `<div class="card-header">
+    <span class="badge ${badges[stage.type]}">${labels[stage.type]}</span>
+    <span class="card-title">${stage.title}</span>
+  </div>`;
+
+  if (stage.type === 'setup') {
+    const extras = stage.notes && stage.notes.length
+      ? stage.notes.map(n => `<li>${n}</li>`).join('')
+      : '<li>Start and accept states already satisfy GNFA constraints — no new states added.</li>';
+    html += `<p class="card-note">∅ transitions added for every missing arrow (omitted from diagram).<ul style="margin:.4em 0 0 1.2em;line-height:1.7">${extras}</ul></p>`;
+  }
+
+  if (stage.type === 'rip') {
+    const selfNote = stage.R2 === '∅'
+      ? `Self-loop <code>q_rip → q_rip</code> = <code>∅</code>, so R₂* = <code>ε</code>. Formula reduces to <strong>R₁·R₃ | R₄</strong>.`
+      : `Self-loop <code>q_rip → q_rip</code> = <code>${stage.R2}</code>, so R₂* = <code>${stage.R2s}</code>. Formula: <strong>R₁·(R₂)*·R₃ | R₄</strong>.`;
+    html += `<p class="card-note">${selfNote}</p>`;
+    html += buildTable(stage.log, stage.gnfa.qs, stage.gnfa.qa);
+  }
+
+  if (stage.type === 'final') {
+    const { qs, qa } = stage.gnfa;
+    const R = stage.regex;
+    // Find the last stage's components — grab from parent if possible
+    html += `<div class="final-block">
+      <div class="final-block-label">Label on ${displayName(qs)} → ${displayName(qa)}</div>
+      <div class="final-regex">${escHtml(R)}</div>
+      <button class="copy-btn">Copy regex</button>
+    </div>`;
+  }
+
+  html += `<div class="mermaid-container"></div>`;
+  return html;
+}
+
+function buildTable(log, qs, qa) {
+  const visible = log.filter(r => r.result !== '∅' || r.R4 !== '∅');
+  if (!visible.length) return '<p class="card-note">All updated transitions are ∅.</p>';
+
+  let html = `<div class="update-wrap"><table class="update-table">
+    <thead><tr>
+      <th>Arrow</th><th>R₁</th><th>R₂</th><th>R₃</th><th>R₄ (old)</th><th>Result</th>
+    </tr></thead><tbody>`;
+
+  for (const r of visible) {
+    const isEmpty = r.result === '∅';
+    const rowCls = isEmpty ? 'row-empty' : r.result !== r.R4 ? 'row-changed' : '';
+    html += `<tr class="${rowCls}">
+      <td class="arrow-col">${displayName(r.qi)} → ${displayName(r.qj)}</td>
+      <td><code title="${escHtml(r.R1)}">${shortLabel(r.R1)}</code></td>
+      <td><code title="${escHtml(r.R2)}">${shortLabel(r.R2)}</code></td>
+      <td><code title="${escHtml(r.R3)}">${shortLabel(r.R3)}</code></td>
+      <td><code title="${escHtml(r.R4)}">${shortLabel(r.R4)}</code></td>
+      <td class="result-cell"><code title="${escHtml(r.result)}">${shortLabel(r.result, 32)}</code></td>
+    </tr>`;
+  }
+
+  html += `</tbody></table></div>`;
+  return html;
+}
+
+function shortLabel(s, max = 22) {
+  const safe = escHtml(s);
+  return safe.length > max ? safe.slice(0, max - 1) + '…' : safe;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ================================================================
+// MAIN
+// ================================================================
+document.getElementById('btn-convert').addEventListener('click', async () => {
+  const text = document.getElementById('fsm-input').value;
+  const errBox = document.getElementById('error-box');
+  const welcome = document.getElementById('welcome');
+
+  errBox.classList.add('hidden');
+
+  let stages;
+  try {
+    stages = buildStages(text);
+  } catch (e) {
+    errBox.textContent = '⚠ ' + e.message;
+    errBox.classList.remove('hidden');
+    return;
+  }
+
+  if (welcome) welcome.remove();
+  await renderStages(stages);
+});
+</script>
+</body>
+</html>
