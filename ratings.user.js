@@ -136,10 +136,10 @@ function injectSprite() {
 					font-family="Impact,Arial Black,sans-serif" fill="#000">IMDb</text>
 	</symbol>
 
-	<!-- Metacritic: bold white "M" -->
+	<!-- Metacritic: bold white "m" -->
 	<symbol id="ri-mc" viewBox="0 0 100 100">
 		<text x="50" y="72" text-anchor="middle" font-size="72" font-weight="900"
-					font-family="Impact,Arial Black,sans-serif" fill="#fff">M</text>
+					font-family="Impact,Arial Black,sans-serif" fill="#fff">m</text>
 	</symbol>
 
 	<!-- RT Tomato (fresh, ≥60%): red tomato body + green stem/leaves -->
@@ -265,7 +265,11 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 	});
 
 	// Move TMDB consensus circle into the row as the first item
-	if (consensus) { setStyles(consensus, { 'margin': '0' }); row.appendChild(consensus); }
+	if (consensus) {
+		setStyles(consensus, { 'margin': '0' }); 
+		setStyles(consensus.querySelector('.outer_ring'), { 'box-shadow': '0 1px 3px rgba(0,0,0,0.5)' })
+		row.appendChild(consensus);
+	}
 
 	const q = encodeURIComponent(title ?? '');
 
