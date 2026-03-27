@@ -126,7 +126,6 @@ function injectSprite() {
   // MC: bold white "M" on transparent
   // RT-fresh: classic red tomato
   // RT-rotten: green splat
-  // RT-certified: orange tomato + gold band + green award ribbons
 
   const sprite = `<svg id="${SPRITE_ID}" xmlns="http://www.w3.org/2000/svg" style="display:none">
 
