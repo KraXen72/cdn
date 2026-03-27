@@ -254,6 +254,8 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 	if (!detailsWrapper) { console.error('[ratings-inject] .details .wrapper not found', card); return; }
 
 	const consensus = card.querySelector(`.details ${CONSENSUS_SEL}`);
+	const titleEl = card.querySelector('.details .wrapper .title');
+	const isMobile = window.matchMedia('(max-width: 600px)').matches;
 
 	const row = document.createElement('div');
 	row.className = 'omdb-ratings';
@@ -261,7 +263,8 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 		'display': 'flex',
 		'align-items': 'center',
 		'gap': '6px',
-		'padding': '4px 12px 8px',
+		'padding': isMobile ? '4px 12px 8px' : '0',
+		'margin': isMobile ? '0' : '4px 0 0',
 		'flex-wrap': 'wrap',
 	});
 
@@ -324,10 +327,16 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 	});
 	row.appendChild(refreshBtn);
 
-	// Insert row between the poster+details wrapper and the action_bar
-	const actionBar = card.querySelector('.action_bar');
-	if (actionBar) actionBar.insertAdjacentElement('beforebegin', row);
-	else card.appendChild(row);
+	// On mobile: insert between poster+details and action_bar (full-width row)
+	// On desktop: insert after .title inside .details .wrapper (original position)
+	if (isMobile) {
+		const actionBar = card.querySelector('.action_bar');
+		if (actionBar) actionBar.insertAdjacentElement('beforebegin', row);
+		else card.appendChild(row);
+	} else {
+		if (titleEl) titleEl.insertAdjacentElement('afterend', row);
+		else detailsWrapper.appendChild(row);
+	}
 }
 
 async function processCard(card) {
