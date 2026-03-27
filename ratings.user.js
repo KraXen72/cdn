@@ -108,6 +108,11 @@ function toFraction(value) {
   return den ? num / den : 0;
 }
 
+// Apply an object of CSS declarations (kebab-case keys) to an element's inline style.
+function setStyles(el, styles) {
+  for (const [prop, val] of Object.entries(styles)) el.style.setProperty(prop, val);
+}
+
 // ── SVG sprite ──────────────────────────────────────────────────────────────
 // Injected once into <head>. Each symbol's viewBox is 0 0 100 100 so it
 // scales uniformly. Icons are referenced via <use href="#ri-*"> inside the ring.
@@ -174,8 +179,10 @@ function svgEl(tag, attrs) {
 function makeRingSvg(fraction, color, centerSymbolId) {
   const size = RING_CX * 2; // 34
   const svg = svgEl('svg', { width: 30, height: 30, viewBox: `0 0 ${size} ${size}` });
-  svg.style.cssText = 'display:block;flex-shrink:0;';
-
+  setStyles(svg, {
+    'display': 'block',
+    'flex-shrink': '0',
+  });
   // track ring
   svg.appendChild(svgEl('circle', { cx: RING_CX, cy: RING_CY, r: RING_R,
     fill: 'none', stroke: '#333', 'stroke-width': RING_SW }));
@@ -205,16 +212,31 @@ function makeRingSvg(fraction, color, centerSymbolId) {
 function makePill(symbolId, scoreText, fraction, color, url) {
   const pill = document.createElement('a');
   if (url) Object.assign(pill, { href: url, target: '_blank', rel: 'noopener noreferrer' });
-  pill.style.cssText = 'display:inline-flex;align-items:center;height:38px;padding:2px 6px 2px 5px;' +
-    'background:#1c1c1c;border-radius:999px;box-shadow:0 1px 3px rgba(0,0,0,0.5);' +
-    'overflow:hidden;text-decoration:none;cursor:pointer;gap:4px;';
+  setStyles(pill, {
+    'display': 'inline-flex',
+    'align-items': 'center',
+    'height': '38px',
+    'padding': '2px 6px 2px 5px',
+    'background': '#1c1c1c',
+    'border-radius': '999px',
+    'box-shadow': '0 1px 3px rgba(0,0,0,0.5)',
+    'overflow': 'hidden',
+    'text-decoration': 'none',
+    'cursor': 'pointer',
+    'gap': '4px',
+  });
 
   pill.appendChild(makeRingSvg(fraction, color, symbolId));
 
   const score = Object.assign(document.createElement('span'), { textContent: scoreText });
-  score.style.cssText = 'font-size:20px;font-weight:700;color:#fff;white-space:nowrap;font-family:system-ui,sans-serif;';
+  setStyles(score, {
+    'font-size': '20px',
+    'font-weight': '700',
+    'color': '#fff',
+    'white-space': 'nowrap',
+    'font-family': 'system-ui,sans-serif',
+  });
   pill.appendChild(score);
-
   return pill;
 }
 
@@ -234,10 +256,16 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 
   const row = document.createElement('div');
   row.className = 'omdb-ratings';
-  row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:4px 0 0;flex-wrap:nowrap;';
+  setStyles(row, {
+    'display': 'flex',
+    'align-items': 'center',
+    'gap': '6px',
+    'margin': '4px 0 0',
+    'flex-wrap': 'nowrap',
+  });
 
   // Move TMDB consensus circle into the row as the first item
-  if (consensus) { consensus.style.margin = '0'; row.appendChild(consensus); }
+  if (consensus) { setStyles(consensus, { 'margin': '0' }); row.appendChild(consensus); }
 
   const q = encodeURIComponent(title ?? '');
 
@@ -258,11 +286,26 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
   const refreshBtn = document.createElement('button');
   refreshBtn.title = 'Refresh ratings';
   refreshBtn.textContent = '↻';
-  refreshBtn.style.cssText = 'width:38px;height:38px;border-radius:50%;background:#1c1c1c;border:1px solid #444;' +
-    'color:#fff;font-size:18px;line-height:1;cursor:pointer;flex-shrink:0;' +
-    'display:inline-flex;align-items:center;justify-content:center;padding:0;margin-left:2px;transition:background 0.15s;';
-  refreshBtn.addEventListener('mouseenter', () => { refreshBtn.style.background = '#2e2e2e'; });
-  refreshBtn.addEventListener('mouseleave', () => { refreshBtn.style.background = '#1c1c1c'; });
+  setStyles(refreshBtn, {
+    'width': '38px',
+    'height': '38px',
+    'border-radius': '50%',
+    'background': '#1c1c1c',
+    'border': '1px solid #444',
+    'color': '#fff',
+    'font-size': '18px',
+    'line-height': '1',
+    'cursor': 'pointer',
+    'flex-shrink': '0',
+    'display': 'inline-flex',
+    'align-items': 'center',
+    'justify-content': 'center',
+    'padding': '0',
+    'margin-left': '2px',
+    'transition': 'background 0.15s',
+  });
+  refreshBtn.addEventListener('mouseenter', () => { setStyles(refreshBtn, { 'background': '#2e2e2e' }); });
+  refreshBtn.addEventListener('mouseleave', () => { setStyles(refreshBtn, { 'background': '#1c1c1c' }); });
   refreshBtn.addEventListener('click', (e) => {
     e.preventDefault(); e.stopPropagation();
     if (typeof GM_deleteValue === 'function') GM_deleteValue(cacheKey(type, tmdbId));
