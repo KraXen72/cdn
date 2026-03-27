@@ -4,44 +4,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Temporary Playlist</title>
-    <link rel="stylesheet" href="style.css">
+    <title>YouTube Tools</title>
+    <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
     <div class="container">
-        <header>
-            <h1>Playlist Creator</h1>
-            <p class="description">Paste YouTube links below to generate a playlist.</p>
-        </header>
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="clip">Clip Embed</button>
+            <button class="tab-btn" data-tab="playlist">Playlist</button>
+        </nav>
 
-        <div class="input-group">
-            <label for="inputUrls">Input Videos (URLs or IDs)</label>
-            <textarea id="inputUrls" placeholder="https://www.youtube.com/watch?v=...&#10;https://youtu.be/..."></textarea>
-            <div class="status-bar">
-                <span id="statusText">Waiting for input...</span>
+        <!-- Clip Embed Tab -->
+        <div class="tab-panel" id="tab-clip">
+            <header>
+                <h1>Clip Embed</h1>
+                <p class="description">Paste a YouTube URL and a timestamp range to embed the clip.</p>
+            </header>
+
+            <div class="input-group">
+                <label for="clipUrl">Video URL</label>
+                <input type="text" id="clipUrl" placeholder="https://www.youtube.com/watch?v=...">
+            </div>
+
+            <div class="input-group">
+                <label for="clipRange">Timestamp Range</label>
+                <input type="text" id="clipRange" placeholder="from 47:14 to 1:00:14">
+            </div>
+
+            <div class="embed-wrapper" id="embedWrapper" style="display:none">
+                <div class="embed-ratio">
+                    <iframe id="embedFrame" src="" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+                </div>
             </div>
         </div>
 
-        <div class="input-group">
-            <label for="outputUrl">Generated Playlist Link</label>
-            <textarea id="outputUrl" readonly placeholder="Result will appear here..."></textarea>
-        </div>
+        <!-- Playlist Tab -->
+        <div class="tab-panel hidden" id="tab-playlist">
+            <header>
+                <h1>Playlist Creator</h1>
+                <p class="description">Paste YouTube links below to generate a playlist.</p>
+            </header>
 
-        <button id="openBtn" disabled>
-            open playlist in a new tab
-        </button>
+            <div class="input-group">
+                <label for="inputUrls">Input Videos (URLs or IDs)</label>
+                <textarea id="inputUrls" placeholder="https://www.youtube.com/watch?v=...&#10;https://youtu.be/..."></textarea>
+                <div class="status-bar">
+                    <span id="statusText">Waiting for input...</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="outputUrl">Generated Playlist Link</label>
+                <textarea id="outputUrl" readonly placeholder="Result will appear here..."></textarea>
+            </div>
+
+            <button id="openBtn" disabled>
+                open playlist in a new tab
+            </button>
+        </div>
     </div>
 
     <script>
+        // thanks to https://gist.github.com/afeld/1254889?permalink_comment_id=4528726#gistcomment-4528726 (slightly edited)
+        const ytRegex = /^(?:(?:https?:\/\/|\/\/)?(?:www\.|m\.|.+\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|shorts\/|feeds\/api\/videos\/|watch\?v=|watch\?.+&v=)))?([\\w-]{11})(?![\\w-])$/gim;
+
+        // --- Tab switching ---
+        document.querySelectorAll(".tab-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+                document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
+                btn.classList.add("active");
+                document.getElementById("tab-" + btn.dataset.tab).classList.remove("hidden");
+            });
+        });
+
+        // --- Playlist tab ---
         const inputArea = document.getElementById("inputUrls");
         const outputArea = document.getElementById("outputUrl");
         const openBtn = document.getElementById("openBtn");
         const statusText = document.getElementById("statusText");
-        
-        // thanks to https://gist.github.com/afeld/1254889?permalink_comment_id=4528726#gistcomment-4528726 (slightly edited)
-        const ytRegex = /^(?:(?:https?:\/\/|\/\/)?(?:www\.|m\.|.+\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|shorts\/|feeds\/api\/videos\/|watch\?v=|watch\?.+&v=)))?([\w-]{11})(?![\w-])$/gim;
 
         const processInput = () => {
             const text = inputArea.value;
@@ -63,6 +106,42 @@
         inputArea.addEventListener("input", processInput);
         openBtn.addEventListener("click", () => outputArea.value && window.open(outputArea.value, "_blank"));
         outputArea.addEventListener("click", () => outputArea.select());
+
+        // --- Clip embed tab ---
+        const clipUrlInput = document.getElementById("clipUrl");
+        const clipRangeInput = document.getElementById("clipRange");
+        const embedWrapper = document.getElementById("embedWrapper");
+        const embedFrame = document.getElementById("embedFrame");
+
+        const tsToSecs = (ts) => {
+            const parts = ts.split(":").map(Number);
+            if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+            if (parts.length === 2) return parts[0] * 60 + parts[1];
+            return parts[0];
+        };
+
+        const extractVideoId = (url) => {
+            ytRegex.lastIndex = 0;
+            const m = ytRegex.exec(url.trim());
+            return m ? m[1] : null;
+        };
+
+        const updateClip = () => {
+            const videoId = extractVideoId(clipUrlInput.value);
+            const tsMatches = [...clipRangeInput.value.matchAll(/(\d{1,2}(?::\d{2}){1,2})/g)];
+            if (videoId && tsMatches.length >= 2) {
+                const start = tsToSecs(tsMatches[0][1]);
+                const end = tsToSecs(tsMatches[1][1]);
+                embedFrame.src = `https://www.youtube.com/embed/${videoId}?start=${start}&end=${end}&autoplay=1`;
+                embedWrapper.style.display = "block";
+            } else {
+                embedFrame.src = "";
+                embedWrapper.style.display = "none";
+            }
+        };
+
+        clipUrlInput.addEventListener("input", updateClip);
+        clipRangeInput.addEventListener("input", updateClip);
     </script>
 </body>
 
