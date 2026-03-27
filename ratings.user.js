@@ -265,13 +265,6 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 		'flex-wrap': 'nowrap',
 	});
 
-	// Move TMDB consensus circle into the row as the first item
-	if (consensus) {
-		setStyles(consensus, { 'margin': '0' }); 
-		setStyles(consensus.querySelector('.outer_ring'), { 'box-shadow': '0 1px 3px rgba(0,0,0,0.5)' })
-		row.appendChild(consensus);
-	}
-
 	const q = encodeURIComponent(title ?? '');
 
 	if (imdb && imdb !== 'N/A') {
@@ -286,6 +279,13 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 	if (mc && mc !== 'N/A') {
 		row.appendChild(makePill('ri-mc', mc.replace('/100', ''), toFraction(mc), '#66cc33',
 			`https://www.metacritic.com/search/${q}/`, "Metacritic"));
+	}
+
+	if (consensus) {
+		setStyles(consensus, { 'margin': '0' }); 
+		setStyles(consensus.querySelector('.outer_ring'), { 'box-shadow': '0 1px 3px rgba(0,0,0,0.5)' })
+		Object.assign(consensus, { title: 'TMDB Community Rating' })
+		row.appendChild(consensus);
 	}
 
 	const refreshBtn = document.createElement('button');
