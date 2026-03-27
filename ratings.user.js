@@ -248,14 +248,23 @@ function rtSymbolId(fraction) {
 }
 
 function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
-	if (!imdb && !rt && !mc) return;
+	const hasRatings = !!(imdb || rt || mc);
+	const isMobile = window.matchMedia('(max-width: 600px)').matches;
+
+	// On mobile with no ratings: leave card untouched
+	if (!hasRatings && isMobile) return;
 
 	const detailsWrapper = card.querySelector('.details .wrapper');
 	if (!detailsWrapper) { console.error('[ratings-inject] .details .wrapper not found', card); return; }
 
 	const consensus = card.querySelector(`.details ${CONSENSUS_SEL}`);
 	const titleEl = card.querySelector('.details .wrapper .title');
-	const isMobile = window.matchMedia('(max-width: 600px)').matches;
+
+	// On desktop with no ratings: only reposition consensus (if present), nothing else
+	if (!hasRatings) {
+		if (consensus && titleEl) titleEl.insertAdjacentElement('afterend', consensus);
+		return;
+	}
 
 	const row = document.createElement('div');
 	row.className = 'omdb-ratings';
