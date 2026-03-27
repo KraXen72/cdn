@@ -9,6 +9,7 @@
 // @grant        GM_getValue
 // @grant        GM_deleteValue
 // @grant        GM_xmlhttpRequest
+// @grant        GM_addStyle
 // @connect      www.omdbapi.com
 // @run-at       document-idle
 // ==/UserScript==
@@ -262,7 +263,7 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 		'align-items': 'center',
 		'gap': '6px',
 		'margin': '4px 0 0',
-		'flex-wrap': 'nowrap',
+		'flex-wrap': 'wrap',
 	});
 
 	const q = encodeURIComponent(title ?? '');
@@ -383,5 +384,13 @@ function setupObserver() {
 }
 
 injectSprite();
+
+// Mobile: prevent the ratings row from overflowing the card's details column
+GM_addStyle(`
+@media (max-width: 600px) {
+  .omdb-ratings { flex-wrap: wrap !important; }
+  .omdb-ratings a, .omdb-ratings button { flex-shrink: 0; }
+}`);
+
 document.querySelectorAll(`${CARD_SEL}:not([data-injected])`).forEach(enqueueCard);
 setupObserver();
