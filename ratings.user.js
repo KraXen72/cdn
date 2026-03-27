@@ -213,10 +213,10 @@ function makePill(symbolId, scoreText, fraction, color, url) {
     'display': 'inline-flex',
     'align-items': 'center',
     'height': '38px',
-    'padding': '2px 6px 2px 5px',
+    'padding': '2px 8px 2px 4px',
     'background': '#1c1c1c',
     'border-radius': '999px',
-    'box-shadow': '0 1px 3px rgba(0,0,0,0.5)',
+    // 'box-shadow': '0 1px 3px rgba(0,0,0,0.5)',
     'overflow': 'hidden',
     'text-decoration': 'none',
     'cursor': 'pointer',
@@ -225,7 +225,7 @@ function makePill(symbolId, scoreText, fraction, color, url) {
 
   pill.appendChild(makeRingSvg(fraction, color, symbolId));
 
-  const score = Object.assign(document.createElement('span'), { textContent: scoreText });
+  const score = Object.assign(document.createElement('span'), { textContent: scoreText.replaceAll("%", "") });
   setStyles(score, {
     'font-size': '20px',
     'font-weight': '700',
@@ -298,7 +298,7 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
     'align-items': 'center',
     'justify-content': 'center',
     'padding': '0',
-    'margin-left': '2px',
+    'padding-top': '2px',
     'transition': 'background 0.15s',
   });
   refreshBtn.addEventListener('mouseenter', () => { setStyles(refreshBtn, { 'background': '#2e2e2e' }); });
