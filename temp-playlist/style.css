@@ -33,14 +33,14 @@ body {
 	font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
 	display: flex;
 	justify-content: center;
-	align-items: flex-start;
+	align-items: center;
 	min-height: 100vh;
 	padding: 28px;
 }
 
 .container {
 	width: 100%;
-	max-width: 1840px;
+	max-width: 700px;
 	background-color: var(--flexoki-bg-2);
 	border: 1px solid var(--flexoki-ui-2);
 	border-radius: 12px;
@@ -200,94 +200,4 @@ button:disabled {
 	cursor: not-allowed;
 	color: var(--flexoki-tx-2);
 	background-color: transparent;
-}
-
-/* Tabs */
-.tabs {
-	display: flex;
-	gap: 4px;
-	background: var(--flexoki-bg);
-	border: 1px solid var(--flexoki-ui-2);
-	border-radius: 8px;
-	padding: 4px;
-}
-
-.tab-btn {
-	flex: 1;
-	background: transparent;
-	color: var(--flexoki-tx-2);
-	border: none;
-	border-radius: 5px;
-	padding: 8px 14px;
-	font-size: 0.9rem;
-	font-weight: 500;
-	cursor: pointer;
-}
-
-.tab-btn:hover:not(.active) {
-	background: var(--flexoki-ui);
-	color: var(--flexoki-tx);
-}
-
-.tab-btn.active {
-	background: var(--flexoki-ui-2);
-	color: var(--flexoki-tx);
-}
-
-/* Tab panels */
-.tab-panel {
-	display: flex;
-	flex-direction: column;
-	gap: 16px;
-}
-
-.tab-panel.hidden {
-	display: none;
-}
-
-/* Playlist tab: cap width so it doesn't stretch too wide */
-#tab-playlist {
-	max-width: 700px;
-	width: 100%;
-	align-self: center;
-}
-
-/* Embed */
-.embed-wrapper {
-	width: 100%;
-}
-
-.embed-ratio {
-	position: relative;
-	width: 100%;
-	padding-bottom: 56.25%; /* 16:9 */
-}
-
-.embed-ratio iframe {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	border: none;
-	border-radius: 6px;
-}
-
-/* Text inputs (for clip tool) */
-input[type="text"] {
-	width: 100%;
-	background-color: transparent;
-	border: none;
-	padding: 10px 2px 2px;
-	color: var(--flexoki-tx);
-	font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
-	font-size: 0.9rem;
-	outline: none;
-}
-
-input[type="text"]::placeholder {
-	color: var(--flexoki-ui-3);
-}
-
-input[type="text"]:focus {
-	outline: none;
 }
