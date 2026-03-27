@@ -258,6 +258,7 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 	if (!detailsWrapper) { console.error('[ratings-inject] .details .wrapper not found', card); return; }
 
 	const consensus = card.querySelector(`.details ${CONSENSUS_SEL}`);
+	if (consensus) setStyles(consensus, { 'margin': '0' }); 
 	const titleEl = card.querySelector('.details .wrapper .title');
 
 	// On desktop with no ratings: only reposition consensus (if present), nothing else
@@ -331,7 +332,6 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 	row.appendChild(refreshBtn);
 
 	if (consensus) {
-		setStyles(consensus, { 'margin': '0' }); 
 		setStyles(consensus.querySelector('.outer_ring'), { 'box-shadow': '0 1px 3px rgba(0,0,0,0.5)' })
 		Object.assign(consensus, { title: 'TMDB Community Rating' })
 		row.appendChild(consensus);
