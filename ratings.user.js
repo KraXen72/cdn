@@ -209,8 +209,9 @@ function makeRingSvg(fraction, color, centerSymbolId) {
 }
 
 // Build a rating pill: ring SVG + score text, wrapped in a clickable anchor.
-function makePill(symbolId, scoreText, fraction, color, url) {
+function makePill(symbolId, scoreText, fraction, color, url, title = null) {
 	const pill = document.createElement('a');
+	if (title) Object.assign(pill, { title })
 	if (url) Object.assign(pill, { href: url, target: '_blank', rel: 'noopener noreferrer' });
 	setStyles(pill, {
 		'display': 'inline-flex',
@@ -275,16 +276,16 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 
 	if (imdb && imdb !== 'N/A') {
 		const url = imdbID ? `https://www.imdb.com/title/${imdbID}/` : `https://www.imdb.com/find/?q=${q}`;
-		row.appendChild(makePill('ri-imdb', imdb.replace('/10', ''), toFraction(imdb), '#F5C518', url));
+		row.appendChild(makePill('ri-imdb', imdb.replace('/10', ''), toFraction(imdb), '#F5C518', url, "IMDb"));
 	}
 	if (rt && rt !== 'N/A') {
 		const f = toFraction(rt);
 		row.appendChild(makePill(rtSymbolId(f), rt, f, '#FA320A',
-			`https://www.rottentomatoes.com/search?search=${q}`));
+			`https://www.rottentomatoes.com/search?search=${q}`, "Rotten Tomatoes"));
 	}
 	if (mc && mc !== 'N/A') {
 		row.appendChild(makePill('ri-mc', mc.replace('/100', ''), toFraction(mc), '#66cc33',
-			`https://www.metacritic.com/search/${q}/`));
+			`https://www.metacritic.com/search/${q}/`, "Metacritic"));
 	}
 
 	const refreshBtn = document.createElement('button');
