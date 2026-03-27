@@ -294,13 +294,6 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 			`https://www.metacritic.com/search/${q}/`, "Metacritic"));
 	}
 
-	if (consensus) {
-		setStyles(consensus, { 'margin': '0' }); 
-		setStyles(consensus.querySelector('.outer_ring'), { 'box-shadow': '0 1px 3px rgba(0,0,0,0.5)' })
-		Object.assign(consensus, { title: 'TMDB Community Rating' })
-		row.appendChild(consensus);
-	}
-
 	const refreshBtn = document.createElement('button');
 	refreshBtn.title = 'Refresh ratings';
 	refreshBtn.textContent = '↻';
@@ -336,6 +329,13 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 		enqueueCard(card);
 	});
 	row.appendChild(refreshBtn);
+
+	if (consensus) {
+		setStyles(consensus, { 'margin': '0' }); 
+		setStyles(consensus.querySelector('.outer_ring'), { 'box-shadow': '0 1px 3px rgba(0,0,0,0.5)' })
+		Object.assign(consensus, { title: 'TMDB Community Rating' })
+		row.appendChild(consensus);
+	}
 
 	// On mobile: insert between poster+details and action_bar (full-width row)
 	// On desktop: insert after .title inside .details .wrapper (original position)
