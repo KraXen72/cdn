@@ -10,6 +10,12 @@
 
 <body>
 
+    <div class="embed-wrapper" id="embedWrapper">
+        <div class="embed-ratio">
+            <iframe id="embedFrame" src="" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
+        </div>
+    </div>
+
     <div class="container">
         <nav class="tabs">
             <button class="tab-btn active" data-tab="clip">Clip Embed</button>
@@ -33,11 +39,7 @@
                 <input type="text" id="clipRange" placeholder="from 47:14 to 1:00:14">
             </div>
 
-            <div class="embed-wrapper" id="embedWrapper" style="display:none">
-                <div class="embed-ratio">
-                    <iframe id="embedFrame" src="" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
-                </div>
-            </div>
+
         </div>
 
         <!-- Playlist Tab -->
@@ -68,7 +70,7 @@
 
     <script>
         // thanks to https://gist.github.com/afeld/1254889?permalink_comment_id=4528726#gistcomment-4528726 (slightly edited)
-        const ytRegex = /^(?:(?:https?:\/\/|\/\/)?(?:www\.|m\.|.+\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|shorts\/|feeds\/api\/videos\/|watch\?v=|watch\?.+&v=)))?([\\w-]{11})(?![\\w-])$/gim;
+        const ytRegex = /(?:youtu\.be\/|[?&]v=)([\w-]{11})/gim;
 
         // --- Tab switching ---
         document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -132,11 +134,11 @@
             if (videoId && tsMatches.length >= 2) {
                 const start = tsToSecs(tsMatches[0][1]);
                 const end = tsToSecs(tsMatches[1][1]);
-                embedFrame.src = `https://www.youtube.com/embed/${videoId}?start=${start}&end=${end}&autoplay=1`;
-                embedWrapper.style.display = "block";
+                embedFrame.src = `https://www.youtube.com/embed/${videoId}?start=${start}`;
+                embedWrapper.classList.add("active");
             } else {
                 embedFrame.src = "";
-                embedWrapper.style.display = "none";
+                embedWrapper.classList.remove("active");
             }
         };
 
