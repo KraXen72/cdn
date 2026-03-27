@@ -274,7 +274,7 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 		'gap': '6px',
 		'padding': isMobile ? '6px 12px 8px' : '0',
 		'margin': isMobile ? '0' : '4px 0 0',
-		'flex-wrap': 'wrap',
+		'flex-wrap': isMobile ? 'wrap' : 'nowrap',
 		...(isMobile && { 'background': '#1c1c1c', 'width': '100%', 'box-sizing': 'border-box' }),
 	});
 
