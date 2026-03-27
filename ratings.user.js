@@ -263,9 +263,10 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 		'display': 'flex',
 		'align-items': 'center',
 		'gap': '6px',
-		'padding': isMobile ? '4px 12px 8px' : '0',
+		'padding': isMobile ? '6px 12px 8px' : '0',
 		'margin': isMobile ? '0' : '4px 0 0',
 		'flex-wrap': 'wrap',
+		...(isMobile && { 'background': '#1c1c1c', 'width': '100%', 'box-sizing': 'border-box' }),
 	});
 
 	const q = encodeURIComponent(title ?? '');
@@ -330,6 +331,8 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 	// On mobile: insert between poster+details and action_bar (full-width row)
 	// On desktop: insert after .title inside .details .wrapper (original position)
 	if (isMobile) {
+		// Pills blend into row bg — remove their individual shadows and bg
+		row.querySelectorAll('a').forEach(a => a.style.setProperty('box-shadow', 'none'));
 		const actionBar = card.querySelector('.action_bar');
 		if (actionBar) actionBar.insertAdjacentElement('beforebegin', row);
 		else card.appendChild(row);
