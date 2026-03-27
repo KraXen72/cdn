@@ -254,7 +254,6 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 	if (!detailsWrapper) { console.error('[ratings-inject] .details .wrapper not found', card); return; }
 
 	const consensus = card.querySelector(`.details ${CONSENSUS_SEL}`);
-	const titleEl = card.querySelector('.details .wrapper .title');
 
 	const row = document.createElement('div');
 	row.className = 'omdb-ratings';
@@ -262,7 +261,7 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 		'display': 'flex',
 		'align-items': 'center',
 		'gap': '6px',
-		'margin': '4px 0 0',
+		'padding': '4px 12px 8px',
 		'flex-wrap': 'wrap',
 	});
 
@@ -325,9 +324,10 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 	});
 	row.appendChild(refreshBtn);
 
-	// Insert row after .title (or append as fallback)
-	if (titleEl) { detailsWrapper.prepend(titleEl); titleEl.insertAdjacentElement('afterend', row); }
-	else detailsWrapper.appendChild(row);
+	// Insert row between the poster+details wrapper and the action_bar
+	const actionBar = card.querySelector('.action_bar');
+	if (actionBar) actionBar.insertAdjacentElement('beforebegin', row);
+	else card.appendChild(row);
 }
 
 async function processCard(card) {
