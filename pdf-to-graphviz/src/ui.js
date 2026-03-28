@@ -101,6 +101,8 @@ async function renderGraphviz(dotString) {
 
 // ── Mermaid rendering ──────────────────────────────────────────
 let _mermaidLib = null;
+let _mermaidPanZoomInstance = null;
+let _mermaidPanZoomRO = null;
 async function getMermaid() {
   if (!_mermaidLib) {
     const mod = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
@@ -118,6 +120,14 @@ async function renderMermaid(result) {
   $('mermaid-placeholder').style.display = 'none';
 
   const preview = $('mermaid-preview');
+
+  // Destroy previous pan-zoom instance before wiping the DOM
+  if (_mermaidPanZoomInstance) {
+    try { _mermaidPanZoomInstance.destroy(); } catch (_) {}
+    _mermaidPanZoomInstance = null;
+  }
+  if (_mermaidPanZoomRO) { _mermaidPanZoomRO.disconnect(); _mermaidPanZoomRO = null; }
+
   preview.innerHTML = '';
 
   try {
@@ -129,10 +139,49 @@ async function renderMermaid(result) {
     const id = 'mermaid-render-' + Date.now();
     const { svg } = await mermaid.render(id, mmd, scratch);
     document.body.removeChild(scratch);
-    preview.innerHTML = svg;
-    // Make the SVG responsive
-    const svgEl = preview.querySelector('svg');
-    if (svgEl) { svgEl.style.maxWidth = '100%'; svgEl.style.height = 'auto'; }
+
+    // Parse SVG string → real DOM element so svg-pan-zoom can work with it
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(svg, 'image/svg+xml');
+    const svgEl = svgDoc.documentElement;
+    svgEl.setAttribute('width', '100%');
+    svgEl.setAttribute('height', '100%');
+    svgEl.style.display = 'block';
+    preview.style.overflow = 'hidden'; // pan-zoom handles navigation
+    preview.appendChild(svgEl);
+
+    const tryInitPanZoom = () => {
+      if (_mermaidPanZoomInstance) return;
+      const { width, height } = preview.getBoundingClientRect();
+      if (width === 0 || height === 0) return; // not visible yet (tab hidden)
+      try {
+        _mermaidPanZoomInstance = svgPanZoom(svgEl, {
+          zoomEnabled:          true,
+          panEnabled:           true,
+          controlIconsEnabled:  true,
+          fit:                  true,
+          center:               true,
+          minZoom:              0.1,
+          maxZoom:              20,
+          zoomScaleSensitivity: 0.3,
+        });
+      } catch (_) { /* SVG not ready */ }
+    };
+
+    tryInitPanZoom();
+
+    // Keep pan-zoom in sync when the split pane is resized (also deferred init)
+    _mermaidPanZoomRO = new ResizeObserver(() => {
+      try {
+        tryInitPanZoom();
+        if (_mermaidPanZoomInstance) {
+          _mermaidPanZoomInstance.resize();
+          _mermaidPanZoomInstance.fit();
+          _mermaidPanZoomInstance.center();
+        }
+      } catch (_) { /* SVGMatrix may be non-invertible if element is hidden/zero-size */ }
+    });
+    _mermaidPanZoomRO.observe(preview);
   } catch (e) {
     preview.innerHTML = `<pre style="color:red;font-size:11px;white-space:pre-wrap;padding:8px">${e.message}</pre>`;
   }

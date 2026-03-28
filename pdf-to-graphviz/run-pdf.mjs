@@ -15,13 +15,15 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl.href;
 // Import shared logic
 import { PathExtractor, analyzeGraphs, generateDOT, generatePlain, generateMermaid } from './src/extractor.js';
 
-const PAGE_NUM = parseInt(process.argv[2] || '2', 10);
-const PDF_PATH = join(__dirname, 'test_pdf', 'w4a - vragen2.pdf');
+const PAGE_NUM = parseInt(process.argv[2] || '1', 10);
+const PDF_FILE = process.argv[3] || 'book-excercises4.pdf';
+const PDF_PATH = join(__dirname, 'test_pdf', PDF_FILE);
 
 const data = readFileSync(PDF_PATH);
 const pdf  = await pdfjsLib.getDocument({ data: new Uint8Array(data.buffer) }).promise;
 
 console.error(`PDF loaded: ${pdf.numPages} pages. Analyzing page ${PAGE_NUM}...`);
+console.error(`Testing: ${PDF_FILE} page ${PAGE_NUM}`);
 
 const page        = await pdf.getPage(PAGE_NUM);
 const opList      = await page.getOperatorList();

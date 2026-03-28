@@ -194,15 +194,31 @@ export class PathExtractor {
 // GEOMETRY HELPERS
 // ═══════════════════════════════════════════════════════════════
 function fitCircle(segs) {
-  const pts = segs.filter(s => s.type==='M' || s.type==='C').map(s => ({ x: s.x, y: s.y }));
-  if (pts.length < 4) return null;
-  const cx = pts.reduce((s,p) => s+p.x, 0) / pts.length;
-  const cy = pts.reduce((s,p) => s+p.y, 0) / pts.length;
-  const radii = pts.map(p => Math.hypot(p.x-cx, p.y-cy));
-  const r = radii.reduce((a,b) => a+b, 0) / radii.length;
+  // Use only cubic endpoint coords — M is often a duplicate of the last C endpoint
+  // (PDF circles drawn as M + 4C + optional-L + Z), so excluding M avoids skewing the centroid.
+  const cubicPts = segs.filter(s => s.type==='C').map(s => ({ x: s.x, y: s.y }));
+  if (cubicPts.length < 4) return null;
+
+  // Use bounding-box center for robustness with slightly elliptical shapes
+  const xs = cubicPts.map(p => p.x), ys = cubicPts.map(p => p.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  const rx = (maxX - minX) / 2;
+  const ry = (maxY - minY) / 2;
+  const r  = (rx + ry) / 2;
   if (r < 3) return null;
-  const maxDev = Math.max(...radii.map(ri => Math.abs(ri - r)));
-  if (maxDev / r > 0.30) return null; // relaxed for 4-arc Bézier circle approx
+
+  // Reject if aspect ratio is too extreme (more than 3:1 → probably not a state circle)
+  if (rx > 0 && ry > 0 && Math.max(rx, ry) / Math.min(rx, ry) > 3.0) return null;
+
+  // Validate: check that the cubic endpoints are roughly at equal distance from center
+  const radii  = cubicPts.map(p => Math.hypot(p.x - cx, p.y - cy));
+  const meanR  = radii.reduce((a, b) => a + b, 0) / radii.length;
+  const maxDev = Math.max(...radii.map(ri => Math.abs(ri - meanR)));
+  if (maxDev / meanR > 0.50) return null; // 50% — looser to handle ellipses
+
   return { x: cx, y: cy, r };
 }
 
@@ -323,6 +339,21 @@ export function analyzeGraph(paths, textItems) {
         if (bb) {
           const maxDim = Math.max(bb.maxX-bb.minX, bb.maxY-bb.minY);
           if (maxDim > 1 && maxDim < medR * 0.6) { arrowheads.push(centroid(pts)); continue; }
+        }
+      }
+    }
+
+    // Bezier arrowhead: small filled shape made of cubics (no straight lines), common in
+    // book-style PDFs where arrowheads are rendered as 4-cubic bezier outlines
+    if (filled && !stroked && cubics.length >= 3 && cubics.length <= 8 && keyPts(segs).length <= 2) {
+      const allPts = segs.filter(s => s.type==='M' || s.type==='C').map(s => ({ x: s.x, y: s.y }));
+      if (allPts.length >= 3) {
+        const bb = getBBox(allPts);
+        if (bb) {
+          const maxDim = Math.max(bb.maxX - bb.minX, bb.maxY - bb.minY);
+          if (maxDim > 0.5 && maxDim < medR * 1.2) {
+            arrowheads.push(centroid(allPts)); continue;
+          }
         }
       }
     }
@@ -548,6 +579,7 @@ export function analyzeGraph(paths, textItems) {
 
   return {
     nodes, edges: finalEdges, arrowheads, rawCircles, textGroups, medR, confidence,
+    diagramBounds,
     stats: {
       rawCircles: rawCircles.length, nodes: nodes.length,
       arrowheads: arrowheads.length, edgePaths: edgePaths.length,
@@ -753,20 +785,35 @@ export function analyzeGraphs(paths, textItems) {
       ? Math.round((resolvedEdges.length / subEdges.length) * 100)
       : 100;
 
+    const subDiagramBounds = subNodes.length ? {
+      minX: Math.min(...subNodes.map(n => n.x)) - full.medR * 6,
+      maxX: Math.max(...subNodes.map(n => n.x)) + full.medR * 6,
+      minY: Math.min(...subNodes.map(n => n.y)) - full.medR * 6,
+      maxY: Math.max(...subNodes.map(n => n.y)) + full.medR * 6,
+    } : null;
+
     return {
       ...full,
       nodes: subNodes,
       edges: subEdges,
       stats: subStats,
       confidence,
+      diagramBounds: subDiagramBounds,
     };
   });
 }
 
 // ── Mermaid stateDiagram-v2 output ──────────────────────────────
 export function generateMermaid(result) {
-  const { nodes, edges } = result;
-  const lines = ['stateDiagram-v2'];
+  const { nodes, edges, diagramBounds, medR } = result;
+  const lines = [];
+
+  // Emit %%{init}%% front-matter with elk layout for smoother edge routing
+  // and padding proportional to the estimated diagram size
+  const pad = Math.round((medR || 20) * 3);
+  const initConfig = { theme: 'default', layout: 'elk' };
+  lines.push(`%%{init: ${JSON.stringify(initConfig)}}%%`);
+  lines.push('stateDiagram-v2');
 
   // Mermaid state IDs must be alphanumeric — map node index → safe ID
   // Use "state "display" as id" to show the real label
