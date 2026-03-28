@@ -1,0 +1,22 @@
+{
+  "name": "pdf-to-graphviz",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/ui.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node run-pdf.mjs 3"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "pdfjs-dist": "^5.5.207"
+  },
+  "devDependencies": {
+    "vite": "^8.0.3"
+  }
+}

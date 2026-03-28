@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF → Automaton DOT</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@viz-js/viz@3/lib/viz-standalone.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0c0f16;
+  --bg2:      #141820;
+  --bg3:      #1c2230;
+  --bg4:      #232b3a;
+  --amber:    #e8a428;
+  --amber-lo: rgba(232,164,40,0.12);
+  --teal:     #4ecdc4;
+  --red:      #ff6b6b;
+  --green:    #a8e6cf;
+  --text:     #cdd6f4;
+  --dim:      #5a6a8a;
+  --border:   rgba(255,255,255,0.07);
+  --mono:     'IBM Plex Mono', monospace;
+  --ui:       'Barlow Condensed', sans-serif;
+}
+
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--ui); }
+body { display: flex; flex-direction: column; }
+
+/* ── HEADER ── */
+header {
+  display: flex; align-items: center; gap: 16px;
+  padding: 10px 18px; flex-shrink: 0;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+}
+header h1 {
+  font-size: 16px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--amber);
+}
+header p { font-size: 12px; color: var(--dim); font-family: var(--mono); }
+.badge {
+  margin-left: auto; padding: 3px 9px;
+  font-size: 10px; font-weight: 700; letter-spacing: .15em;
+  border: 1px solid var(--teal); color: var(--teal); border-radius: 2px;
+  text-transform: uppercase; opacity: .7;
+}
+
+/* ── MAIN ── */
+main { display: grid; grid-template-columns: 1fr 400px; flex: 1; overflow: hidden; }
+
+/* ── LEFT PANEL ── */
+.left { display: flex; flex-direction: column; border-right: 1px solid var(--border); overflow: hidden; }
+
+.toolbar {
+  display: none; align-items: center; gap: 10px;
+  padding: 7px 12px; flex-shrink: 0;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+}
+.toolbar.show { display: flex; }
+
+select, button {
+  font-family: var(--ui); font-size: 13px;
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); padding: 4px 10px; border-radius: 3px; cursor: pointer;
+}
+select:focus, button:focus { outline: 1px solid var(--amber); }
+
+.btn-primary {
+  background: var(--amber); color: #0c0f16;
+  font-weight: 700; letter-spacing: .06em; border-color: transparent;
+}
+.btn-primary:hover { background: #cf922a; }
+.btn-small { font-size: 11px; padding: 3px 8px; }
+
+.toolbar-right { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--dim); }
+
+.legend {
+  display: none; gap: 14px; align-items: center; flex-wrap: wrap;
+  padding: 6px 12px; flex-shrink: 0;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  font-size: 11px; font-family: var(--mono);
+}
+.legend.show { display: flex; }
+.leg { display: flex; align-items: center; gap: 5px; color: var(--dim); }
+.leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+.canvas-wrap {
+  flex: 1; overflow: auto;
+  background: radial-gradient(ellipse at center, #161d2a 0%, #0c0f16 100%);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 20px; position: relative;
+}
+
+#dropzone {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  cursor: pointer; border: 2px dashed var(--border);
+  transition: border-color .2s, background .2s;
+}
+#dropzone.hidden { display: none; }
+#dropzone:hover, #dropzone.dragover {
+  border-color: var(--amber); background: var(--amber-lo);
+}
+#dropzone .icon { font-size: 52px; opacity: .25; user-select: none; }
+#dropzone .dz-title { font-size: 18px; font-weight: 700; letter-spacing: .06em; color: var(--dim); }
+#dropzone .dz-sub { font-size: 12px; color: var(--dim); opacity: .6; font-family: var(--mono); }
+#file-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+.canvas-inner { position: relative; flex-shrink: 0; }
+#pdf-canvas, #overlay-canvas {
+  position: absolute; top: 0; left: 0;
+  display: none;
+}
+#overlay-canvas { pointer-events: none; }
+/* canvas-inner sizing is set by JS */
+
+/* ── RIGHT PANEL ── */
+.right { display: flex; flex-direction: column; background: var(--bg2); overflow: hidden; }
+
+.tabs { display: flex; flex-shrink: 0; border-bottom: 1px solid var(--border); }
+.tab-btn {
+  flex: 1; padding: 9px 0;
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  font-family: var(--ui); font-size: 12px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--dim); cursor: pointer; transition: color .15s, border-color .15s;
+}
+.tab-btn.active { color: var(--amber); border-bottom-color: var(--amber); }
+.tab-btn:hover:not(.active) { color: var(--text); }
+
+.tab-panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.tab-panel.active { display: flex; }
+
+.output-scroll { flex: 1; overflow: auto; }
+
+textarea.code-out {
+  width: 100%; height: 100%; min-height: 300px;
+  resize: none; border: none; outline: none;
+  background: transparent; padding: 14px;
+  font-family: var(--mono); font-size: 12px; line-height: 1.65;
+  color: var(--text); tab-size: 2;
+}
+
+.panel-footer {
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  padding: 6px 12px; border-top: 1px solid var(--border); flex-shrink: 0;
+}
+
+.placeholder-msg {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; gap: 8px;
+  color: var(--dim); font-size: 13px; font-family: var(--mono);
+  font-style: italic; text-align: center; padding: 20px;
+}
+.placeholder-msg .ph-icon { font-size: 36px; opacity: .2; margin-bottom: 4px; }
+
+.debug-scroll { flex: 1; overflow-y: auto; }
+.dbg-section { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.dbg-section h3 {
+  font-size: 10px; color: var(--amber); text-transform: uppercase;
+  letter-spacing: .14em; margin-bottom: 7px; font-family: var(--ui); font-weight: 700;
+}
+.dbg-row { font-size: 11px; font-family: var(--mono); color: var(--dim); padding: 2px 0; line-height: 1.5; }
+.dbg-row b { color: var(--text); }
+.dbg-row .tag-acc { color: var(--teal); margin-left: 6px; }
+.dbg-row .tag-init { color: var(--green); margin-left: 6px; }
+.dbg-row .tag-warn { color: var(--red); margin-left: 6px; }
+
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.stat-cell { background: var(--bg3); border-radius: 4px; padding: 7px 10px; }
+.stat-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; }
+.stat-value { font-size: 22px; font-weight: 700; color: var(--amber); font-family: var(--mono); line-height: 1.2; }
+
+.confidence-bar-wrap { margin-top: 10px; }
+.confidence-label { font-size: 11px; color: var(--dim); font-family: var(--mono); margin-bottom: 4px; }
+.confidence-bar { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.confidence-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
+
+/* ── GRAPH PREVIEW ── */
+#tab-dot { display: none; flex-direction: column; overflow: hidden; }
+#tab-dot.active { display: flex; }
+#dot-out {
+  flex: 0 0 50%; min-height: 0;
+  height: 50%; resize: none; border: none; outline: none;
+  background: transparent; padding: 14px;
+  font-family: var(--mono); font-size: 12px; line-height: 1.65;
+  color: var(--text); tab-size: 2;
+  border-bottom: 1px solid var(--border);
+}
+#graph-preview {
+  flex: 1 1 50%; min-height: 0;
+  overflow: auto;
+  background: #fff;
+  padding: 8px;
+  display: flex; align-items: flex-start; justify-content: center;
+}
+#graph-preview svg {
+  max-width: 100%; height: auto;
+}
+#graph-preview:empty::after {
+  content: 'Graph preview will appear here after analysis';
+  color: var(--dim); font-family: var(--mono); font-size: 11px;
+  font-style: italic; align-self: center;
+}
+
+/* ── STATUS BAR ── */
+footer {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 14px; flex-shrink: 0;
+  background: var(--bg); border-top: 1px solid var(--border);
+  font-size: 11px; font-family: var(--mono); color: var(--dim);
+}
+#status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--dim); transition: background .3s;
+  flex-shrink: 0;
+}
+#status-dot.ok { background: var(--teal); }
+#status-dot.err { background: var(--red); }
+#status-dot.busy { background: var(--amber); animation: pulse .8s infinite alternate; }
+@keyframes pulse { to { opacity: .3; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Automaton Extractor</h1>
+  <p>PDF (TikZ-compiled) → GraphViz DOT &nbsp;·&nbsp; geometry-only, no OCR</p>
+  <div class="badge">Beta</div>
+</header>
+
+<main>
+  <!-- LEFT: PDF canvas -->
+  <div class="left">
+    <div class="toolbar" id="toolbar">
+      <label style="display:flex;align-items:center;gap:7px;font-size:13px">
+        Page
+        <select id="page-sel"></select>
+      </label>
+      <button class="btn-primary" id="analyze-btn">⟳ Analyze</button>
+      <button class="btn-small" id="reload-btn" title="Load different PDF">↩ New PDF</button>
+      <span class="toolbar-right" id="page-info"></span>
+    </div>
+
+    <div class="legend" id="legend">
+      <span class="leg"><span class="leg-dot" style="border:2px solid var(--amber);background:transparent"></span>Node</span>
+      <span class="leg"><span class="leg-dot" style="border:2px solid var(--teal);background:transparent"></span>Accepting</span>
+      <span class="leg"><span class="leg-dot" style="background:var(--red)"></span>Arrowhead</span>
+      <span class="leg"><span class="leg-dot" style="border:2px solid rgba(78,205,196,.55);background:transparent"></span>Edge</span>
+      <span class="leg"><span class="leg-dot" style="background:rgba(168,230,207,.6)"></span>Initial</span>
+    </div>
+
+    <div class="canvas-wrap" id="canvas-wrap">
+      <div id="dropzone">
+        <input type="file" id="file-input" accept=".pdf">
+        <span class="icon">⊛</span>
+        <span class="dz-title">Drop PDF here</span>
+        <span class="dz-sub">or click to browse · TikZ-compiled automata</span>
+      </div>
+      <div class="canvas-inner" id="canvas-inner">
+        <canvas id="pdf-canvas"></canvas>
+        <canvas id="overlay-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: output -->
+  <div class="right">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="dot">DOT</button>
+      <button class="tab-btn" data-tab="plain">Plain</button>
+      <button class="tab-btn" data-tab="debug">Debug</button>
+    </div>
+
+    <!-- DOT tab -->
+    <div class="tab-panel active" id="tab-dot">
+      <div id="dot-placeholder" class="placeholder-msg" style="flex:1">
+        <span class="ph-icon">◎</span>
+        Drop a PDF and click Analyze<br>to extract the automaton
+      </div>
+      <textarea id="dot-out" readonly style="display:none"></textarea>
+      <div id="graph-preview"></div>
+      <div class="panel-footer">
+        <button class="btn-small" id="copy-dot">Copy DOT</button>
+      </div>
+    </div>
+
+    <!-- Plain text tab -->
+    <div class="tab-panel" id="tab-plain">
+      <div class="output-scroll">
+        <div id="plain-placeholder" class="placeholder-msg">
+          <span class="ph-icon">≡</span>
+          Human-readable graph description<br>appears here after analysis
+        </div>
+        <textarea class="code-out" id="plain-out" readonly style="display:none"></textarea>
+      </div>
+      <div class="panel-footer">
+        <button class="btn-small" id="copy-plain">Copy Text</button>
+      </div>
+    </div>
+
+    <!-- Debug tab -->
+    <div class="tab-panel" id="tab-debug">
+      <div class="debug-scroll">
+        <div id="debug-placeholder" class="placeholder-msg">
+          <span class="ph-icon">⚙</span>
+          Geometry detection details<br>appear here after analysis
+        </div>
+        <div id="debug-content" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span id="status-dot"></span>
+  <span id="status-msg">Ready — drop a TikZ-compiled PDF to begin</span>
+</footer>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+</script>
+<script src="script.js"></script>
+</body>
+</html>

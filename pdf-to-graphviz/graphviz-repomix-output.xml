@@ -1,0 +1,1151 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.github/
+  workflows/
+    ci.yml
+index.html
+main.js
+README.md
+style.css
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".github/workflows/ci.yml">
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+</file>
+
+<file path="index.html">
+<!DOCTYPE html>
+<html lang="utf-8">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Graphviz Online</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div id="editor-toggle">
+    <button id="toggle-btn"></button>
+  </div>
+  <div id="editor-pane">
+    <pre id="editor">digraph G {
+
+  subgraph cluster_0 {
+    style=filled;
+    color=lightgrey;
+    node [style=filled,color=white];
+    a0 -> a1 -> a2 -> a3;
+    label = "process #1";
+  }
+
+  subgraph cluster_1 {
+    node [style=filled];
+    b0 -> b1 -> b2 -> b3;
+    label = "process #2";
+    color=blue
+  }
+  start -> a0;
+  start -> b0;
+  a1 -> b3;
+  b2 -> a3;
+  a3 -> a0;
+  a3 -> end;
+  b3 -> end;
+
+  start [shape=Mdiamond];
+  end [shape=Msquare];
+}</pre>
+  </div>
+  <div id="splitter"></div>
+  <div id="review-pane">
+    <div id="options">
+      <label id="engine">
+        Engine:
+        <select>
+          <option>circo</option>
+          <option selected="">dot</option>
+          <option>fdp</option>
+          <option>nop</option>
+          <option>nop2</option>
+          <option>neato</option>
+          <option>sfdp</option>
+          <option>twopi</option>
+          <option>osage</option>
+          <option>patchwork</option>
+        </select>
+      </label>
+
+      <label id="format">
+        Format:
+        <select>
+          <option selected="">svg</option>
+          <option>png</option>
+          <option>json</option>
+          <option>xdot</option>
+          <option>plain</option>
+          <option>ps</option>
+        </select>
+      </label>
+
+      <label id="raw" class="disabled">
+        <input type="checkbox" disabled=""> Show raw output
+      </label>
+
+      <label>
+        <a href="#" target="_blank" id="download">Download</a>
+      </label>
+
+      <label>
+        <input type="button" value="Share" id="share">
+      </label>
+
+      <input type="input" value="" id="shareurl">
+
+      <div style="flex-grow: 1;">
+        <a id="github-link" href="https://github.com/dreampuf/GraphvizOnline"></a>
+      </div>
+    </div>
+    <div id="review">
+      <div id="error"></div>
+    </div>
+  </div>
+  <div id="status"></div>
+
+  <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"
+    integrity="sha512-qtX0GLM3qX8rxJN1gyDfcnMFFrKvixfoEOwbBib9VafR5vbChV5LeE5wSI/x+IlCkTY5ZFddFDCCfaVJJNnuKQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="viz-global.js"></script>
+  <script src="svg-pan-zoom.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="hammer.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="main.js" type="text/javascript" charset="utf-8"></script>
+</body>
+
+</html>
+</file>
+
+<file path="main.js">
+'use strict';
+
+(function adjustGithubRepositoryUrl(a) {
+  if (!(a && location.host.match('^([^.]+)\.github\.io$'))) { return; }
+  const ghuser = RegExp.$1;
+  const url = new URL(a.href);
+  const pathSplit = url.pathname.split('/');
+  pathSplit[1] = ghuser;
+  url.pathname = pathSplit.join('/');
+  a.href = url.href;
+})(document.querySelector('#github-link'));
+
+(function (document) {
+  const GraphvizOnline = globalThis.GraphvizOnline ?? (globalThis.GraphvizOnline = new EventTarget());
+
+  const editorPaneElement = document.getElementById('editor-pane');
+  const reviewElement = document.getElementById('review');
+  const toggleBtn = document.getElementById('toggle-btn');
+  const splitter = document.getElementById('splitter');
+
+  // Splitter drag and double-click functionality
+
+  splitter.addEventListener('dblclick', (e) => {
+    document.documentElement.style.setProperty('--editor-width', `calc(50% - var(--splitter-width))`);
+  });
+  splitter.addEventListener('mousedown', (e) => {
+    document.documentElement.classList.add('splitter-is-dragging');
+    // overlay to prevent mouse pointer flickering when dragging the splitter to the left
+    const overlayElement = editorPaneElement.appendChild(document.createElement('div'));
+    Object.assign(overlayElement.style, { position: 'absolute', inset: 0, zIndex: 10 });
+    document.addEventListener('mousemove', handleMouseMoveWhileDraggingSplitter);
+    document.addEventListener('mouseup', () => {
+      document.documentElement.classList.remove('splitter-is-dragging');
+      overlayElement.remove();
+      document.removeEventListener('mousemove', handleMouseMoveWhileDraggingSplitter);
+      resizeSVG();
+    }, { once: true });
+    e.preventDefault();
+  });
+
+  function handleMouseMoveWhileDraggingSplitter(e) {
+    const windowWidth = window.innerWidth;
+    const newLeft = e.clientX;
+    const percentage = (newLeft / windowWidth) * 100;
+
+    // Limit the splitter to reasonable bounds (10% to 90%)
+    if (percentage >= 10 && percentage <= 90) {
+      document.documentElement.style.setProperty('--editor-width', `${percentage}%`);
+      resizeSVG({ throttle: 100 });
+    }
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    document.documentElement.classList.toggle('editor-collapsed')
+  });
+
+  let resizeSVGTimer = null;
+  window.addEventListener('resize', resizeSVG.bind(null, { throttle: 100 }));
+  editorPaneElement.addEventListener('transitionend', resizeSVG);
+
+  let prevReviewRect;
+  // a valid bounding client rect is available after <body> is rendered
+  // (i.e. document.documentElement.classList.contains('ready'))
+  setTimeout(() => {
+    prevReviewRect = reviewElement.getBoundingClientRect();
+  }, 0);
+
+  function resizeSVG({ throttle } = {}) {
+    if (throttle) {
+      if (resizeSVGTimer) { return; }
+      resizeSVGTimer = setTimeout(resizeSVG, 100);
+      return;
+    } else {
+      clearTimeout(resizeSVGTimer);
+    }
+    resizeSVGTimer = null;
+    const svg = document.querySelector('#review svg');
+    if (svg) {
+      const currRect = reviewElement.getBoundingClientRect();
+      const dw = currRect.width - prevReviewRect.width;
+      const dh = currRect.height - prevReviewRect.height;
+      svgPanZoom(svg).resize().panBy({ x: dw / 2, y: dh / 2 });
+      prevReviewRect = currRect;
+    }
+  }
+
+  //http://stackoverflow.com/a/10372280/398634
+  window.URL = window.URL || window.webkitURL;
+  var el_stetus = document.getElementById("status"),
+    t_stetus = -1,
+    reviewer = document.getElementById("review"),
+    scale = window.devicePixelRatio || 1,
+    downloadBtn = document.getElementById("download"),
+    editor = ace.edit("editor"),
+    lastHD = -1,
+    worker = null,
+    parser = new DOMParser(),
+    showError = null,
+    formatEl = document.querySelector("#format select"),
+    engineEl = document.querySelector("#engine select"),
+    rawEl = document.querySelector("#raw input"),
+    shareEl = document.querySelector("#share"),
+    shareURLEl = document.querySelector("#shareurl"),
+    errorEl = document.querySelector("#error");
+
+  // if the editor is initally hidden in presentation mode,
+  // we need to trigger a resize once
+  const boundEditorResize = editor.resize.bind(editor, true);
+  editorPaneElement.addEventListener('transitionstart', boundEditorResize, { once: true });
+  editorPaneElement.addEventListener('transitionend', boundEditorResize, { once: true });
+
+  function show_status(text, hide) {
+    hide = hide || 0;
+    clearTimeout(t_stetus);
+    el_stetus.innerHTML = text;
+    if (hide) {
+      t_stetus = setTimeout(function () {
+        el_stetus.innerHTML = "";
+      }, hide);
+    }
+  }
+
+  function show_error(e) {
+    console.trace();
+    console.error(e);
+    show_status("error", 500);
+    reviewer.classList.remove("working");
+    reviewer.classList.add("error");
+    var message = e.message === undefined ? "An error occurred while processing the graph input." : e.message;
+    while (errorEl.firstChild) {
+      errorEl.removeChild(errorEl.firstChild);
+    }
+    errorEl.appendChild(document.createTextNode(message));
+  }
+
+  function svgXmlToImage(svgXml, callback) {
+    var pngImage = new Image(), svgImage = new Image();
+
+    svgImage.onload = function () {
+      var canvas = document.createElement("canvas");
+      canvas.width = svgImage.width * scale;
+      canvas.height = svgImage.height * scale;
+
+      var context = canvas.getContext("2d");
+      context.drawImage(svgImage, 0, 0, canvas.width, canvas.height);
+
+      pngImage.src = canvas.toDataURL("image/png");
+      pngImage.width = svgImage.width;
+      pngImage.height = svgImage.height;
+
+      if (callback !== undefined) {
+        callback(null, pngImage);
+      }
+    }
+
+    svgImage.onerror = function (e) {
+      if (callback !== undefined) {
+        callback(e);
+      }
+    }
+    svgImage.src = svgXml;
+  }
+
+  function copyShareURL(e) {
+    let content = encodeURIComponent(editor.getSession().getDocument().getValue());
+    const longUrl = new URL(location.href);
+    longUrl.hash = content;
+    // encode preserved commas from updateState()
+    longUrl.search = longUrl.searchParams.toString();
+
+    shareEl.disabled = true;
+    let n = 0;
+    let animateId = setInterval(()=> { shareEl.value = "Loading" + ".".repeat(n++%3)}, 300)
+    // cors for is.gd
+    fetch("https://api.allorigins.win/get?url=" + encodeURIComponent("https://is.gd/create.php?" + new URLSearchParams({
+      format: 'simple',
+      url: longUrl.toString(),
+    }).toString()))
+      .then((r) => {
+        if (r.ok) return r.json()
+        return new Error("network issues");
+      })
+      .then((rs) => {
+        shareURLEl.style.display = "inline";
+        shareURLEl.value = rs.contents;
+      }).catch((err) => {
+        const rawContent = editor.getSession().getDocument().getValue();
+        const compressedContent = LZString.compressToEncodedURIComponent(rawContent);
+
+        const compressedUrl = new URL(location.href);
+        compressedUrl.searchParams.append("compressed", compressedContent);
+        compressedUrl.hash = "";
+        shareURLEl.style.display = "inline";
+        shareURLEl.value = compressedUrl.toString();
+      }).finally(()=>{
+        clearInterval(animateId);
+        shareEl.value = "Share";
+        shareEl.disabled = false;
+      })
+  }
+
+  function copyToClipboard(str) {
+    const el = document.createElement('textarea');
+    el.value = str;
+    el.setAttribute('readonly', '');
+    el.style.position = 'absolute';
+    el.style.left = '-9999px';
+    document.body.appendChild(el);
+    const selected =
+      document.getSelection().rangeCount > 0
+        ? document.getSelection().getRangeAt(0)
+        : false;
+    el.select();
+    var result = document.execCommand('copy')
+    document.body.removeChild(el);
+    if (selected) {
+      document.getSelection().removeAllRanges();
+      document.getSelection().addRange(selected);
+    }
+    return result;
+  };
+
+  function renderGraph() {
+    reviewer.classList.add("working");
+    reviewer.classList.remove("error");
+
+    show_status("rendering...");
+    Viz.instance().then(function (viz) {
+      let dotContent = editor.getSession().getDocument().getValue();
+      let options = {
+        format: formatEl.value,
+        engine: engineEl.value,
+      };
+      let result = null;
+
+      if (["svg", "png"].indexOf(formatEl.value) > -1) {
+        result = viz.renderSVGElement(dotContent, options);
+      } else {
+        result = viz.render(dotContent, options);
+      }
+
+      if (result.status !== undefined && result.status != "success") {
+        show_error(result.errors && result.errors.length > 0 && result.errors[0] || result);
+      } else {
+        updateOutput(result);
+      }
+    }).catch((err) => {
+      show_error(err);
+    }).finally(() => {
+      reviewer.classList.remove("working");
+      show_status("done", 500)
+    });
+  }
+
+  function updateState() {
+    const updateStateEvent = new Event('updateState', { cancelable: true } );
+    GraphvizOnline.dispatchEvent(updateStateEvent);
+    if (updateStateEvent.defaultPrevented) { return; }
+
+    const updatedUrl = new URL(window.location)
+    // Hash
+    const content = encodeURIComponent(editor.getSession().getDocument().getValue());
+    updatedUrl.hash = content
+    // Search params
+    updatedUrl.searchParams.set("engine", engineEl.value);
+    // preserve commas in search params
+    updatedUrl.search = updatedUrl.searchParams.toString().replaceAll('%2C', ',');
+    history.pushState({ "content": content, "engine": engineEl.value }, "", updatedUrl.toString())
+  }
+
+  function updateOutput(result) {
+    const updateOutputEvent = new CustomEvent('updateOutput', { detail: { result } } );
+    GraphvizOnline.dispatchEvent(updateOutputEvent);
+
+    if (formatEl.value === "svg") {
+      document.querySelector("#raw").classList.remove("disabled");
+      rawEl.disabled = false;
+    } else {
+      document.querySelector("#raw").classList.add("disabled");
+      rawEl.disabled = true;
+    }
+
+    var text = reviewer.querySelector("#text");
+    if (text) {
+      reviewer.removeChild(text);
+    }
+
+    var a = reviewer.querySelector("a");
+    if (a) {
+      reviewer.removeChild(a);
+    }
+
+    if (!result) {
+      return;
+    }
+
+    reviewer.classList.remove("working");
+    reviewer.classList.remove("error");
+
+    if (formatEl.value == "svg" && !rawEl.checked) {
+      var serializer = new XMLSerializer();
+      var source = serializer.serializeToString(result);
+      // https://stackoverflow.com/questions/18925210/download-blob-content-using-specified-charset
+      //const blob = new Blob(["\ufeff", svg], {type: 'image/svg+xml;charset=utf-8'});
+      const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+      downloadBtn.href = url;
+      downloadBtn.download = "graphviz.svg";
+      var a = document.createElement("a");
+      a.appendChild(result);
+      reviewer.appendChild(a);
+      svgPanZoom(result, {
+        zoomEnabled: true,
+        controlIconsEnabled: true,
+        fit: true,
+        center: true,
+        // based on https://github.com/bumbu/svg-pan-zoom/blob/master/demo/mobile.html
+        // added stuff around svgElement.getBoundingClientRect()
+        customEventsHandler: {
+          haltEventListeners: ['touchstart', 'touchend', 'touchmove', 'touchleave', 'touchcancel']
+          , init: function (options) {
+            var instance = options.instance
+              , initialScale = 1
+              , pannedX = 0
+              , pannedY = 0
+              , clientX = 0
+              , clientY = 0
+            // Init Hammer
+            // Listen only for pointer and touch events
+            this.hammer = Hammer(options.svgElement, {
+              inputClass: Hammer.SUPPORT_POINTER_EVENTS ? Hammer.PointerEventInput : Hammer.TouchInput
+            })
+            // Enable pinch
+            this.hammer.get('pinch').set({ enable: true })
+            // Handle double tap
+            this.hammer.on('doubletap', function (ev) {
+              instance.zoomIn()
+            })
+            // Handle pan
+            this.hammer.on('panstart panmove', function (ev) {
+              // On pan start reset panned variables
+              if (ev.type === 'panstart') {
+                pannedX = 0
+                pannedY = 0
+              }
+              // Pan only the difference
+              instance.panBy({ x: ev.deltaX - pannedX, y: ev.deltaY - pannedY })
+              pannedX = ev.deltaX
+              pannedY = ev.deltaY
+            })
+            // Handle pinch
+            this.hammer.on('pinchstart pinchmove', function (ev) {
+              // On pinch start remember initial zoom
+              if (ev.type === 'pinchstart') {
+                ({x: clientX, y: clientY } = options.svgElement.getBoundingClientRect());
+                initialScale = instance.getZoom()
+              }
+              instance.zoomAtPoint(initialScale * ev.scale, {
+                x: ev.center.x - clientX,
+                y: ev.center.y - clientY,
+              });
+            })
+            // Prevent moving the page on some devices when panning over SVG
+            options.svgElement.addEventListener('touchmove', function (e) { e.preventDefault(); });
+          }
+          , destroy: function () {
+            this.hammer.destroy()
+          }
+        },
+      });
+    } else if (formatEl.value == "png") {
+      var serializer = new XMLSerializer();
+      var source = serializer.serializeToString(result);
+      let resultWithPNGHeader = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(source)));
+      svgXmlToImage(resultWithPNGHeader, function (err, image) {
+        if (err) {
+          show_error(err)
+          return
+        }
+        image.setAttribute("title", "graphviz");
+        downloadBtn.href = image.src;
+        downloadBtn.download = "graphviz.png";
+        var a = document.createElement("a");
+        a.appendChild(image);
+        reviewer.appendChild(a);
+      })
+    } else {
+      var text = document.createElement("div");
+      text.id = "text";
+      if (formatEl.value == "svg") {
+        let serializer = new XMLSerializer();
+        result = serializer.serializeToString(result);
+      } else {
+        result = result.output;
+      }
+      text.appendChild(document.createTextNode(result));
+      reviewer.appendChild(text);
+    }
+
+    updateState()
+  }
+
+  let renderGraphImmediately = false;
+  editor.setTheme("ace/theme/twilight");
+  editor.getSession().setMode("ace/mode/dot");
+  editor.getSession().setValueAndRenderGraphImmediately = (value) => {
+    renderGraphImmediately = true;
+    editor.getSession().setValue(value);
+  }
+  editor.getSession().on("change", function (delta) {
+    clearTimeout(lastHD);
+    if (renderGraphImmediately) {
+      lastHD = -1;
+      // do not render after 'remove'
+      if (delta.action === 'insert') {
+        renderGraph();
+        renderGraphImmediately = false;
+      }
+      return;
+    }
+    lastHD = setTimeout(renderGraph, 1500);
+  });
+
+  window.onpopstate = function (event) {
+    if (event.state != null && event.state.content != undefined) {
+      editor.getSession().setValue(decodeURIComponent(event.state.content));
+    }
+  };
+
+  (function initEditorStableWidthGutterRenderer() {
+    let numberOfLines;
+    let gutterChars;
+    let gutterWidth;
+    let gutterPad;
+    function ensureGutterPad(session) {
+      const n = session.doc.$lines.length;
+      if (n !== numberOfLines) {
+        numberOfLines = n;
+        gutterChars = String(n).length;
+        gutterPad = ' '.repeat(gutterChars < 3 ? 3 : gutterChars);
+        gutterWidth = undefined;
+      }
+    }
+    function ensureGutterWidth(session, config) {
+      ensureGutterPad(session);
+      if (gutterWidth === undefined) {
+        gutterWidth = gutterChars * config.characterWidth;
+      }
+      return gutterWidth;
+    }
+    editor.session.gutterRenderer = {
+      getText: function (session, row) {
+        ensureGutterPad(session);
+        return (gutterPad + row).slice(-gutterChars);
+      },
+      getWidth: function (session, lastLineNumber, config) {
+        ensureGutterWidth(session, config);
+        return gutterWidth;
+      },
+    };
+  }).call();
+
+  formatEl.addEventListener("change", renderGraph);
+  engineEl.addEventListener("change", renderGraph);
+  rawEl.addEventListener("change", renderGraph);
+  share.addEventListener("click", copyShareURL);
+
+  // Since apparently HTMLCollection does not implement the oh so convenient array functions
+  HTMLOptionsCollection.prototype.indexOf = function (name) {
+    for (let i = 0; i < this.length; i++) {
+      if (this[i].value == name) {
+        return i;
+      }
+    }
+
+    return -1;
+  };
+
+  Object.assign(GraphvizOnline, {
+    editor,
+    reviewElement,
+    show_error,
+  });
+  const startupEvent = new Event('startup', { cancelable: true } );
+  GraphvizOnline.dispatchEvent(startupEvent);
+  if (startupEvent.defaultPrevented) { return; }
+
+  /* parsing from URL sharing */
+  const params = new URLSearchParams(location.search.substring(1));
+  if (params.has('engine')) {
+    const engine = params.get('engine');
+    const index = engineEl.options.indexOf(engine);
+    if (index > -1) { // if index exists
+      engineEl.selectedIndex = index;
+    } else {
+      show_error({ message: `invalid engine ${engine} selected` });
+    }
+  }
+
+  if (params.has('format')) {
+    const format = params.get('format');
+    const index = formatEl.options.indexOf(format);
+    if (index > -1) {
+      formatEl.selectedIndex = index;
+    } else {
+      show_error({ message: `Invalid format ${format} selected` });
+    }
+  }
+
+  if (params.has('presentation')) {
+    const classList = document.documentElement.classList;
+    classList.add('editor-collapsed', 'hide-editor-toggle');
+    const options = params.get('presentation').split(',');
+    if (options.indexOf('editable') !== -1) {
+      classList.remove('hide-editor-toggle');
+    }
+    for (const option of options) {
+      if (option.startsWith('show-') || option.startsWith('hide-')) {
+        classList.add(option);
+      }
+    }
+  }
+
+  if (params.has('raw')) {
+    editor.getSession().setValueAndRenderGraphImmediately(params.get('raw'));
+  } else if (params.has('compressed')) {
+    const compressed = params.get('compressed');
+    editor.getSession().setValueAndRenderGraphImmediately(LZString.decompressFromEncodedURIComponent(compressed));
+  } else if (params.has('url')) {
+    const url = params.get('url');
+    let ok = false;
+    fetch(url)
+      .then(res => {
+        ok = res.ok;
+        return res.text();
+      })
+      .then(res => {
+        if (!ok) {
+          throw { message: res };
+        }
+
+        editor.getSession().setValueAndRenderGraphImmediately(res);
+      }).catch(e => {
+        show_error(e);
+      });
+  } else if (location.hash.length > 1) {
+    editor.getSession().setValueAndRenderGraphImmediately(decodeURIComponent(location.hash.substring(1)));
+  } else if (editor.getValue()) { // Init
+    renderGraph();
+  }
+
+  document.documentElement.classList.add('ready');
+
+})(document);
+</file>
+
+<file path="README.md">
+# Introduction
+
+Author: [dreampuf](https://github.com/dreampuf/)
+
+[GraphvizOnline](https://github.com/dreampuf/GraphvizOnline) lets you edit and view [GraphViz](http://www.graphviz.org/) diagrams online. You can [use GraphvizOnline online here](http://dreampuf.github.io/GraphvizOnline/).
+
+## Graph from URL / Gist
+
+You can display a graph defined in a gist, or any other publically available url by adding a `?url=` parameter to the GraphvizOnline url
+
+Example: https://dreampuf.github.io/GraphvizOnline/?url=https://gist.githubusercontent.com/timabell/da08616ecb8693d524b8eab3b7b51018/raw/0e205c341b40641206a55c9f96b5db9b8fa581bc/graph.gv
+
+Using https://gist.github.com/ allows you to share and version your graph definitions.
+
+## Presentation mode
+
+If you would like to display just the graph and not the graph input, you can add a `?presentation` query param. This can be helpful when generating links with the graph already prefilled. You might set the param to comma separated list of the following values:
+
+- `editable`: show the editor-toggle button
+- `hide-options`: hide the options bar at top of page
+- `show-engine`, `show-format`, `show-raw`, `show-download`, `show-share`: show some some options in conjuntion with `hide-options`
+
+Example: `?presentation=editable,hide-options,show-download`
+
+# How to implement this
+
+- [viz.js](https://github.com/mdaines/viz.js) This repo has compile graphviz(C) to javascript via [emscripten](https://github.com/kripken/emscripten).
+- [ACE-editor](http://ace.ajax.org/) An amazing online editor.
+
+# License
+
+GraphvizOnline licensed under BSD-3 license. The dependencies:
+
+- [viz.js](https://github.com/mdaines/viz.js/blob/master/LICENSE) MIT
+- [ACE-editor](https://github.com/ajaxorg/ace/blob/master/LICENSE) BSD-2
+</file>
+
+<file path="style.css">
+:root {
+  --splitter-width: 5px;
+  --editor-width: calc(50% - var(--splitter-width));
+}
+:root.hide-options:not(.show-engine,.show-format,.show-raw,.show-download,.show-share) #options,
+:root.hide-options #options > :not(div:last-child),
+:root.hide-editor-toggle #editor-toggle {
+  display: none;
+}
+:root.show-engine #engine, :root.show-format #format, :root.show-raw #raw, :root.show-download :has(>#download), :root.show-share :has(>#share) {
+  display: initial!important;
+}
+:root:not(.ready) body {
+  display: none;
+}
+
+body {
+  overflow: hidden;
+  margin: 0 0;
+}
+
+#editor-toggle {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  z-index: 10;
+  transform: translateY(-50%);
+}
+
+#toggle-btn {
+  cursor: pointer;
+  padding: 10px 6px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(222, 226, 230, 0.7);
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+  color: #495057;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.08);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 20px;
+}
+
+#toggle-btn::before { content: "▶"; }
+#toggle-btn::after { content: "◀"; }
+#toggle-btn::before, #toggle-btn::after {
+  position: absolute;
+  transition: visibility 0.2s ease;
+}
+:root:not(.editor-collapsed) #toggle-btn::before,
+:root.editor-collapsed #toggle-btn::after {
+  visibility: hidden;
+}
+
+#toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 2px 0 6px rgba(0,0,0,0.12);
+  color: #212529;
+}
+
+#toggle-btn:active {
+  background: rgba(233, 236, 239, 0.8);
+  box-shadow: 1px 0 3px rgba(0,0,0,0.05);
+}
+
+:root.editor-collapsed #toggle-btn {
+  background: linear-gradient(to right, #ffffff, #f8f9fa);
+  border: 1px solid #dee2e6;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.08);
+  color: #495057;
+}
+
+:root.editor-collapsed #toggle-btn:hover {
+  background: linear-gradient(to right, #f8f9fa, #e9ecef);
+  color: #212529;
+}
+
+#editor-pane {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  transition: width 0.3s ease;
+  width: var(--editor-width);
+}
+
+#editor {
+  flex-grow: 1;
+  min-height: 1px;
+  position: relative;
+  margin: 0;
+}
+
+:root.editor-collapsed #editor-pane {
+  width: 0 !important;
+}
+
+#splitter {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--editor-width);
+  width: var(--splitter-width);
+  background: #ccc;
+  cursor: col-resize;
+  z-index: 5;
+  transition: left 0.3s ease, visibility 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.08);
+}
+
+:root.editor-collapsed #splitter {
+  visibility: hidden;
+  left: 0!important;
+  cursor: initial;
+}
+
+#splitter::before {
+  content: '⋮';
+  color: #555;
+  font-size: 20px;
+  font-weight: bold;
+  pointer-events: none;
+  line-height: 1;
+}
+
+#splitter:hover {
+  background: #999;
+}
+
+#splitter:hover::before {
+  color: #222;
+}
+
+:root.splitter-is-dragging #splitter {
+  background: #666;
+}
+
+:root.splitter-is-dragging :is(#splitter, #editor-pane, #review-pane) {
+  transition: none;
+}
+
+:root.splitter-is-dragging #splitter::before {
+  color: #fff;
+}
+
+:root.splitter-is-dragging body {
+  cursor: col-resize;
+}
+
+#review-pane {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: calc(var(--editor-width) + var(--splitter-width));
+  transition: left 0.3s ease;
+}
+
+#review {
+  flex-grow: 1;
+  min-height: 1px;
+  position: relative;
+}
+
+:root.editor-collapsed :has(>#review) {
+  left: 0 !important;
+}
+
+#options {
+  flex: 0 0 auto;
+  background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+  border-bottom: 1px solid #dee2e6;
+  padding: 8px 12px;
+  overflow: hidden;
+  transition: left 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  z-index: 10;
+}
+
+#options label {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #495057;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+#options select {
+  padding: 4px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  color: #212529;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+#options select:hover {
+  border-color: #adb5bd;
+}
+
+#options select:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+#options input[type="checkbox"] {
+  cursor: pointer;
+}
+
+#options input[type="button"] {
+  padding: 5px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  color: #212529;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+#options input[type="button"]:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+#options input[type="button"]:active {
+  background: #e9ecef;
+}
+
+#options #raw.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#options #raw.disabled input {
+  cursor: not-allowed;
+}
+
+#options > div:last-child {
+  text-align: right;
+}
+
+#github-link {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  vertical-align: middle;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32px" height="32px" fill="black"><path d="M10.303 16.652c-2.837-.344-4.835-2.385-4.835-5.028 0-1.074.387-2.235 1.031-3.008-.279-.709-.236-2.214.086-2.837.86-.107 2.02.344 2.708.967.816-.258 1.676-.386 2.728-.386 1.053 0 1.913.128 2.686.365.666-.602 1.848-1.053 2.708-.946.3.581.344 2.085.064 2.815.688.817 1.053 1.913 1.053 3.03 0 2.643-1.998 4.641-4.877 5.006.73.473 1.224 1.504 1.224 2.686v2.235c0 .644.537 1.01 1.182.752 3.889-1.483 6.94-5.372 6.94-10.185 0-6.081-4.942-11.044-11.022-11.044-6.081 0-10.98 4.963-10.98 11.044a10.84 10.84 0 0 0 7.112 10.206c.58.215 1.139-.172 1.139-.752v-1.719a2.768 2.768 0 0 1-1.032.215c-1.418 0-2.256-.773-2.857-2.213-.237-.58-.495-.924-.989-.988-.258-.022-.344-.129-.344-.258 0-.258.43-.451.86-.451.623 0 1.16.386 1.719 1.181.43.623.881.903 1.418.903.537 0 .881-.194 1.375-.688.365-.365.645-.687.903-.902Z"></path></svg>');
+}
+
+#status {
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  display: block;
+  color: #FFF;
+  z-index: 999;
+}
+
+#review svg {
+  width: 100%;
+  height: 100%;
+}
+
+#review #text {
+  font-size: 12px;
+  font-family: monaco, courier, monospace;
+  white-space: pre;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+#review img {
+  display: block;
+  margin: 0 auto;
+}
+
+#review.working svg,
+#output.error svg,
+#review.working #text,
+#output.error #text,
+#review.working img,
+#output.error img {
+  opacity: 0.4;
+}
+
+#review.error #error {
+  display: inherit;
+}
+
+#review #error {
+  display: none;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  margin-right: 20px;
+  padding: 0 1ex;
+  background: red;
+  color: white;
+  z-index: 1;
+}
+
+#download {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  background: white;
+  color: #212529;
+  padding: 5px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  display: inline-block;
+  transition: all 0.15s ease;
+}
+
+#download:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+#download:active {
+  background: #e9ecef;
+}
+
+#shareurl {
+  display: none;
+  padding: 4px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  color: #212529;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  width: 300px;
+}
+
+#shareurl:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+</file>
+
+</files>
