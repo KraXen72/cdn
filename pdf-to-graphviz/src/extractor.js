@@ -768,32 +768,39 @@ export function generateMermaid(result) {
   const { nodes, edges } = result;
   const lines = ['stateDiagram-v2'];
 
-  function safeId(label) {
-    if (!label) return 'unknown';
-    // Mermaid state IDs: wrap in quotes to allow special chars
-    return `"${label.replace(/"/g, "'")}"`;
+  // Mermaid state IDs must be alphanumeric — map node index → safe ID
+  // Use "state "display" as id" to show the real label
+  const nodeId = (i) => `s${i}`;
+
+  // Declare all states with their display labels
+  for (let i = 0; i < nodes.length; i++) {
+    const lbl = nodes[i].label || `q${i}`;
+    // Escape double quotes in label
+    const safeLbl = lbl.replace(/"/g, "'");
+    lines.push(`  state "${safeLbl}" as ${nodeId(i)}`);
   }
 
   // Initial arrow
   const initEdge = edges.find(e => e.isInitial && e.to >= 0);
   if (initEdge) {
-    lines.push(`  [*] --> ${safeId(nodes[initEdge.to]?.label ?? `q${initEdge.to}`)}`);
+    lines.push(`  [*] --> ${nodeId(initEdge.to)}`);
   }
 
   // Regular transitions
   for (const e of edges) {
     if (e.isInitial) continue;
     if (e.from < 0 || e.to < 0) continue;
-    const from = safeId(nodes[e.from]?.label ?? `q${e.from}`);
-    const to   = safeId(nodes[e.to]?.label   ?? `q${e.to}`);
-    const lbl  = e.label ? ` : ${e.label}` : '';
-    lines.push(`  ${from} --> ${to}${lbl}`);
+    // Escape colons (Mermaid uses : as label separator) and other special chars
+    const lbl = e.label
+      ? ` : ${e.label.replace(/:/g, '꞉').replace(/"/g, "'")}`
+      : '';
+    lines.push(`  ${nodeId(e.from)} --> ${nodeId(e.to)}${lbl}`);
   }
 
   // Accepting states → [*]
-  for (const n of nodes) {
-    if (n.accepting) {
-      lines.push(`  ${safeId(n.label)} --> [*]`);
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].accepting) {
+      lines.push(`  ${nodeId(i)} --> [*]`);
     }
   }
 

@@ -86,6 +86,16 @@ async function renderGraphviz(dotString) {
 }
 
 // ── Mermaid rendering ──────────────────────────────────────────
+let _mermaidLib = null;
+async function getMermaid() {
+  if (!_mermaidLib) {
+    const mod = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+    _mermaidLib = mod.default;
+    _mermaidLib.initialize({ startOnLoad: false, theme: 'default' });
+  }
+  return _mermaidLib;
+}
+
 async function renderMermaid(result) {
   const mmd = generateMermaid(result);
   const out = $('mermaid-out');
@@ -96,16 +106,21 @@ async function renderMermaid(result) {
   const preview = $('mermaid-preview');
   preview.innerHTML = '';
 
-  if (!window.mermaidLib) {
-    preview.textContent = 'Mermaid library not loaded (check CDN).';
-    return;
-  }
   try {
+    const mermaid = await getMermaid();
+    // mermaid.render() needs a scratch element in the DOM
+    const scratch = document.createElement('div');
+    scratch.style.cssText = 'position:absolute;left:-9999px;top:-9999px;visibility:hidden';
+    document.body.appendChild(scratch);
     const id = 'mermaid-render-' + Date.now();
-    const { svg } = await window.mermaidLib.render(id, mmd);
+    const { svg } = await mermaid.render(id, mmd, scratch);
+    document.body.removeChild(scratch);
     preview.innerHTML = svg;
+    // Make the SVG responsive
+    const svgEl = preview.querySelector('svg');
+    if (svgEl) { svgEl.style.maxWidth = '100%'; svgEl.style.height = 'auto'; }
   } catch (e) {
-    preview.innerHTML = `<pre style="color:red;font-size:11px;white-space:pre-wrap">${e.message}</pre>`;
+    preview.innerHTML = `<pre style="color:red;font-size:11px;white-space:pre-wrap;padding:8px">${e.message}</pre>`;
   }
 }
 
