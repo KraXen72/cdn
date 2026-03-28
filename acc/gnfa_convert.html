@@ -391,6 +391,120 @@ td.result-cell code { background: #dcfce7; max-width: 220px; }
 }
 .component-item .clabel { color: #9ca3af; display: block; font-size: 0.65em; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
 .component-item .cval   { color: #d1fae5; word-break: break-all; }
+/* ─── RIP ORDER PANEL ────────────────────────────────── */
+#rip-order-panel {
+  margin-top: 14px;
+  border-top: 1px solid #1f2937;
+  padding-top: 14px;
+}
+#rip-order-panel h3 {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin-bottom: 4px;
+}
+#rip-order-panel .rip-hint {
+  font-size: 0.72rem;
+  color: #6b7280;
+  margin-bottom: 10px;
+  line-height: 1.5;
+  font-family: var(--serif);
+  font-style: italic;
+}
+#rip-order-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+#rip-order-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 5px;
+  padding: 6px 8px;
+  cursor: grab;
+  user-select: none;
+  transition: background 0.1s, opacity 0.15s;
+}
+#rip-order-list li:active { cursor: grabbing; }
+#rip-order-list li.drag-over { border-color: #4ade80; background: #064e3b; }
+#rip-order-list li.dragging { opacity: 0.4; }
+.rip-handle {
+  color: #4b5563;
+  font-size: 0.9rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.rip-index {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: #4b5563;
+  min-width: 14px;
+  flex-shrink: 0;
+}
+.rip-name {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: #d1fae5;
+  flex: 1;
+}
+.rip-arrows {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex-shrink: 0;
+}
+.rip-arrows button {
+  background: none;
+  border: none;
+  color: #4b5563;
+  cursor: pointer;
+  font-size: 0.65rem;
+  line-height: 1;
+  padding: 1px 3px;
+  border-radius: 3px;
+  transition: color 0.1s, background 0.1s;
+}
+.rip-arrows button:hover:not(:disabled) { color: #d1fae5; background: #1f2937; }
+.rip-arrows button:disabled { opacity: 0.25; cursor: default; }
+.rip-order-actions {
+  display: flex;
+  gap: 6px;
+}
+.btn-reset-order {
+  flex: 1;
+  padding: 7px;
+  background: #1f2937;
+  color: #9ca3af;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-reset-order:hover { background: #374151; color: #d1fae5; }
+.btn-run {
+  flex: 2;
+  padding: 7px;
+  background: #065f46;
+  color: #d1fae5;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-run:hover { background: #047857; }
 </style>
 </head>
 <body>
@@ -429,7 +543,17 @@ q2:b>q1
 q2:a,b>q2
 q2:$>qa</textarea>
 
-      <button class="btn-convert" id="btn-convert">Convert →</button>
+      <button class="btn-convert" id="btn-convert">Load FSM →</button>
+
+      <div id="rip-order-panel" hidden>
+        <h3>Ripping Order</h3>
+        <p class="rip-hint">Drag or use ↑↓ to reorder. States are ripped top-to-bottom.</p>
+        <ul id="rip-order-list"></ul>
+        <div class="rip-order-actions">
+          <button class="btn-reset-order" id="btn-reset-order">↺ Reset</button>
+          <button class="btn-run" id="btn-run">Run Conversion →</button>
+        </div>
+      </div>
       <div class="error-box hidden" id="error-box"></div>
 
       <div class="format-section">
@@ -443,7 +567,7 @@ q2:$>qa</textarea>
 <span class="comment">$ = ε (epsilon)</span></pre>
       </div>
     </div>
-    <div class="sidebar-footer">States ripped in #states order · ∅ edges omitted from diagrams</div>
+    <div class="sidebar-footer">Drag the Ripping Order list to customize · ∅ edges omitted from diagrams</div>
   </aside>
 
   <!-- ─── OUTPUT ──────────────────────────── -->
@@ -646,14 +770,14 @@ function ripState(gnfa, qrip) {
 // ================================================================
 // BUILD ALL STAGES
 // ================================================================
-function buildStages(text) {
+function buildStages(text, ripOrder) {
   const parsed = parseFSM(text);
   const stages = [];
 
   let gnfa = setupGNFA(parsed);
   stages.push({ type: 'setup', title: 'Initial GNFA', gnfa: cloneGNFA(gnfa), notes: gnfa.setupNotes });
 
-  const interior = gnfa.states.filter(s => s !== gnfa.qs && s !== gnfa.qa);
+  const interior = ripOrder ?? gnfa.states.filter(s => s !== gnfa.qs && s !== gnfa.qa);
   for (const qrip of interior) {
     const r = ripState(gnfa, qrip);
     gnfa = { states: r.states, qs: gnfa.qs, qa: gnfa.qa, transitions: r.transitions };
@@ -824,18 +948,107 @@ function escHtml(s) {
 }
 
 // ================================================================
-// MAIN
+// MAIN — two-step: Load → Reorder → Convert
 // ================================================================
-document.getElementById('btn-convert').addEventListener('click', async () => {
+
+let _defaultRipOrder = [];   // original declaration order
+let _currentRipOrder = [];   // user-modified order
+let _dragSrcIndex = null;
+
+function renderRipList() {
+  const ul = document.getElementById('rip-order-list');
+  ul.innerHTML = '';
+  _currentRipOrder.forEach((name, i) => {
+    const li = document.createElement('li');
+    li.draggable = true;
+    li.dataset.index = i;
+    li.innerHTML = `
+      <span class="rip-handle">⠿</span>
+      <span class="rip-index">${i + 1}.</span>
+      <span class="rip-name">${escHtml(name)}</span>
+      <span class="rip-arrows">
+        <button data-dir="up" title="Move up" ${i === 0 ? 'disabled' : ''}>▲</button>
+        <button data-dir="down" title="Move down" ${i === _currentRipOrder.length - 1 ? 'disabled' : ''}>▼</button>
+      </span>`;
+
+    // Arrow buttons
+    li.querySelectorAll('button[data-dir]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const dir = btn.dataset.dir;
+        const idx = parseInt(li.dataset.index, 10);
+        const swapWith = dir === 'up' ? idx - 1 : idx + 1;
+        if (swapWith < 0 || swapWith >= _currentRipOrder.length) return;
+        [_currentRipOrder[idx], _currentRipOrder[swapWith]] = [_currentRipOrder[swapWith], _currentRipOrder[idx]];
+        renderRipList();
+      });
+    });
+
+    // Drag-and-drop
+    li.addEventListener('dragstart', e => {
+      _dragSrcIndex = i;
+      li.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    li.addEventListener('dragend', () => {
+      li.classList.remove('dragging');
+      document.querySelectorAll('#rip-order-list li').forEach(el => el.classList.remove('drag-over'));
+    });
+    li.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('#rip-order-list li').forEach(el => el.classList.remove('drag-over'));
+      li.classList.add('drag-over');
+    });
+    li.addEventListener('drop', e => {
+      e.preventDefault();
+      const dst = i;
+      if (_dragSrcIndex === null || _dragSrcIndex === dst) return;
+      const item = _currentRipOrder.splice(_dragSrcIndex, 1)[0];
+      _currentRipOrder.splice(dst, 0, item);
+      _dragSrcIndex = null;
+      renderRipList();
+    });
+
+    ul.appendChild(li);
+  });
+}
+
+document.getElementById('btn-convert').addEventListener('click', () => {
+  const text = document.getElementById('fsm-input').value;
+  const errBox = document.getElementById('error-box');
+  errBox.classList.add('hidden');
+
+  let parsed, gnfa;
+  try {
+    parsed = parseFSM(text);
+    gnfa = setupGNFA(parsed);
+  } catch (e) {
+    errBox.textContent = '⚠ ' + e.message;
+    errBox.classList.remove('hidden');
+    return;
+  }
+
+  _defaultRipOrder = gnfa.states.filter(s => s !== gnfa.qs && s !== gnfa.qa);
+  _currentRipOrder = [..._defaultRipOrder];
+  renderRipList();
+  document.getElementById('rip-order-panel').hidden = false;
+});
+
+document.getElementById('btn-reset-order').addEventListener('click', () => {
+  _currentRipOrder = [..._defaultRipOrder];
+  renderRipList();
+});
+
+document.getElementById('btn-run').addEventListener('click', async () => {
   const text = document.getElementById('fsm-input').value;
   const errBox = document.getElementById('error-box');
   const welcome = document.getElementById('welcome');
-
   errBox.classList.add('hidden');
 
   let stages;
   try {
-    stages = buildStages(text);
+    stages = buildStages(text, _currentRipOrder);
   } catch (e) {
     errBox.textContent = '⚠ ' + e.message;
     errBox.classList.remove('hidden');
