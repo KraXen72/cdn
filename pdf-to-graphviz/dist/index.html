@@ -217,8 +217,27 @@ footer {
 #status-dot.err { background: var(--red); }
 #status-dot.busy { background: var(--amber); animation: pulse .8s infinite alternate; }
 @keyframes pulse { to { opacity: .3; } }
+/* ── GRAPH TABS ── */
+#graph-tabs-bar {
+  display: none; align-items: center; gap: 8px;
+  padding: 5px 12px; flex-shrink: 0;
+  background: var(--bg3); border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+#graph-tabs-bar.show { display: flex; }
+#graph-tabs-label { color: var(--dim); font-family: var(--mono); font-size: 11px; flex-shrink: 0; }
+#graph-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.graph-tab-btn {
+  font-family: var(--ui); font-size: 11px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 2px;
+  background: var(--bg4); border: 1px solid var(--border);
+  color: var(--dim); cursor: pointer; transition: color .15s, border-color .15s, background .15s;
+}
+.graph-tab-btn:hover { color: var(--text); border-color: var(--amber); }
+.graph-tab-btn.active { background: var(--amber); color: #0c0f16; border-color: transparent; }
 </style>
-  <script type="module" crossorigin src="./assets/index-qOpb4EEg.js"></script>
+  <script type="module" crossorigin src="./assets/index-C_oWM5hn.js"></script>
 </head>
 <body>
 
@@ -246,6 +265,11 @@ footer {
         <button class="btn-small" id="zoom-reset-btn" title="Reset zoom">⊙</button>
       </span>
       <span class="toolbar-right" id="page-info"></span>
+    </div>
+
+    <div id="graph-tabs-bar">
+      <span id="graph-tabs-label">Graph</span>
+      <div id="graph-tabs" role="tablist"></div>
     </div>
 
     <div class="legend" id="legend">
