@@ -46,7 +46,15 @@ header p { font-size: 12px; color: var(--dim); font-family: var(--mono); }
 }
 
 /* ── MAIN ── */
-main { display: grid; grid-template-columns: 1fr 400px; flex: 1; overflow: hidden; }
+main { display: grid; grid-template-columns: 1fr 8px var(--sidebar-w, 400px); flex: 1; overflow: hidden; }
+
+.resize-handle {
+  cursor: col-resize;
+  background: var(--border);
+  transition: background .15s;
+  position: relative; z-index: 1;
+}
+.resize-handle:hover, .resize-handle.dragging { background: var(--amber); }
 
 /* ── LEFT PANEL ── */
 .left { display: flex; flex-direction: column; border-right: 1px solid var(--border); overflow: hidden; }
@@ -210,7 +218,7 @@ footer {
 #status-dot.busy { background: var(--amber); animation: pulse .8s infinite alternate; }
 @keyframes pulse { to { opacity: .3; } }
 </style>
-  <script type="module" crossorigin src="./assets/index-DOw3VKCc.js"></script>
+  <script type="module" crossorigin src="./assets/index-qOpb4EEg.js"></script>
 </head>
 <body>
 
@@ -231,6 +239,12 @@ footer {
       <button class="btn-primary" id="analyze-btn">⟳ Analyze</button>
       <button class="btn-small" id="reload-btn" title="Load different PDF">↩ New PDF</button>
       <button class="btn-small" id="toggle-overlay-btn" title="Toggle detection overlay">Overlay ✓</button>
+      <span style="display:flex;align-items:center;gap:3px">
+        <button class="btn-small" id="zoom-out-btn" title="Zoom out (Ctrl+scroll)">−</button>
+        <span id="zoom-label" style="font-family:var(--mono);font-size:11px;color:var(--dim);min-width:3.2em;text-align:center">100%</span>
+        <button class="btn-small" id="zoom-in-btn" title="Zoom in">+</button>
+        <button class="btn-small" id="zoom-reset-btn" title="Reset zoom">⊙</button>
+      </span>
       <span class="toolbar-right" id="page-info"></span>
     </div>
 
@@ -254,7 +268,9 @@ footer {
         <canvas id="overlay-canvas"></canvas>
       </div>
     </div>
-  </div>
+  </div><!-- .left -->
+
+  <div class="resize-handle" id="resize-handle"></div>
 
   <!-- RIGHT: output -->
   <div class="right">

@@ -137,16 +137,18 @@ function drawOverlay(result, viewport) {
   for (const n of result.nodes) {
     const [cx, cy] = vp({x:n.x, y:n.y});
     const r = n.r * viewport.scale;
-    ctx.strokeStyle = n.accepting ? '#4ecdc4' : '#e8a428';
+    const nodeColor = n.accepting ? '#4ecdc4' : '#e8a428';
+    ctx.fillStyle   = nodeColor;
+    ctx.strokeStyle = nodeColor;
     ctx.lineWidth   = 2.5;
-    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill(); ctx.stroke();
     if (n.accepting) {
       ctx.beginPath(); ctx.arc(cx, cy, r*0.82, 0, Math.PI*2); ctx.stroke();
     }
     if (n.label) {
       const fs = Math.max(9, Math.min(13, r * 0.65));
       ctx.font         = `bold ${fs}px IBM Plex Mono`;
-      ctx.fillStyle    = n.accepting ? '#4ecdc4' : '#e8a428';
+      ctx.fillStyle    = '#0c0f16';
       ctx.textAlign    = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(n.label, cx, cy);
@@ -206,6 +208,33 @@ function renderDebug(result) {
 
 // ── Main flow ──────────────────────────────────────────────────
 let pdfDoc = null;
+const BASE_SCALE = 1.6;
+let pdfZoom = 1.0;
+let currentPage = null;
+let currentResult = null;
+
+async function renderAtZoom() {
+  if (!currentPage || !currentResult) return;
+  const scale    = BASE_SCALE * pdfZoom;
+  const viewport = currentPage.getViewport({ scale });
+
+  const pdfC = $('pdf-canvas'), ovC = $('overlay-canvas'), ci = $('canvas-inner');
+  pdfC.width = ovC.width = viewport.width;
+  pdfC.height = ovC.height = viewport.height;
+  ci.style.width  = viewport.width  + 'px';
+  ci.style.height = viewport.height + 'px';
+  pdfC.style.display = ovC.style.display = 'block';
+
+  const ctx = pdfC.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, pdfC.width, pdfC.height);
+  await currentPage.render({ canvasContext: ctx, viewport }).promise;
+
+  $('page-info').textContent = `${Math.round(viewport.width)} × ${Math.round(viewport.height)} px`;
+  $('zoom-label').textContent = Math.round(pdfZoom * 100) + '%';
+
+  drawOverlay(currentResult, viewport);
+}
 
 async function loadPDF(file) {
   setStatus('Loading PDF…', 'busy');
@@ -235,45 +264,34 @@ async function analyzePage(num) {
   if (!pdfDoc) return;
   setStatus(`Analyzing page ${num}…`, 'busy');
   try {
-    const page     = await pdfDoc.getPage(num);
-    const scale    = 1.6;
-    const viewport = page.getViewport({ scale });
+    const page = await pdfDoc.getPage(num);
+    currentPage = page;
 
-    const pdfC = $('pdf-canvas'), ovC = $('overlay-canvas'), ci = $('canvas-inner');
-    pdfC.width = ovC.width = viewport.width;
-    pdfC.height = ovC.height = viewport.height;
-    ci.style.width  = viewport.width  + 'px';
-    ci.style.height = viewport.height + 'px';
-    pdfC.style.display = ovC.style.display = 'block';
-
-    const ctx = pdfC.getContext('2d');
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, pdfC.width, pdfC.height);
-    await page.render({ canvasContext: ctx, viewport }).promise;
-    $('page-info').textContent = `${Math.round(viewport.width)} × ${Math.round(viewport.height)} px`;
+    // Run analysis at base scale (geometry is scale-independent)
+    const viewport = page.getViewport({ scale: BASE_SCALE });
 
     const opList      = await page.getOperatorList();
     const extractor   = new PathExtractor(pdfjsLib.OPS);
     const paths       = extractor.extract(opList.fnArray, opList.argsArray);
     const textContent = await page.getTextContent();
-    const result      = analyzeGraph(paths, textContent.items);
+    currentResult     = analyzeGraph(paths, textContent.items);
 
-    drawOverlay(result, viewport);
+    // Render canvas at current zoom
+    await renderAtZoom();
     $('legend').classList.add('show');
 
-    const dot   = generateDOT(result);
-    const plain = generatePlain(result);
+    const dot   = generateDOT(currentResult);
+    const plain = generatePlain(currentResult);
     showOutput('dot',   dot);
     showOutput('plain', plain);
-    renderDebug(result);
-    $('debug-content').style.display   = 'block';
+    renderDebug(currentResult);
+    $('debug-content').style.display    = 'block';
     $('debug-placeholder').style.display = 'none';
 
-    // Render graph (non-blocking)
     renderGraphviz(dot);
 
     setStatus(
-      `Page ${num}: ${result.stats.nodes} nodes · ${result.stats.edges} edges · ${result.confidence}% confidence`,
+      `Page ${num}: ${currentResult.stats.nodes} nodes · ${currentResult.stats.edges} edges · ${currentResult.confidence}% confidence`,
       'ok'
     );
   } catch (e) {
@@ -355,4 +373,59 @@ $('toggle-overlay-btn').addEventListener('click', () => {
 $('engine-sel').addEventListener('change', () => {
   const dot = $('dot-out').value;
   if (dot) renderGraphviz(dot);
+});
+
+// ── PDF canvas zoom ────────────────────────────────────────────
+function stepZoom(delta) {
+  pdfZoom = Math.min(5, Math.max(0.2, +(pdfZoom + delta).toFixed(2)));
+  renderAtZoom();
+}
+$('zoom-in-btn').addEventListener('click',    () => stepZoom(+0.25));
+$('zoom-out-btn').addEventListener('click',   () => stepZoom(-0.25));
+$('zoom-reset-btn').addEventListener('click', () => { pdfZoom = 1.0; renderAtZoom(); });
+
+$('canvas-wrap').addEventListener('wheel', e => {
+  if (!currentPage) return;
+  if (!e.ctrlKey && !e.metaKey) return;
+  e.preventDefault();
+  stepZoom(e.deltaY < 0 ? +0.15 : -0.15);
+}, { passive: false });
+
+// ── Arrow key page navigation ──────────────────────────────────
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement?.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (!pdfDoc) return;
+  const sel = $('page-sel');
+  const cur = +sel.value;
+  if (e.key === 'ArrowRight' && cur < pdfDoc.numPages) {
+    sel.value = cur + 1;
+    analyzePage(cur + 1);
+  } else if (e.key === 'ArrowLeft' && cur > 1) {
+    sel.value = cur - 1;
+    analyzePage(cur - 1);
+  }
+});
+
+// ── Resizable sidebar ──────────────────────────────────────────
+const resizeHandle = $('resize-handle');
+let _resizing = false;
+
+resizeHandle.addEventListener('mousedown', e => {
+  _resizing = true;
+  resizeHandle.classList.add('dragging');
+  e.preventDefault();
+});
+document.addEventListener('mousemove', e => {
+  if (!_resizing) return;
+  const mainEl = document.querySelector('main');
+  const mainRect = mainEl.getBoundingClientRect();
+  const newW = Math.max(200, Math.min(900, mainRect.right - e.clientX - 4));
+  mainEl.style.setProperty('--sidebar-w', newW + 'px');
+  if (_panZoomInstance) { _panZoomInstance.resize(); }
+});
+document.addEventListener('mouseup', () => {
+  if (!_resizing) return;
+  _resizing = false;
+  resizeHandle.classList.remove('dragging');
 });
