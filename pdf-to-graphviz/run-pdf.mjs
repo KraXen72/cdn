@@ -16,7 +16,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl.href;
 import { PathExtractor, analyzeGraphs, generateDOT, generatePlain } from './src/extractor.js';
 
 const PAGE_NUM = parseInt(process.argv[2] || '2', 10);
-const PDF_PATH = join(__dirname, 'practicum-a-2-exercises5.pdf');
+const PDF_PATH = join(__dirname, 'test_pdf', 'w4a - vragen2.pdf');
 
 const data = readFileSync(PDF_PATH);
 const pdf  = await pdfjsLib.getDocument({ data: new Uint8Array(data.buffer) }).promise;

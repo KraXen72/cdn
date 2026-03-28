@@ -437,11 +437,27 @@ export function analyzeGraph(paths, textItems) {
   }
 
   // ── Assign text to nodes ─────────────────────────────────────
+  // Two-pass: first assign only non-transition-looking text (no →), then
+  // fall back to any text if node still has no label. This prevents
+  // transition labels (which always contain →) from being used as state names.
+  const ARROW_RE = /→|->|,R|,L/;  // patterns found in TM transition labels
   for (const g of textGroups) {
+    if (ARROW_RE.test(g.text)) continue; // skip likely transition labels in pass 1
     let best = -1, bestD = Infinity;
     for (let i = 0; i < nodes.length; i++) {
       const d = Math.hypot(g.x-nodes[i].x, g.y-nodes[i].y);
       if (d < nodes[i].r * 1.6 && d < bestD) { bestD = d; best = i; }
+    }
+    if (best >= 0) { nodes[best].label = (nodes[best].label + g.text).trim(); g.assigned = true; }
+  }
+  // Pass 2: for nodes still unlabelled, allow any text (including transition-like)
+  for (const g of textGroups) {
+    if (g.assigned) continue;
+    let best = -1, bestD = Infinity;
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].label) continue; // already labelled
+      const d = Math.hypot(g.x-nodes[i].x, g.y-nodes[i].y);
+      if (d < nodes[i].r * 1.2 && d < bestD) { bestD = d; best = i; } // tighter radius for fallback
     }
     if (best >= 0) { nodes[best].label = (nodes[best].label + g.text).trim(); g.assigned = true; }
   }
@@ -726,4 +742,41 @@ export function analyzeGraphs(paths, textItems) {
       confidence,
     };
   });
+}
+
+// ── Mermaid stateDiagram-v2 output ──────────────────────────────
+export function generateMermaid(result) {
+  const { nodes, edges } = result;
+  const lines = ['stateDiagram-v2'];
+
+  function safeId(label) {
+    if (!label) return 'unknown';
+    // Mermaid state IDs: wrap in quotes to allow special chars
+    return `"${label.replace(/"/g, "'")}"`;
+  }
+
+  // Initial arrow
+  const initEdge = edges.find(e => e.isInitial && e.to >= 0);
+  if (initEdge) {
+    lines.push(`  [*] --> ${safeId(nodes[initEdge.to]?.label ?? `q${initEdge.to}`)}`);
+  }
+
+  // Regular transitions
+  for (const e of edges) {
+    if (e.isInitial) continue;
+    if (e.from < 0 || e.to < 0) continue;
+    const from = safeId(nodes[e.from]?.label ?? `q${e.from}`);
+    const to   = safeId(nodes[e.to]?.label   ?? `q${e.to}`);
+    const lbl  = e.label ? ` : ${e.label}` : '';
+    lines.push(`  ${from} --> ${to}${lbl}`);
+  }
+
+  // Accepting states → [*]
+  for (const n of nodes) {
+    if (n.accepting) {
+      lines.push(`  ${safeId(n.label)} --> [*]`);
+    }
+  }
+
+  return lines.join('\n');
 }
