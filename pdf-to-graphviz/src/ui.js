@@ -3,7 +3,7 @@
  * Imports shared logic from extractor.js, wires DOM events, renders Graphviz SVG.
  */
 import * as pdfjsLib from 'pdfjs-dist';
-import { PathExtractor, analyzeGraph, analyzeGraphs, generateDOT, generatePlain } from './extractor.js';
+import { PathExtractor, analyzeGraph, analyzeGraphs, generateDOT, generatePlain, generateAutomaton } from './extractor.js';
 import svgPanZoom from 'svg-pan-zoom';
 
 // pdfjs worker — Vite will copy the worker to the output
@@ -267,10 +267,12 @@ function selectGraph(idx) {
     btn.setAttribute('aria-selected', i === idx ? 'true' : 'false');
   });
   const result = currentResults[idx];
-  const dot   = generateDOT(result);
-  const plain = generatePlain(result);
-  showOutput('dot',   dot);
-  showOutput('plain', plain);
+  const dot       = generateDOT(result);
+  const plain     = generatePlain(result);
+  const automaton = generateAutomaton(result);
+  showOutput('dot',       dot);
+  showOutput('plain',     plain);
+  showOutput('automaton', automaton);
   renderDebug(result);
   renderGraphviz(dot);
   // Redraw overlay
@@ -330,10 +332,12 @@ async function analyzePage(num) {
     $('legend').classList.add('show');
 
     const result = currentResults[0];
-    const dot   = generateDOT(result);
-    const plain = generatePlain(result);
-    showOutput('dot',   dot);
-    showOutput('plain', plain);
+    const dot       = generateDOT(result);
+    const plain     = generatePlain(result);
+    const automaton = generateAutomaton(result);
+    showOutput('dot',       dot);
+    showOutput('plain',     plain);
+    showOutput('automaton', automaton);
     renderDebug(result);
     $('debug-content').style.display    = 'block';
     $('debug-placeholder').style.display = 'none';
@@ -379,6 +383,14 @@ $('copy-plain').addEventListener('click', () => {
     setTimeout(() => setStatus('Ready', 'ok'), 2000);
   });
 });
+$('copy-automaton').addEventListener('click', () => {
+  const v = $('automaton-out').value;
+  if (!v) return;
+  navigator.clipboard.writeText(v).then(() => {
+    setStatus('Automaton copied ✓', 'ok');
+    setTimeout(() => setStatus('Ready', 'ok'), 2000);
+  });
+});
 $('page-sel').addEventListener('change', e => analyzePage(+e.target.value));
 $('analyze-btn').addEventListener('click', () => analyzePage(+$('page-sel').value));
 $('reload-btn').addEventListener('click', () => {
@@ -392,7 +404,7 @@ $('reload-btn').addEventListener('click', () => {
   $('dropzone').classList.remove('hidden');
   $('pdf-canvas').style.display = $('overlay-canvas').style.display = 'none';
   $('canvas-inner').style.display = 'none';
-  ['dot', 'plain'].forEach(t => {
+  ['dot', 'plain', 'automaton'].forEach(t => {
     $(`${t}-placeholder`).style.display = '';
     $(`${t}-out`).style.display = 'none';
   });

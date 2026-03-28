@@ -578,6 +578,65 @@ export function generatePlain(result) {
 }
 
 /**
+ * generateAutomaton — outputs the automaton in the simple text format:
+ *   #states / #initial / #accepting / #alphabet / #transitions
+ * $ is used for epsilon (empty string) transitions.
+ */
+export function generateAutomaton(result) {
+  const { nodes, edges } = result;
+  const L = [];
+
+  // #states
+  L.push('#states');
+  for (const n of nodes) L.push(n.label || '?');
+
+  // #initial — states pointed to by isInitial edges
+  L.push('#initial');
+  const initialEdges = edges.filter(e => e.isInitial && e.to >= 0);
+  for (const e of initialEdges) L.push(nodes[e.to].label || '?');
+
+  // #accepting
+  L.push('#accepting');
+  for (const n of nodes.filter(n => n.accepting)) L.push(n.label || '?');
+
+  // #alphabet — collect all unique non-epsilon symbols from edge labels
+  L.push('#alphabet');
+  const symbols = new Set();
+  for (const e of edges) {
+    if (e.isInitial) continue;
+    const lbl = e.label ? e.label.trim() : '';
+    if (!lbl) continue; // epsilon — no symbol
+    // Labels may be comma-separated (e.g. "a,b")
+    for (const sym of lbl.split(',').map(s => s.trim()).filter(Boolean)) {
+      symbols.add(sym);
+    }
+  }
+  for (const sym of [...symbols].sort()) L.push(sym);
+
+  // #transitions
+  L.push('#transitions');
+  for (const e of edges) {
+    if (e.isInitial) {
+      // Initial arrow: from virtual start (qs-style) to target — skip, handled by #initial
+      continue;
+    }
+    if (e.from < 0 || e.to < 0) continue;
+    const from = nodes[e.from].label || '?';
+    const to   = nodes[e.to].label   || '?';
+    const lbl  = e.label ? e.label.trim() : '';
+    if (!lbl) {
+      // epsilon transition
+      L.push(`${from}:$>${to}`);
+    } else {
+      // may be "a,b" style — keep as-is (comma-separated is the format)
+      L.push(`${from}:${lbl}>${to}`);
+    }
+  }
+
+  return L.join('\n');
+}
+
+/**
  * analyzeGraphs — detect multiple disconnected automata on one page.
  * Returns an array of result objects (one per connected component).
  * Falls back to [analyzeGraph(paths, textItems)] if only one cluster found.

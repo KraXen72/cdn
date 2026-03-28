@@ -300,6 +300,7 @@ footer {
     <div class="tabs">
       <button class="tab-btn active" data-tab="dot">DOT</button>
       <button class="tab-btn" data-tab="plain">Plain</button>
+      <button class="tab-btn" data-tab="automaton">Automaton</button>
       <button class="tab-btn" data-tab="debug">Debug</button>
     </div>
 
@@ -339,6 +340,20 @@ footer {
       </div>
       <div class="panel-footer">
         <button class="btn-small" id="copy-plain">Copy Text</button>
+      </div>
+    </div>
+
+    <!-- Automaton tab -->
+    <div class="tab-panel" id="tab-automaton">
+      <div class="output-scroll">
+        <div id="automaton-placeholder" class="placeholder-msg">
+          <span class="ph-icon">⊛</span>
+          Automaton text format<br>appears here after analysis
+        </div>
+        <textarea class="code-out" id="automaton-out" readonly style="display:none"></textarea>
+      </div>
+      <div class="panel-footer">
+        <button class="btn-small" id="copy-automaton">Copy Automaton</button>
       </div>
     </div>
 
