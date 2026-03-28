@@ -13,7 +13,7 @@ const workerUrl = new URL('./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl.href;
 
 // Import shared logic
-import { PathExtractor, analyzeGraphs, generateDOT, generatePlain } from './src/extractor.js';
+import { PathExtractor, analyzeGraphs, generateDOT, generatePlain, generateMermaid } from './src/extractor.js';
 
 const PAGE_NUM = parseInt(process.argv[2] || '2', 10);
 const PDF_PATH = join(__dirname, 'test_pdf', 'w4a - vragen2.pdf');
@@ -51,7 +51,14 @@ results.forEach((result, gi) => {
 
 // DOT output for all graphs to stdout (separated by comments)
 results.forEach((result, gi) => {
-  console.log(`// === Graph ${gi + 1} ===`);
+  console.log(`// === Graph ${gi + 1} — DOT ===`);
   console.log(generateDOT(result));
+  console.log('');
+});
+
+// Mermaid output for all graphs to stdout
+results.forEach((result, gi) => {
+  console.log(`// === Graph ${gi + 1} — Mermaid ===`);
+  console.log(generateMermaid(result));
   console.log('');
 });

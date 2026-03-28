@@ -77,7 +77,9 @@ async function renderGraphviz(dotString) {
 
     // Keep pan-zoom in sync when the split pane is resized
     _panZoomRO = new ResizeObserver(() => {
-      if (_panZoomInstance) { _panZoomInstance.resize(); _panZoomInstance.fit(); _panZoomInstance.center(); }
+      try {
+        if (_panZoomInstance) { _panZoomInstance.resize(); _panZoomInstance.fit(); _panZoomInstance.center(); }
+      } catch (_) { /* SVGMatrix may be non-invertible if element is hidden/zero-size */ }
     });
     _panZoomRO.observe(preview);
   } catch (e) {
