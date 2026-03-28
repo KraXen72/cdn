@@ -64,20 +64,32 @@ async function renderGraphviz(dotString) {
     preview.innerHTML = '';
     preview.appendChild(svgEl);
 
-    _panZoomInstance = svgPanZoom(svgEl, {
-      zoomEnabled:          true,
-      panEnabled:           true,
-      controlIconsEnabled:  true,
-      fit:                  true,
-      center:               true,
-      minZoom:              0.1,
-      maxZoom:              20,
-      zoomScaleSensitivity: 0.3,
-    });
+    // Only init svgPanZoom when the container is visible and has non-zero size
+    // (if DOT tab is hidden, defer until it becomes visible via the ResizeObserver)
+    const tryInitPanZoom = () => {
+      if (_panZoomInstance) return;
+      const { width, height } = preview.getBoundingClientRect();
+      if (width === 0 || height === 0) return; // not visible yet
+      try {
+        _panZoomInstance = svgPanZoom(svgEl, {
+          zoomEnabled:          true,
+          panEnabled:           true,
+          controlIconsEnabled:  true,
+          fit:                  true,
+          center:               true,
+          minZoom:              0.1,
+          maxZoom:              20,
+          zoomScaleSensitivity: 0.3,
+        });
+      } catch (_) { /* SVG not ready */ }
+    };
 
-    // Keep pan-zoom in sync when the split pane is resized
+    tryInitPanZoom();
+
+    // Keep pan-zoom in sync when the split pane is resized (also used to init if deferred)
     _panZoomRO = new ResizeObserver(() => {
       try {
+        tryInitPanZoom();
         if (_panZoomInstance) { _panZoomInstance.resize(); _panZoomInstance.fit(); _panZoomInstance.center(); }
       } catch (_) { /* SVGMatrix may be non-invertible if element is hidden/zero-size */ }
     });
@@ -385,6 +397,7 @@ async function analyzePage(num) {
     $('debug-placeholder').style.display = 'none';
 
     renderGraphviz(dot);
+    renderMermaid(result);
 
     const graphCount = currentResults.length;
     const totalNodes = currentResults.reduce((s, r) => s + r.stats.nodes, 0);
@@ -449,10 +462,11 @@ $('reload-btn').addEventListener('click', () => {
   $('dropzone').classList.remove('hidden');
   $('pdf-canvas').style.display = $('overlay-canvas').style.display = 'none';
   $('canvas-inner').style.display = 'none';
-  ['dot', 'plain', 'automaton'].forEach(t => {
+  ['dot', 'plain', 'automaton', 'mermaid'].forEach(t => {
     $(`${t}-placeholder`).style.display = '';
     $(`${t}-out`).style.display = 'none';
   });
+  $('mermaid-preview').innerHTML = '';
   $('debug-placeholder').style.display = '';
   $('debug-content').style.display = 'none';
   const preview = $('graph-preview');
