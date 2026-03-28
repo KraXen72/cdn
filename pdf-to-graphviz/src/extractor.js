@@ -847,8 +847,7 @@ export function generateMermaid(result) {
   // Emit %%{init}%% front-matter with elk layout for smoother edge routing
   // and padding proportional to the estimated diagram size
   const pad = Math.round((medR || 20) * 3);
-  const initConfig = { theme: 'default', layout: 'elk' };
-  lines.push(`%%{init: ${JSON.stringify(initConfig)}}%%`);
+  lines.push(`%%{init: {"theme":"default"}}%%`);
   lines.push('stateDiagram-v2');
 
   // Mermaid state IDs must be alphanumeric — map node index → safe ID
