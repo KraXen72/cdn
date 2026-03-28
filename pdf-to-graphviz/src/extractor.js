@@ -586,7 +586,7 @@ export function analyzeGraphs(paths, textItems) {
   const full = analyzeGraph(paths, textItems);
   if (full.nodes.length === 0) return [full];
 
-  const threshold = full.medR * 8; // nodes closer than this are in the same graph
+  const threshold = full.medR * 5; // nodes closer than this are in the same graph
   const n = full.nodes.length;
   const parent = Array.from({ length: n }, (_, i) => i);
 
@@ -597,18 +597,18 @@ export function analyzeGraphs(paths, textItems) {
     parent[find(a)] = find(b);
   }
 
-  // Connect spatially close nodes
+  // Connect nodes linked by an edge (primary: handles all reachable pairs)
+  for (const e of full.edges) {
+    if (e.from >= 0 && e.to >= 0) union(e.from, e.to);
+  }
+
+  // Connect spatially close nodes (fallback for isolated nodes not reached by edges)
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
       const dx = full.nodes[i].x - full.nodes[j].x;
       const dy = full.nodes[i].y - full.nodes[j].y;
       if (Math.hypot(dx, dy) < threshold) union(i, j);
     }
-  }
-
-  // Connect nodes linked by an edge (handles spread-out diagrams)
-  for (const e of full.edges) {
-    if (e.from >= 0 && e.to >= 0) union(e.from, e.to);
   }
 
   // Group node indices by component root
