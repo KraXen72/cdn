@@ -143,12 +143,11 @@ select:focus, button:focus { outline: 1px solid var(--amber); }
 
 #graph-preview {
   flex: 1 1 50%; min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   background: #fff;
-  padding: 8px;
-  display: flex; align-items: flex-start; justify-content: center;
+  position: relative;
 }
-#graph-preview svg { max-width: 100%; height: auto; }
+#graph-preview svg { width: 100%; height: 100%; display: block; }
 .gv-loading, .gv-error {
   font-family: var(--mono); font-size: 11px; padding: 14px;
   align-self: center; display: block;
@@ -230,6 +229,7 @@ footer {
       </label>
       <button class="btn-primary" id="analyze-btn">⟳ Analyze</button>
       <button class="btn-small" id="reload-btn" title="Load different PDF">↩ New PDF</button>
+      <button class="btn-small" id="toggle-overlay-btn" title="Toggle detection overlay">Overlay ✓</button>
       <span class="toolbar-right" id="page-info"></span>
     </div>
 
@@ -272,6 +272,18 @@ footer {
       <textarea id="dot-out" readonly></textarea>
       <div id="graph-preview"></div>
       <div class="panel-footer">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim)">
+          Engine
+          <select id="engine-sel" style="font-size:12px;padding:2px 6px">
+            <option value="dot">dot</option>
+            <option value="neato">neato</option>
+            <option value="circo">circo</option>
+            <option value="twopi">twopi</option>
+            <option value="fdp">fdp</option>
+            <option value="osage">osage</option>
+            <option value="patchwork">patchwork</option>
+          </select>
+        </label>
         <button class="btn-small" id="copy-dot">Copy DOT</button>
       </div>
     </div>

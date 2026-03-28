@@ -4,6 +4,7 @@
  */
 import * as pdfjsLib from 'pdfjs-dist';
 import { PathExtractor, analyzeGraph, generateDOT, generatePlain } from './extractor.js';
+import svgPanZoom from 'svg-pan-zoom';
 
 // pdfjs worker — Vite will copy the worker to the output
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.mjs?url';
@@ -37,18 +38,48 @@ async function getViz() {
   return _vizInstance;
 }
 
+let _panZoomInstance = null;
+let _panZoomRO = null;
+
 async function renderGraphviz(dotString) {
   const preview = $('graph-preview');
   if (!preview) return;
+
+  // Destroy previous pan-zoom instance before wiping the DOM
+  if (_panZoomInstance) {
+    try { _panZoomInstance.destroy(); } catch (_) {}
+    _panZoomInstance = null;
+  }
+  if (_panZoomRO) { _panZoomRO.disconnect(); _panZoomRO = null; }
+
   preview.innerHTML = '<span class="gv-loading">Rendering graph…</span>';
   try {
-    const viz   = await getViz();
-    const svgEl = viz.renderSVGElement(dotString, { engine: 'dot' });
-    svgEl.style.maxWidth = '100%';
-    svgEl.style.height   = 'auto';
-    svgEl.style.display  = 'block';
+    const viz    = await getViz();
+    const engine = $('engine-sel')?.value ?? 'dot';
+    const svgEl  = viz.renderSVGElement(dotString, { engine });
+    // svg-pan-zoom needs explicit dimensions to fill the container
+    svgEl.setAttribute('width',  '100%');
+    svgEl.setAttribute('height', '100%');
+    svgEl.style.display = 'block';
     preview.innerHTML = '';
     preview.appendChild(svgEl);
+
+    _panZoomInstance = svgPanZoom(svgEl, {
+      zoomEnabled:          true,
+      panEnabled:           true,
+      controlIconsEnabled:  true,
+      fit:                  true,
+      center:               true,
+      minZoom:              0.1,
+      maxZoom:              20,
+      zoomScaleSensitivity: 0.3,
+    });
+
+    // Keep pan-zoom in sync when the split pane is resized
+    _panZoomRO = new ResizeObserver(() => {
+      if (_panZoomInstance) { _panZoomInstance.resize(); _panZoomInstance.fit(); _panZoomInstance.center(); }
+    });
+    _panZoomRO.observe(preview);
   } catch (e) {
     preview.innerHTML = `<span class="gv-error">Graphviz error: ${e.message}</span>`;
   }
@@ -308,4 +339,20 @@ wrap.addEventListener('drop', e => {
   const f = e.dataTransfer.files[0];
   if (f?.type === 'application/pdf' || f?.name?.endsWith('.pdf')) loadPDF(f);
   else setStatus('Please drop a PDF file', 'err');
+});
+
+// ── Overlay toggle ──────────────────────────────────────────────
+$('toggle-overlay-btn').addEventListener('click', () => {
+  const ovC = $('overlay-canvas');
+  const btn = $('toggle-overlay-btn');
+  const nowVisible = ovC.style.display !== 'none';
+  ovC.style.display = nowVisible ? 'none' : 'block';
+  btn.textContent   = nowVisible ? 'Overlay ✗' : 'Overlay ✓';
+  btn.style.opacity = nowVisible ? '0.5' : '';
+});
+
+// ── Engine selector → re-render preview ────────────────────────
+$('engine-sel').addEventListener('change', () => {
+  const dot = $('dot-out').value;
+  if (dot) renderGraphviz(dot);
 });
