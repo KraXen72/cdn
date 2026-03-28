@@ -3,7 +3,7 @@
  * Imports shared logic from extractor.js, wires DOM events, renders Graphviz SVG.
  */
 import * as pdfjsLib from 'pdfjs-dist';
-import { PathExtractor, analyzeGraph, analyzeGraphs, generateDOT, generatePlain, generateAutomaton } from './extractor.js';
+import { PathExtractor, analyzeGraph, analyzeGraphs, generateDOT, generatePlain, generateAutomaton, generateMermaid } from './extractor.js';
 import svgPanZoom from 'svg-pan-zoom';
 
 // pdfjs worker — Vite will copy the worker to the output
@@ -82,6 +82,30 @@ async function renderGraphviz(dotString) {
     _panZoomRO.observe(preview);
   } catch (e) {
     preview.innerHTML = `<span class="gv-error">Graphviz error: ${e.message}</span>`;
+  }
+}
+
+// ── Mermaid rendering ──────────────────────────────────────────
+async function renderMermaid(result) {
+  const mmd = generateMermaid(result);
+  const out = $('mermaid-out');
+  out.value = mmd;
+  out.style.display = 'block';
+  $('mermaid-placeholder').style.display = 'none';
+
+  const preview = $('mermaid-preview');
+  preview.innerHTML = '';
+
+  if (!window.mermaidLib) {
+    preview.textContent = 'Mermaid library not loaded (check CDN).';
+    return;
+  }
+  try {
+    const id = 'mermaid-render-' + Date.now();
+    const { svg } = await window.mermaidLib.render(id, mmd);
+    preview.innerHTML = svg;
+  } catch (e) {
+    preview.innerHTML = `<pre style="color:red;font-size:11px;white-space:pre-wrap">${e.message}</pre>`;
   }
 }
 
@@ -275,6 +299,7 @@ function selectGraph(idx) {
   showOutput('automaton', automaton);
   renderDebug(result);
   renderGraphviz(dot);
+  renderMermaid(result);
   // Redraw overlay
   if (currentPage) {
     const scale    = BASE_SCALE * pdfZoom;
@@ -390,6 +415,9 @@ $('copy-automaton').addEventListener('click', () => {
     setStatus('Automaton copied ✓', 'ok');
     setTimeout(() => setStatus('Ready', 'ok'), 2000);
   });
+});
+$('copy-mermaid')?.addEventListener('click', () => {
+  if ($('mermaid-out').value) navigator.clipboard.writeText($('mermaid-out').value);
 });
 $('page-sel').addEventListener('change', e => analyzePage(+e.target.value));
 $('analyze-btn').addEventListener('click', () => analyzePage(+$('page-sel').value));

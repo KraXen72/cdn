@@ -7,6 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <!-- viz.js (Graphviz WASM) — exposes global Viz -->
 <script src="https://cdn.jsdelivr.net/npm/@viz-js/viz@3/lib/viz-standalone.js"></script>
+<!-- mermaid.js — exposes window.mermaidLib for stateDiagram-v2 rendering -->
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: false, theme: 'default' });
+  window.mermaidLib = mermaid;
+</script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -242,7 +248,7 @@ footer {
 
 <header>
   <h1>Automaton Extractor</h1>
-  <p>PDF (TikZ-compiled) → GraphViz DOT &nbsp;·&nbsp; geometry-only, no OCR</p>
+  <p>PDF (TikZ-compiled) → GraphViz / Mermaid &nbsp;·&nbsp; geometry-only, no OCR</p>
   <div class="badge">Beta</div>
 </header>
 
@@ -302,6 +308,7 @@ footer {
       <button class="tab-btn" data-tab="plain">Plain</button>
       <button class="tab-btn" data-tab="automaton">Automaton</button>
       <button class="tab-btn" data-tab="debug">Debug</button>
+      <button class="tab-btn" data-tab="mermaid">Mermaid</button>
     </div>
 
     <!-- DOT tab: textarea (top 50%) + graph preview (bottom 50%) -->
@@ -365,6 +372,19 @@ footer {
           Geometry detection details<br>appear here after analysis
         </div>
         <div id="debug-content" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Mermaid tab: textarea (top 40%) + mermaid diagram preview (bottom 60%) -->
+    <div class="tab-panel" id="tab-mermaid">
+      <div id="mermaid-placeholder" class="placeholder-msg">
+        <span class="ph-icon">⬡</span>
+        Mermaid stateDiagram-v2 output<br>appears here after analysis
+      </div>
+      <textarea class="code-out" id="mermaid-out" readonly style="display:none;flex:0 0 40%"></textarea>
+      <div id="mermaid-preview" style="flex:1 1 60%;background:#fff;overflow:auto;padding:8px"></div>
+      <div class="panel-footer">
+        <button class="btn-small" id="copy-mermaid">Copy Mermaid</button>
       </div>
     </div>
   </div>
