@@ -3,7 +3,7 @@
  * Imports shared logic from extractor.js, wires DOM events, renders Graphviz SVG.
  */
 import * as pdfjsLib from 'pdfjs-dist';
-import { PathExtractor, analyzeGraph, generateDOT, generatePlain } from './extractor.js';
+import { PathExtractor, analyzeGraph, analyzeGraphs, generateDOT, generatePlain } from './extractor.js';
 import svgPanZoom from 'svg-pan-zoom';
 
 // pdfjs worker — Vite will copy the worker to the output
@@ -211,10 +211,12 @@ let pdfDoc = null;
 const BASE_SCALE = 1.6;
 let pdfZoom = 1.0;
 let currentPage = null;
-let currentResult = null;
+let currentResults = [];
+let currentGraphIdx = 0;
 
 async function renderAtZoom() {
-  if (!currentPage || !currentResult) return;
+  if (!currentPage || !currentResults.length) return;
+  const result = currentResults[currentGraphIdx];
   const scale    = BASE_SCALE * pdfZoom;
   const viewport = currentPage.getViewport({ scale });
 
@@ -233,7 +235,50 @@ async function renderAtZoom() {
   $('page-info').textContent = `${Math.round(viewport.width)} × ${Math.round(viewport.height)} px`;
   $('zoom-label').textContent = Math.round(pdfZoom * 100) + '%';
 
-  drawOverlay(currentResult, viewport);
+  drawOverlay(result, viewport);
+}
+
+function buildGraphTabs(results) {
+  const bar = $('graph-tabs-bar');
+  const container = $('graph-tabs');
+  container.innerHTML = '';
+  if (results.length <= 1) {
+    bar.classList.remove('show');
+    return;
+  }
+  bar.classList.add('show');
+  results.forEach((r, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'graph-tab-btn' + (i === 0 ? ' active' : '');
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+    btn.textContent = `Graph ${i + 1}`;
+    btn.title = `${r.nodes.length} nodes · ${r.edges.length} edges · ${r.confidence}% confidence`;
+    btn.addEventListener('click', () => selectGraph(i));
+    container.appendChild(btn);
+  });
+}
+
+function selectGraph(idx) {
+  currentGraphIdx = idx;
+  // Update tab active state
+  $('graph-tabs').querySelectorAll('.graph-tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === idx);
+    btn.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+  });
+  const result = currentResults[idx];
+  const dot   = generateDOT(result);
+  const plain = generatePlain(result);
+  showOutput('dot',   dot);
+  showOutput('plain', plain);
+  renderDebug(result);
+  renderGraphviz(dot);
+  // Redraw overlay
+  if (currentPage) {
+    const scale    = BASE_SCALE * pdfZoom;
+    const viewport = currentPage.getViewport({ scale });
+    drawOverlay(result, viewport);
+  }
 }
 
 async function loadPDF(file) {
@@ -266,6 +311,7 @@ async function analyzePage(num) {
   try {
     const page = await pdfDoc.getPage(num);
     currentPage = page;
+    currentGraphIdx = 0;
 
     // Run analysis at base scale (geometry is scale-independent)
     const viewport = page.getViewport({ scale: BASE_SCALE });
@@ -274,24 +320,33 @@ async function analyzePage(num) {
     const extractor   = new PathExtractor(pdfjsLib.OPS);
     const paths       = extractor.extract(opList.fnArray, opList.argsArray);
     const textContent = await page.getTextContent();
-    currentResult     = analyzeGraph(paths, textContent.items);
+    currentResults    = analyzeGraphs(paths, textContent.items);
+
+    // Build graph tabs (hidden if only one graph)
+    buildGraphTabs(currentResults);
 
     // Render canvas at current zoom
     await renderAtZoom();
     $('legend').classList.add('show');
 
-    const dot   = generateDOT(currentResult);
-    const plain = generatePlain(currentResult);
+    const result = currentResults[0];
+    const dot   = generateDOT(result);
+    const plain = generatePlain(result);
     showOutput('dot',   dot);
     showOutput('plain', plain);
-    renderDebug(currentResult);
+    renderDebug(result);
     $('debug-content').style.display    = 'block';
     $('debug-placeholder').style.display = 'none';
 
     renderGraphviz(dot);
 
+    const graphCount = currentResults.length;
+    const totalNodes = currentResults.reduce((s, r) => s + r.stats.nodes, 0);
+    const totalEdges = currentResults.reduce((s, r) => s + r.stats.edges, 0);
     setStatus(
-      `Page ${num}: ${currentResult.stats.nodes} nodes · ${currentResult.stats.edges} edges · ${currentResult.confidence}% confidence`,
+      graphCount > 1
+        ? `Page ${num}: ${graphCount} graphs · ${totalNodes} nodes · ${totalEdges} edges`
+        : `Page ${num}: ${result.stats.nodes} nodes · ${result.stats.edges} edges · ${result.confidence}% confidence`,
       'ok'
     );
   } catch (e) {
@@ -330,6 +385,10 @@ $('reload-btn').addEventListener('click', () => {
   pdfDoc = null;
   $('toolbar').classList.remove('show');
   $('legend').classList.remove('show');
+  $('graph-tabs-bar').classList.remove('show');
+  $('graph-tabs').innerHTML = '';
+  currentResults = [];
+  currentGraphIdx = 0;
   $('dropzone').classList.remove('hidden');
   $('pdf-canvas').style.display = $('overlay-canvas').style.display = 'none';
   $('canvas-inner').style.display = 'none';

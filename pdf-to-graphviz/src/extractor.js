@@ -576,3 +576,95 @@ export function generatePlain(result) {
   L.push(`Median node radius: ${result.medR.toFixed(1)} PDF units`);
   return L.join('\n');
 }
+
+/**
+ * analyzeGraphs — detect multiple disconnected automata on one page.
+ * Returns an array of result objects (one per connected component).
+ * Falls back to [analyzeGraph(paths, textItems)] if only one cluster found.
+ */
+export function analyzeGraphs(paths, textItems) {
+  const full = analyzeGraph(paths, textItems);
+  if (full.nodes.length === 0) return [full];
+
+  const threshold = full.medR * 8; // nodes closer than this are in the same graph
+  const n = full.nodes.length;
+  const parent = Array.from({ length: n }, (_, i) => i);
+
+  function find(i) {
+    return parent[i] === i ? i : (parent[i] = find(parent[i]));
+  }
+  function union(a, b) {
+    parent[find(a)] = find(b);
+  }
+
+  // Connect spatially close nodes
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const dx = full.nodes[i].x - full.nodes[j].x;
+      const dy = full.nodes[i].y - full.nodes[j].y;
+      if (Math.hypot(dx, dy) < threshold) union(i, j);
+    }
+  }
+
+  // Connect nodes linked by an edge (handles spread-out diagrams)
+  for (const e of full.edges) {
+    if (e.from >= 0 && e.to >= 0) union(e.from, e.to);
+  }
+
+  // Group node indices by component root
+  const groups = new Map();
+  for (let i = 0; i < n; i++) {
+    const root = find(i);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root).push(i);
+  }
+
+  if (groups.size <= 1) return [full];
+
+  // Sort groups top-to-bottom, left-to-right (PDF y increases upward, so larger y = higher on page)
+  const sorted = [...groups.values()].sort((a, b) => {
+    const na = full.nodes[a[0]], nb = full.nodes[b[0]];
+    const dyDiff = nb.y - na.y; // higher on page first
+    return Math.abs(dyDiff) > full.medR * 3 ? dyDiff : na.x - nb.x; // else left-to-right
+  });
+
+  return sorted.map(nodeIdxs => {
+    const idxSet = new Set(nodeIdxs);
+    const oldToNew = new Map(nodeIdxs.map((old, ni) => [old, ni]));
+
+    const subNodes = nodeIdxs.map(oldIdx => ({
+      ...full.nodes[oldIdx],
+      id: `q${oldToNew.get(oldIdx)}`,
+    }));
+
+    const subEdges = full.edges
+      .filter(e => {
+        if (e.isInitial && e.to >= 0) return idxSet.has(e.to);
+        return (e.from >= 0 && idxSet.has(e.from)) || (e.to >= 0 && idxSet.has(e.to));
+      })
+      .map(e => ({
+        ...e,
+        from: e.from >= 0 ? (oldToNew.has(e.from) ? oldToNew.get(e.from) : -1) : e.from,
+        to:   e.to   >= 0 ? (oldToNew.has(e.to)   ? oldToNew.get(e.to)   : -1) : e.to,
+      }));
+
+    const subStats = {
+      ...full.stats,
+      nodes: subNodes.length,
+      edges: subEdges.length,
+    };
+
+    const resolvedEdges = subEdges.filter(e => (e.from >= 0 || e.isInitial) && e.to >= 0);
+    const confidence = subEdges.length
+      ? Math.round((resolvedEdges.length / subEdges.length) * 100)
+      : 100;
+
+    return {
+      ...full,
+      nodes: subNodes,
+      edges: subEdges,
+      stats: subStats,
+      confidence,
+    };
+  });
+}
