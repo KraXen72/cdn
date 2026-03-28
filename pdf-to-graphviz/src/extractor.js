@@ -210,8 +210,10 @@ function fitCircle(segs) {
   const r  = (rx + ry) / 2;
   if (r < 3) return null;
 
-  // Reject if aspect ratio is too extreme (more than 3:1 → probably not a state circle)
-  if (rx > 0 && ry > 0 && Math.max(rx, ry) / Math.min(rx, ry) > 3.0) return null;
+  // Reject if aspect ratio is too extreme (more than 1.15:1 → probably not a state circle)
+  // Real automaton states are drawn as perfect circles or near-perfect (aspect≤1.01 in practice).
+  // Aspect >1.15 means it's an ellipse, bounding arc, or page decoration.
+  if (rx > 0 && ry > 0 && Math.max(rx, ry) / Math.min(rx, ry) > 1.15) return null;
 
   // Validate: check that the cubic endpoints are roughly at equal distance from center
   const radii  = cubicPts.map(p => Math.hypot(p.x - cx, p.y - cy));
@@ -318,6 +320,13 @@ export function analyzeGraph(paths, textItems) {
   const sortedR = rawCircles.map(c => c.r).sort((a,b) => a-b);
   const medR = sortedR.length ? sortedR[Math.floor(sortedR.length/2)] : 20;
 
+  // Filter out circles that are much larger than the median — these are decorative arcs,
+  // page borders, or spurious large shapes, not automaton state circles.
+  // Keep all if there are very few circles (≤2) to avoid discarding legitimate lone states.
+  const MAX_RADIUS_RATIO = 3.0;
+  rawCircles.splice(0, rawCircles.length,
+    ...rawCircles.filter(c => c.r <= medR * MAX_RADIUS_RATIO || rawCircles.length <= 2));
+
   // ── Pass 2: arrowheads + edge paths ────────────────────────
   const arrowheads = [];
   const edgePaths  = [];
@@ -384,8 +393,9 @@ export function analyzeGraph(paths, textItems) {
       if (usedRaw.has(j)) continue;
       const nj = rawCircles[j];
       const dist = Math.hypot(ni.x-nj.x, ni.y-nj.y);
-      // Two concentric circles → accepting state (allow identical radii for some TikZ exports)
-      if (dist < Math.min(ni.r, nj.r) * 0.35) { accepting = true; usedRaw.add(j); }
+      // Two concentric circles → accepting state (double-circle).
+      // Use medR-based absolute threshold so it works regardless of the outer ring's size.
+      if (dist < Math.max(medR * 0.5, Math.min(ni.r, nj.r) * 0.35)) { accepting = true; usedRaw.add(j); }
     }
     nodes.push({ x: ni.x, y: ni.y, r: ni.r, accepting, label: '', id: `q${nodes.length}` });
   }
@@ -491,8 +501,11 @@ export function analyzeGraph(paths, textItems) {
   // fall back to any text if node still has no label. This prevents
   // transition labels (which always contain →) from being used as state names.
   const ARROW_RE = /→|->|,R|,L/;  // patterns found in TM transition labels
+  // State labels are short (≤8 chars) and contain no spaces — longer text is body prose.
+  const looksLikeStateLabel = t => t.length <= 8 && !/\s/.test(t);
   for (const g of textGroups) {
     if (ARROW_RE.test(g.text)) continue; // skip likely transition labels in pass 1
+    if (!looksLikeStateLabel(g.text)) continue; // skip body text / prose
     let best = -1, bestD = Infinity;
     for (let i = 0; i < nodes.length; i++) {
       const d = Math.hypot(g.x-nodes[i].x, g.y-nodes[i].y);
@@ -500,9 +513,10 @@ export function analyzeGraph(paths, textItems) {
     }
     if (best >= 0) { nodes[best].label = (nodes[best].label + g.text).trim(); g.assigned = true; }
   }
-  // Pass 2: for nodes still unlabelled, allow any text (including transition-like)
+  // Pass 2: for nodes still unlabelled, allow any short text (including transition-like)
   for (const g of textGroups) {
     if (g.assigned) continue;
+    if (!looksLikeStateLabel(g.text)) continue; // still skip long body text
     let best = -1, bestD = Infinity;
     for (let i = 0; i < nodes.length; i++) {
       if (nodes[i].label) continue; // already labelled
@@ -734,6 +748,28 @@ export function analyzeGraphs(paths, textItems) {
       const dx = full.nodes[i].x - full.nodes[j].x;
       const dy = full.nodes[i].y - full.nodes[j].y;
       if (Math.hypot(dx, dy) < threshold) union(i, j);
+    }
+  }
+
+  // Second pass: merge components that have no cross-node edges (only self-loops or no edges),
+  // using a larger radius. This handles diagrams where transitions are rasterized bitmaps
+  // (not vector paths), so no inter-node edges exist to link components.
+  // Only applies when current components have no edges connecting different nodes.
+  const hasInterNodeEdge = new Set(); // component roots that have at least one cross-node edge
+  for (const e of full.edges) {
+    if (e.from >= 0 && e.to >= 0 && e.from !== e.to && !e.isInitial) {
+      hasInterNodeEdge.add(find(e.from));
+      hasInterNodeEdge.add(find(e.to));
+    }
+  }
+  const longerThreshold = full.medR * 8;
+  for (let i = 0; i < n; i++) {
+    if (hasInterNodeEdge.has(find(i))) continue; // this component has real cross edges — don't force-merge
+    for (let j = 0; j < n; j++) {
+      if (i === j) continue;
+      const dx = full.nodes[i].x - full.nodes[j].x;
+      const dy = full.nodes[i].y - full.nodes[j].y;
+      if (Math.hypot(dx, dy) < longerThreshold) union(i, j);
     }
   }
 
