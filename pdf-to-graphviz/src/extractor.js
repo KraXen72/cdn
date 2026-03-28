@@ -436,6 +436,25 @@ export function analyzeGraph(paths, textItems) {
     textGroups.push(g);
   }
 
+  // Post-process: split groups where a state name (q + alphanumeric) is immediately followed
+  // by a transition label (containing →). E.g. "qsy→y,R" → split into "qs" and "y→y,R".
+  // Pattern: starts with q + 1-3 alphanumeric chars, then the rest contains →
+  // Match: state name = q + 1-3 alphanumeric chars, followed immediately by a transition "char→..."
+  // We use non-greedy so the shortest valid state prefix is chosen before the "X→" transition start.
+  // E.g. "qsy→y,R" → ["qs", "y→y,R"]; requires remainder to start with exactly one non-→ char then →
+  // Greedy state-name match, backtracking to find the split where remainder is "char→..."
+  // E.g. "qsy→y,R": q[a-z0-9]+ matches "qsy" but "→y,R" doesn't fit ".→.*"; backtracks to "qs"+"y→y,R" ✓
+  const STATE_PREFIX_RE = /^(q[a-z0-9]+)(.→.*)/;
+  for (let gi = textGroups.length - 1; gi >= 0; gi--) {
+    const g = textGroups[gi];
+    const m = STATE_PREFIX_RE.exec(g.text);
+    if (m && m[2].includes('→')) {
+      // Split: keep the state name part in place, push the remainder as a new group
+      textGroups[gi] = { ...g, text: m[1] };
+      textGroups.push({ text: m[2], x: g.x + m[1].length * 4, y: g.y, lastX: g.lastX, assigned: false });
+    }
+  }
+
   // ── Assign text to nodes ─────────────────────────────────────
   // Two-pass: first assign only non-transition-looking text (no →), then
   // fall back to any text if node still has no label. This prevents
