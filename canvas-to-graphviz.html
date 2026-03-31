@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canvas → DOT</title>
+<style>
+  :root {
+    --bg:     #FFFCF0;
+    --bg-2:   #F2F0E5;
+    --ui:     #E6E4D9;
+    --ui-2:   #DAD8CE;
+    --ui-3:   #CECDC3;
+    --tx-3:   #B7B5AC;
+    --tx-2:   #6F6E69;
+    --tx:     #100F0F;
+    --green:  #879A39;
+    --cyan:   #3AA99F;
+    --red:    #D14D41;
+    --mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--tx);
+    font-family: 'Georgia', 'Times New Roman', serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 20px 48px;
+    gap: 24px;
+  }
+
+  header { text-align: center; max-width: 700px; }
+  header h1 {
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  header h1 .arrow { color: var(--cyan); font-style: italic; }
+  header p {
+    margin-top: 8px;
+    font-size: 0.88rem;
+    color: var(--tx-2);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.55;
+  }
+
+  /* ── Options ─────────────────────────────────────────────────────── */
+  .options-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.82rem;
+    color: var(--tx-2);
+  }
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .options-sep { color: var(--ui-3); font-family: 'Helvetica Neue', Arial, sans-serif; }
+  .toggle-wrap input[type=checkbox] { display: none; }
+  .toggle-track {
+    width: 32px; height: 18px;
+    border-radius: 9px;
+    background: var(--ui-2);
+    position: relative;
+    transition: background 0.18s;
+    flex-shrink: 0;
+  }
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: white;
+    transition: transform 0.18s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle-wrap input:checked + .toggle-track { background: var(--cyan); }
+  .toggle-wrap input:checked + .toggle-track::after { transform: translateX(14px); }
+
+  /* ── Workspace ───────────────────────────────────────────────────── */
+  .workspace {
+    width: 100%;
+    max-width: 1100px;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: 1fr;
+    grid-template-areas: "left" "mid" "right";
+  }
+
+  @media (min-width: 768px) {
+    .workspace {
+      grid-template-columns: 1fr auto 1fr;
+      grid-template-rows: 1fr;
+      grid-template-areas: "left mid right";
+      align-items: stretch;
+    }
+  }
+
+  /* ── Panel ───────────────────────────────────────────────────────── */
+  .panel {
+    background: var(--bg-2);
+    border: 1px solid var(--ui-2);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(16,15,15,0.07);
+  }
+  #panelLeft  { grid-area: left; }
+  #panelRight { grid-area: right; }
+
+  .panel-header {
+    padding: 10px 14px 9px;
+    border-bottom: 1px solid var(--ui);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .panel-title {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.67rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--tx-2);
+  }
+  .badge {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    background: var(--ui);
+    color: var(--tx-2);
+    border-radius: 4px;
+    padding: 2px 7px;
+    transition: color 0.15s, background 0.15s;
+    white-space: nowrap;
+  }
+  .badge.active {
+    background: color-mix(in srgb, var(--cyan) 14%, var(--bg-2));
+    color: var(--cyan);
+  }
+
+  /* ── Drop zone ───────────────────────────────────────────────────── */
+  .drop-zone {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .drop-overlay {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--cyan) 7%, var(--bg));
+    border: 2px dashed var(--cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.14s;
+  }
+  .drop-overlay span {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.88rem;
+    color: var(--cyan);
+    font-weight: 500;
+  }
+  .drop-zone.dragging .drop-overlay { opacity: 1; }
+
+  /* ── Textareas ───────────────────────────────────────────────────── */
+  textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 13px 15px;
+    color: var(--tx);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    line-height: 1.65;
+    resize: vertical;
+    outline: none;
+    min-height: 320px;
+    width: 100%;
+    scrollbar-color: var(--ui-3) var(--ui);
+    scrollbar-width: thin;
+  }
+  textarea::placeholder { color: var(--ui-3); }
+  textarea::-webkit-scrollbar { width: 8px; }
+  textarea::-webkit-scrollbar-track { background: var(--ui); }
+  textarea::-webkit-scrollbar-thumb { background: var(--ui-3); border-radius: 4px; }
+
+  /* ── Panel footer ────────────────────────────────────────────────── */
+  .panel-footer {
+    padding: 9px 12px;
+    border-top: 1px solid var(--ui);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+  }
+  .status {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.74rem;
+    color: var(--tx-3);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .status.ok  { color: var(--green); }
+  .status.err { color: var(--red); }
+
+  /* ── Buttons ─────────────────────────────────────────────────────── */
+  button {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.12s, color 0.12s, border-color 0.12s, transform 0.08s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  button:active { transform: translateY(1px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--tx-2);
+    border-color: var(--ui-2);
+  }
+  .btn-ghost:hover { background: var(--ui); color: var(--tx); }
+  .btn-ghost.copied {
+    color: var(--green);
+    border-color: color-mix(in srgb, var(--green) 35%, var(--ui-2));
+  }
+
+  /* ── Mid column ──────────────────────────────────────────────────── */
+  .mid-col {
+    grid-area: mid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-convert {
+    background: var(--tx);
+    color: var(--bg);
+    padding: 9px 24px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+  }
+  .btn-convert:hover { background: var(--cyan); }
+
+  @media (min-width: 768px) {
+    .btn-convert {
+      padding: 0;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 1.1rem;
+      justify-content: center;
+    }
+  }
+
+  #fileInput { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Canvas <span class="arrow"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" style="vertical-align:-0.15em"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7-7l7 7l-7 7"/></svg></span> DOT</h1>
+  <p>Convert <strong>JSON Canvas</strong> files to <strong>Graphviz DOT</strong> notation.
+     Paste JSON, drag &amp; drop a file, or pick one from disk.</p>
+</header>
+
+<div class="options-bar">
+  <label class="toggle-wrap" for="colorToggle">
+    <input type="checkbox" id="colorToggle" checked>
+    <span class="toggle-track"></span>
+    Transfer node colors
+  </label>
+  <span class="options-sep">·</span>
+  <label class="toggle-wrap" for="flexokiToggle">
+    <input type="checkbox" id="flexokiToggle">
+    <span class="toggle-track"></span>
+    Flexoki graph styling
+  </label>
+</div>
+
+<div class="workspace">
+
+  <!-- Left: input -->
+  <div class="panel" id="panelLeft">
+    <div class="panel-header">
+      <span class="panel-title">JSON Canvas input</span>
+      <span class="badge" id="inputBadge">empty</span>
+    </div>
+    <div class="drop-zone" id="dropZone">
+      <div class="drop-overlay"><span>Drop .canvas file here</span></div>
+      <textarea id="inputArea" placeholder="Paste JSON Canvas here, or drop / pick a .canvas file…" spellcheck="false"></textarea>
+    </div>
+    <div class="panel-footer">
+      <input type="file" id="fileInput" accept=".canvas,.json">
+      <button class="btn-ghost" id="pickBtn">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 12V4a1 1 0 011-1h4l2 2h4a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1z"/>
+        </svg>
+        Pick file
+      </button>
+      <button class="btn-ghost" id="clearBtn">Clear</button>
+      <span class="status" id="inputStatus">–</span>
+      <button class="btn-ghost" id="copyInputBtn">Copy</button>
+    </div>
+  </div>
+
+  <!-- Middle: convert -->
+  <div class="mid-col">
+    <button class="btn-convert" id="convertBtn" title="Convert"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7-7l7 7l-7 7"/></svg></button>
+  </div>
+
+  <!-- Right: output -->
+  <div class="panel" id="panelRight">
+    <div class="panel-header">
+      <span class="panel-title">Graphviz DOT output</span>
+      <span class="badge" id="outputBadge">–</span>
+    </div>
+    <div class="drop-zone">
+      <textarea id="outputArea" placeholder="DOT code will appear here…" spellcheck="false"></textarea>
+    </div>
+    <div class="panel-footer">
+      <span class="status" id="outputStatus">–</span>
+      <button class="btn-ghost" id="openGvBtn" style="display:none">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in GraphViz Online
+      </button>
+      <button class="btn-ghost" id="copyOutputBtn">Copy</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CANVAS_COLORS = { '1':'#D14D41','2':'#DA702C','3':'#D0A215','4':'#879A39','5':'#3AA99F','6':'#8B7EC8' };
+
+function dotId(id) {
+  return '"' + id.replace(/\\/g,'\\\\').replace(/"/g,'\\"') + '"';
+}
+function dotLabel(text) {
+  return '"' + String(text).replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n') + '"';
+}
+function luminance(hex) {
+  const r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255;
+  return 0.2126*r+0.7152*g+0.0722*b;
+}
+function resolveColor(c) {
+  if (CANVAS_COLORS[c]) return CANVAS_COLORS[c];
+  if (/^#[0-9a-fA-F]{6}$/.test(c)) return c;
+  return null;
+}
+
+function nodeAttrs(n, applyColors, applyFlexoki) {
+  const attrs = [];
+  let label = n.type==='text' ? (n.text||'') : n.type==='file' ? (n.file||n.id) : n.type==='link' ? (n.url||n.id) : (n.label||n.id);
+  attrs.push('label=' + dotLabel(label));
+  if (n.type==='link')  attrs.push('shape=note');
+  if (n.type==='file')  attrs.push('shape=folder');
+  if (applyColors && n.color) {
+    const fill = resolveColor(n.color);
+    if (fill) {
+      attrs.push(`fillcolor="${fill}"`);
+      attrs.push(`fontcolor="${luminance(fill)>0.35?'#000000':'#ffffff'}"`);
+      attrs.push(`color="${fill}"`);
+    }
+  }
+  return `${dotId(n.id)} [${attrs.join(', ')}];`;
+}
+
+function canvasToDot(json, applyColors, applyFlexoki) {
+  const nodes = json.nodes||[], edges = json.edges||[];
+  const groups  = nodes.filter(n=>n.type==='group');
+  const regular = nodes.filter(n=>n.type!=='group');
+
+  const nodeGroup = {};
+  for (const n of regular)
+    for (const g of groups)
+      if (n.x>=g.x && n.y>=g.y && (n.x+n.width)<=(g.x+g.width) && (n.y+n.height)<=(g.y+g.height))
+        { nodeGroup[n.id]=g.id; break; }
+
+  const L = [];
+  L.push('digraph canvas {');
+  if (applyFlexoki) {
+    L.push('  graph [rankdir=LR fontname="Helvetica" bgcolor=transparent];');
+    L.push('  node  [shape=box style="filled,rounded" fontname="Helvetica" fontsize=11 fillcolor="#F2F0E5" color="#DAD8CE" fontcolor="#100F0F"];');
+    L.push('  edge  [fontname="Helvetica" fontsize=10 color="#6F6E69" fontcolor="#6F6E69"];');
+  } else {
+    L.push('  graph [rankdir=LR fontname="Helvetica" bgcolor=transparent];');
+    L.push('  node  [shape=box style="filled,rounded" fontname="Helvetica" fontsize=11];');
+    L.push('  edge  [fontname="Helvetica" fontsize=10];');
+  }
+  L.push('');
+
+  for (const g of groups) {
+    L.push(`  subgraph cluster_${g.id.replace(/\W/g,'_')} {`);
+    L.push(`    label=${dotLabel(g.label||'')};`);
+    L.push('    style=dashed;');
+    for (const n of regular.filter(n=>nodeGroup[n.id]===g.id))
+      L.push('    ' + nodeAttrs(n, applyColors, applyFlexoki));
+    L.push('  }');
+    L.push('');
+  }
+
+  for (const n of regular.filter(n=>!nodeGroup[n.id]))
+    L.push('  ' + nodeAttrs(n, applyColors, applyFlexoki));
+
+  L.push('');
+
+  for (const e of edges) {
+    const attrs = e.label ? ` [label=${dotLabel(e.label)}]` : '';
+    L.push(`  ${dotId(e.fromNode)} -> ${dotId(e.toNode)}${attrs};`);
+  }
+
+  L.push('}');
+  return L.join('\n');
+}
+
+// ── DOM ───────────────────────────────────────────────────────────────
+const inputArea    = document.getElementById('inputArea');
+const outputArea   = document.getElementById('outputArea');
+const inputBadge   = document.getElementById('inputBadge');
+const outputBadge  = document.getElementById('outputBadge');
+const inputStatus  = document.getElementById('inputStatus');
+const outputStatus = document.getElementById('outputStatus');
+const colorToggle  = document.getElementById('colorToggle');
+const flexokiToggle = document.getElementById('flexokiToggle');
+const openGvBtn    = document.getElementById('openGvBtn');
+
+function setStatus(el, text, cls) {
+  el.textContent = text;
+  el.className = 'status' + (cls ? ' '+cls : '');
+}
+
+function convert() {
+  const raw = inputArea.value.trim();
+  if (!raw) {
+    outputArea.value = '';
+    inputBadge.textContent = 'empty'; inputBadge.className = 'badge';
+    outputBadge.textContent = '–';   outputBadge.className = 'badge';
+    setStatus(inputStatus,'–',''); setStatus(outputStatus,'–','');
+    openGvBtn.style.display = 'none';
+    return;
+  }
+  let json;
+  try { json = JSON.parse(raw); }
+  catch(e) {
+    setStatus(inputStatus, 'Invalid JSON: '+e.message, 'err');
+    inputBadge.textContent='error'; inputBadge.className='badge';
+    outputArea.value='';
+    outputBadge.textContent='–'; outputBadge.className='badge';
+    setStatus(outputStatus,'–','');
+    return;
+  }
+  const n=(json.nodes||[]).length, e=(json.edges||[]).length;
+  inputBadge.textContent=`${n}n · ${e}e`; inputBadge.className='badge active';
+  setStatus(inputStatus,`${n} node${n!==1?'s':''}, ${e} edge${e!==1?'s':''}`, 'ok');
+  try {
+    const dot = canvasToDot(json, colorToggle.checked, flexokiToggle.checked);
+    outputArea.value = dot;
+    outputBadge.textContent=`${dot.split('\n').length} lines`; outputBadge.className='badge active';
+    setStatus(outputStatus,'Converted successfully','ok');
+    openGvBtn.style.display = '';
+    openGvBtn.onclick = () => {
+      window.open('https://dreampuf.github.io/GraphvizOnline/?engine=dot#' + encodeURIComponent(dot), '_blank');
+    };
+  } catch(err) {
+    outputArea.value='';
+    outputBadge.textContent='error'; outputBadge.className='badge';
+    setStatus(outputStatus,'Error: '+err.message,'err');
+    openGvBtn.style.display = 'none';
+  }
+}
+
+inputArea.addEventListener('input', convert);
+colorToggle.addEventListener('change', convert);
+flexokiToggle.addEventListener('change', convert);
+document.getElementById('convertBtn').addEventListener('click', convert);
+document.getElementById('clearBtn').addEventListener('click', () => { inputArea.value=''; convert(); });
+
+// ── Copy (with execCommand fallback) ──────────────────────────────────
+function copyText(text, btn, label) {
+  if (!text) return;
+  function flash() {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = label; btn.classList.remove('copied'); }, 1600);
+  }
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(flash).catch(() => fallback(text, flash));
+  } else {
+    fallback(text, flash);
+  }
+}
+function fallback(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); cb(); } catch(_) {}
+  document.body.removeChild(ta);
+}
+
+document.getElementById('copyInputBtn').addEventListener('click',
+  () => copyText(inputArea.value, document.getElementById('copyInputBtn'), 'Copy'));
+document.getElementById('copyOutputBtn').addEventListener('click',
+  () => copyText(outputArea.value, document.getElementById('copyOutputBtn'), 'Copy'));
+
+// ── File pick ─────────────────────────────────────────────────────────
+const fileInput = document.getElementById('fileInput');
+document.getElementById('pickBtn').addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) loadFile(fileInput.files[0]);
+  fileInput.value = '';
+});
+
+// ── Drag & drop ───────────────────────────────────────────────────────
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragenter', e => { e.preventDefault(); dropZone.classList.add('dragging'); });
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); });
+dropZone.addEventListener('dragleave', e => { if (!dropZone.contains(e.relatedTarget)) dropZone.classList.remove('dragging'); });
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragging');
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+
+function loadFile(file) {
+  setStatus(inputStatus, `Loading ${file.name}…`, '');
+  const r = new FileReader();
+  r.onload = ev => { inputArea.value = ev.target.result; convert(); };
+  r.onerror = () => setStatus(inputStatus,'Failed to read file','err');
+  r.readAsText(file);
+}
+</script>
+</body>
+</html>
