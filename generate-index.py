@@ -218,7 +218,7 @@ def main():
     output_path = SCRIPT_DIR / "index.html"
     output_path.write_text(html_content, encoding="utf-8")
     
-    print(f"[pre-commit hook] [generate-index.py] Generated index.html with {len(entries)} entries")
+    print(f"[generate-index.py] Generated index.html with {len(entries)} entries")
 
 
 if __name__ == "__main__":
