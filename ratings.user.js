@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TMDB Watchlist — OMDb Ratings
 // @namespace    https://github.com/user/ratings-inject
-// @version      2.0.0
+// @version      2.0.2
 // @description  Injects IMDb, Rotten Tomatoes & Metacritic scores into TMDB watchlist cards, cached 3 months
 // @author       user
 // @match        https://www.themoviedb.org/u/*/watchlist*
@@ -18,7 +18,8 @@
 const OMDB_API_KEY = '2deceaec';
 const CACHE_TTL_MS = 90 * 24 * 60 * 60 * 1000; // 3 months
 const CACHE_VERSION = 6;
-const CARD_SEL = 'div.card.v4';
+// const CARD_SEL = 'div.card.v4';
+const CARD_SEL = 'div[data-object-id]';
 const CONSENSUS_SEL = '.consensus.tight';
 
 // Fetch URL via GM_xmlhttpRequest, parse JSON. Returns null on any error.
@@ -254,12 +255,18 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 	// On mobile with no ratings: leave card untouched
 	if (!hasRatings && isMobile) return;
 
-	const detailsWrapper = card.querySelector('.details .wrapper');
+	// const detailsWrapper = card.querySelector('.details .wrapper');
+	const detailsWrapper = card.querySelector('h2')?.closest('[class*="p-3"]');
+
 	if (!detailsWrapper) { console.error('[ratings-inject] .details .wrapper not found', card); return; }
 
-	const consensus = card.querySelector(`.details ${CONSENSUS_SEL}`);
+	// const consensus = card.querySelector(`.details ${CONSENSUS_SEL}`);
+	const consensus = card.querySelector(CONSENSUS_SEL);
+
 	if (consensus) setStyles(consensus, { 'margin': '0' }); 
-	const titleEl = card.querySelector('.details .wrapper .title');
+
+	// const titleEl = card.querySelector('.details .wrapper .title');
+	const titleEl = card.querySelector('h2')?.closest('a');
 
 	// On desktop with no ratings: only reposition consensus (if present), nothing else
 	if (!hasRatings) {
@@ -274,7 +281,8 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 		'align-items': 'center',
 		'gap': '6px',
 		'padding': isMobile ? '6px 12px 8px' : '0',
-		'margin': isMobile ? '0' : '4px 0 0',
+		// 'margin': isMobile ? '0' : '4px 0 0',
+		'margin': isMobile ? '0' : '0 0 0 auto',
 		'flex-wrap': isMobile ? 'wrap' : 'nowrap',
 		...(isMobile && { 'background': '#1c1c1c', 'width': '100%', 'box-sizing': 'border-box' }),
 	});
@@ -342,7 +350,9 @@ function renderBadges(card, { imdb, rt, mc, imdbID, title }, type, tmdbId) {
 	if (isMobile) {
 		// Pills blend into row bg — remove their individual shadows and bg
 		row.querySelectorAll('a').forEach(a => a.style.setProperty('box-shadow', 'none'));
-		const actionBar = card.querySelector('.action_bar');
+		// const actionBar = card.querySelector('.action_bar');
+		const actionBar = card.querySelector('ul')?.closest('div');
+
 		if (actionBar) actionBar.insertAdjacentElement('beforebegin', row);
 		else card.appendChild(row);
 	} else {
@@ -355,7 +365,7 @@ async function processCard(card) {
 	if (card.dataset.injected) return;
 	card.dataset.injected = '1';
 
-	const linkEl = card.querySelector('a.result[href]');
+	const linkEl = card.querySelector('a[data-media-type][data-id]');
 	const href = linkEl?.getAttribute('href') ?? '';
 	// Parse type + ID from href like /movie/83542-cloud-atlas or /tv/1396-breaking-bad
 	const match = href.match(/^\/(movie|tv)\/(\d+)/);
