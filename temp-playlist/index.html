@@ -41,7 +41,7 @@
         const statusText = document.getElementById("statusText");
         
         // thanks to https://gist.github.com/afeld/1254889?permalink_comment_id=4528726#gistcomment-4528726 (slightly edited)
-        const ytRegex = /^(?:(?:https?:\/\/|\/\/)?(?:www\.|m\.|.+\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|shorts\/|feeds\/api\/videos\/|watch\?v=|watch\?.+&v=)))?([\w-]{11})(?![\w-])$/gim;
+        const ytRegex = /^(?:(?:https?:\/\/|\/\/)?(?:www\.|m\.|.+\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|shorts\/|feeds\/api\/videos\/|watch\?v=|watch\?.+&v=)))?([\w-]{11})(?![\w-])/gim;
 
         const processInput = () => {
             const text = inputArea.value;
