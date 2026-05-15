@@ -190,9 +190,19 @@
         else                      result[key] = val;
       }
 
-      if (!('color-scheme' in result))  result['color-scheme'] = 'light';
-      if (!('default'      in result))  result['default']      = false;
-      if (!('prefersdark'  in result))  result['prefersdark']  = false;
+      if (
+        !(
+          "color-scheme" in result &&
+          typeof result["color-scheme"] === "string" &&
+          result["color-scheme"].trim() !== ""
+        )
+      ) {
+        result["color-scheme"] = "light";
+      }
+      if (!("default" in result && typeof result.default === "boolean"))
+        result["default"] = false;
+      if (!("prefersdark" in result && typeof result.prefersdark === "boolean"))
+        result["prefersdark"] = false;
 
       if (!result.name) throw new Error('Missing required "name" property');
       return result;
