@@ -179,13 +179,20 @@
         let val = m[2].trim();
 
         // Strip surrounding quotes
-        if (val.length >= 2 && val[0] === val.at(-1) && (val[0] === '"' || val[0] === "'"))
-          val = val.slice(1, -1);
+        if (val.length >= 2 && (
+          (val[0] === '"'      && val.at(-1) === '"')  ||
+          (val[0] === "'"      && val.at(-1) === "'")  ||
+          (val[0] === '\u201c' && val.at(-1) === '\u201d')
+        )) val = val.slice(1, -1);
 
         if (val === 'true')       result[key] = true;
         else if (val === 'false') result[key] = false;
         else                      result[key] = val;
       }
+
+      if (!('color-scheme' in result))  result['color-scheme'] = 'light';
+      if (!('default'      in result))  result['default']      = false;
+      if (!('prefersdark'  in result))  result['prefersdark']  = false;
 
       if (!result.name) throw new Error('Missing required "name" property');
       return result;
