@@ -162,8 +162,12 @@
 
     let currentUrl = '';
 
+    function stripCssComments(css) {
+      return css.replace(/\/\*[\s\S]*?\*\//g, '');
+    }
+
     function parseTheme(raw) {
-      let body = raw.trim();
+      let body = stripCssComments(raw).trim();
 
       // Strip @plugin wrapper if present, being lenient about the plugin string
       const wrapped = body.match(/@plugin\s+["'][^"']*["']\s*\{([\s\S]*?)\}\s*$/);
