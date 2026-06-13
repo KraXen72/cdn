@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         DeepSeek File Drop Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.18
-// @description  Renames unsupported text files on drop and adds expert-mode file injection with hashing, versioning, and persistent history
+// @version      0.21
+// @description  Renames unsupported text files on drop and adds expert-mode file injection with hashing, versioning, and persistent history (saved only after conversation gets a real URL)
 // @author       KraXen72
 // @match        https://chat.deepseek.com/*
 // @grant        GM_addStyle
@@ -194,19 +194,15 @@ function savePersistentHistory(history) {
 }
 
 function addToPersistentHistory(name, hash, version = null) {
+    if (getConversationKey().trim() === "") return; // Only save when we have a real conversation key
     const history = loadPersistentHistory();
-    // Remove any older entry with same name+hash (shouldn't exist, but clean)
     const filtered = history.filter(entry => !(entry.name === name && entry.hash === hash));
     filtered.push({ name, hash, version, injectedAt: Date.now() });
     savePersistentHistory(filtered);
 }
 
-function isInPersistentHistory(name, hash) {
-    const history = loadPersistentHistory();
-    return history.some(entry => entry.name === name && entry.hash === hash);
-}
-
 function removeFromPersistentHistory(name, hash) {
+    if (getConversationKey().trim() === "") return;
     const history = loadPersistentHistory();
     const filtered = history.filter(entry => !(entry.name === name && entry.hash === hash));
     if (filtered.length !== history.length) {
@@ -214,19 +210,41 @@ function removeFromPersistentHistory(name, hash) {
     }
 }
 
+function isInPersistentHistory(name, hash) {
+    const history = loadPersistentHistory();
+    return history.some(entry => entry.name === name && entry.hash === hash);
+}
+
 let currentConversationKey = null;
 
 async function onConversationChanged() {
     const newKey = getConversationKey();
     if (newKey === currentConversationKey) return;
+
+    const wasEmpty = currentConversationKey?.trim() === "";
+    const isNowNonEmpty = newKey.trim() !== "";
+
     currentConversationKey = newKey;
 
     // Clear pending attached files (they belong to previous conversation)
     attachedFiles = [];
-    // Refresh UI to show empty list
     refreshUI();
     // Re-parse textarea for the new conversation (might have existing file block)
     await refreshInjectedBatchFromTextarea();
+
+    // If we just moved from empty to real conversation, migrate current files to persistent history
+    if (wasEmpty && isNowNonEmpty) {
+        const input = getInputElement();
+        if (input) {
+            const parsed = await parseInjectedFilesFromTextarea();
+            for (const file of parsed) {
+                addToPersistentHistory(file.name, file.hash, file.version);
+            }
+            if (parsed.length > 0) {
+                notify('Conversation saved', `Injected files have been saved to this conversation's history.`);
+            }
+        }
+    }
 }
 
 function setupUrlObserver() {
@@ -254,7 +272,6 @@ function getLatestVersionForName(name) {
     const history = loadPersistentHistory();
     const entries = history.filter(entry => entry.name === name);
     if (entries.length === 0) return null;
-    // Return the most recent version attribute (or null if no version)
     return entries[entries.length - 1].version || null;
 }
 
@@ -354,7 +371,7 @@ async function injectFiles() {
         const tag = f.version ? `${encodedName} version="${f.version}"` : encodedName;
         block += `<${tag}>\n${f.content}\n</${encodedName}>\n`;
 
-        // Add to persistent history
+        // Add to persistent history (will only save if key is non-empty)
         addToPersistentHistory(f.name, f.hash, f.version);
     }
     block += '</files>';
@@ -373,22 +390,26 @@ async function uninjectFiles() {
     // Remove the <files> block from textarea
     setTextareaValue(input, removeFilesBlock(input.value));
 
-    // For each file that was in the injected batch, remove it from persistent history
+    // Remove from persistent history using the currently injected batch
     for (const file of currentlyInjectedBatch) {
         removeFromPersistentHistory(file.name, file.hash);
+    }
+
+    // Also remove using attachedFiles (in case batch was stale or hash mismatch)
+    for (const file of attachedFiles) {
+        const hash = await getContentHash(file.content);
+        removeFromPersistentHistory(file.name, hash);
     }
 
     // Refresh the in-memory batch (now empty)
     await refreshInjectedBatchFromTextarea();
 
-    // Also clear the pending attached files list (optional, but matches old behavior)
-    attachedFiles = [];
+    // Do NOT clear attachedFiles – they remain in the pending list
     refreshUI();
 }
 
 async function clearPersistentHistoryOnly() {
-    clearPersistentHistory(); // existing function
-    // Optionally notify the user
+    clearPersistentHistory();
     notify('History cleared', 'All injected file records have been removed from this conversation.');
 }
 
@@ -422,7 +443,7 @@ function ensureUIContainer() {
     };
 
     btnRow.appendChild(makeButton('Inject', async () => { await injectFiles(); }));
-    btnRow.appendChild(makeButton('Un-inject', async () => { await uninjectFiles(); }));
+    btnRow.appendChild(makeButton('Un‑inject', async () => { await uninjectFiles(); }));
     btnRow.appendChild(makeButton('Clear History', async () => { await clearPersistentHistoryOnly(); }));
 
     container.appendChild(btnRow);
@@ -610,7 +631,7 @@ async function onReady() {
     ensureUIContainer();
     setupModeDetection();
     await refreshInjectedBatchFromTextarea();
-    setupUrlObserver(); // replaces the old loadPersistentHistory call
+    setupUrlObserver();
 }
 
 if (document.readyState === 'loading') {
