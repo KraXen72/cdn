@@ -6,6 +6,7 @@
 // @author       KraXen72
 // @match        https://chat.deepseek.com/*
 // @grant        GM_addStyle
+// @grant        GM_notification
 // @run-at       document-start
 // ==/UserScript==
 
@@ -118,15 +119,8 @@ async function getContentHash(text) {
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-async function notify(title, body) {
-    if (Notification.permission === 'granted') {
-        new Notification(title, { body });
-    } else if (Notification.permission !== 'denied') {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            new Notification(title, { body });
-        }
-    }
+function notify(title, body) {
+    GM_notification({ title, text: body })
 }
 
 function encodeFileNameForTag(name) {
@@ -175,6 +169,7 @@ function getConversationKey() {
 
 function loadPersistentHistory() {
     const key = getConversationKey();
+    if (key.trim() === "") return [];
     const stored = localStorage.getItem(`ds_injected_${key}`);
     if (stored) {
         try {
@@ -186,8 +181,15 @@ function loadPersistentHistory() {
     return [];
 }
 
+function clearPersistentHistory() {
+    const key = getConversationKey();
+    if (key.trim() === "") return;
+    localStorage.removeItem(`ds_injected_${key}`);
+}
+
 function savePersistentHistory(history) {
     const key = getConversationKey();
+    if (key.trim() === "") return;
     localStorage.setItem(`ds_injected_${key}`, JSON.stringify(history));
 }
 
@@ -202,6 +204,50 @@ function addToPersistentHistory(name, hash, version = null) {
 function isInPersistentHistory(name, hash) {
     const history = loadPersistentHistory();
     return history.some(entry => entry.name === name && entry.hash === hash);
+}
+
+function removeFromPersistentHistory(name, hash) {
+    const history = loadPersistentHistory();
+    const filtered = history.filter(entry => !(entry.name === name && entry.hash === hash));
+    if (filtered.length !== history.length) {
+        savePersistentHistory(filtered);
+    }
+}
+
+let currentConversationKey = null;
+
+async function onConversationChanged() {
+    const newKey = getConversationKey();
+    if (newKey === currentConversationKey) return;
+    currentConversationKey = newKey;
+
+    // Clear pending attached files (they belong to previous conversation)
+    attachedFiles = [];
+    // Refresh UI to show empty list
+    refreshUI();
+    // Re-parse textarea for the new conversation (might have existing file block)
+    await refreshInjectedBatchFromTextarea();
+}
+
+function setupUrlObserver() {
+    // Override pushState and replaceState to detect SPA navigation
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+
+    history.pushState = function (...args) {
+        originalPushState.apply(this, args);
+        onConversationChanged();
+    };
+
+    history.replaceState = function (...args) {
+        originalReplaceState.apply(this, args);
+        onConversationChanged();
+    };
+
+    window.addEventListener('popstate', () => onConversationChanged());
+
+    // Initial call
+    onConversationChanged();
 }
 
 function getLatestVersionForName(name) {
@@ -285,7 +331,7 @@ async function injectFiles() {
 
         // Check persistent history for duplicate (same name+hash)
         if (isInPersistentHistory(file.name, hash)) {
-            await notify('Duplicate file', `"${file.name}" (same content) has already been injected in this conversation. Skipping.`);
+            notify('Duplicate file', `"${file.name}" (same content) has already been injected in this conversation. Skipping.`);
             continue;
         }
 
@@ -320,11 +366,30 @@ async function injectFiles() {
     await refreshInjectedBatchFromTextarea();
 }
 
-async function clearFilesBlock() {
+async function uninjectFiles() {
     const input = getInputElement();
     if (!input) return;
+
+    // Remove the <files> block from textarea
     setTextareaValue(input, removeFilesBlock(input.value));
+
+    // For each file that was in the injected batch, remove it from persistent history
+    for (const file of currentlyInjectedBatch) {
+        removeFromPersistentHistory(file.name, file.hash);
+    }
+
+    // Refresh the in-memory batch (now empty)
     await refreshInjectedBatchFromTextarea();
+
+    // Also clear the pending attached files list (optional, but matches old behavior)
+    attachedFiles = [];
+    refreshUI();
+}
+
+async function clearPersistentHistoryOnly() {
+    clearPersistentHistory(); // existing function
+    // Optionally notify the user
+    notify('History cleared', 'All injected file records have been removed from this conversation.');
 }
 
 function getUIContainer() {
@@ -357,7 +422,8 @@ function ensureUIContainer() {
     };
 
     btnRow.appendChild(makeButton('Inject', async () => { await injectFiles(); }));
-    btnRow.appendChild(makeButton('Clear', async () => { await clearFilesBlock(); }));
+    btnRow.appendChild(makeButton('Un-inject', async () => { await uninjectFiles(); }));
+    btnRow.appendChild(makeButton('Clear History', async () => { await clearPersistentHistoryOnly(); }));
 
     container.appendChild(btnRow);
     document.body.appendChild(container);
@@ -503,7 +569,7 @@ document.addEventListener('drop', async (e) => {
             const hash = await getContentHash(content);
             // Use persistent history to prevent re-adding already-injected files
             if (isInPersistentHistory(file.name, hash)) {
-                await notify('Duplicate file', `"${file.name}" (same content) has already been injected in this conversation. Not adding.`);
+                notify('Duplicate file', `"${file.name}" (same content) has already been injected in this conversation. Not adding.`);
                 continue;
             }
             newAttachments.push({ name: file.name, ext: file.name.split('.').pop(), content });
@@ -544,8 +610,7 @@ async function onReady() {
     ensureUIContainer();
     setupModeDetection();
     await refreshInjectedBatchFromTextarea();
-    // Load persistent history on page load (no need to do anything else, just priming)
-    loadPersistentHistory();
+    setupUrlObserver(); // replaces the old loadPersistentHistory call
 }
 
 if (document.readyState === 'loading') {
