@@ -16,6 +16,21 @@ const COLORS = {
     border: '#45474B'
 };
 
+const INPUT_SELECTOR = 'textarea[placeholder="Message DeepSeek"][name="search"]';
+
+const EXPERT_MODE_ACTIVE_SELECTOR = 'div[data-model-type="expert"][role="radio"][aria-checked="true"]';
+const MODE_TOGGLE_SELECTOR = 'div[data-model-type="expert"][role="radio"], div[data-model-type="default"][role="radio"]';
+const ONGOING_CHAT_MODE_SELECTOR = '.the-header'
+const MESSAGE_SELECTOR = '.ds-message:not(:has(> .ds-assistant-message-main-content)):not(:has(> .ds-think-content)) > div[class]'
+
+const UPLOAD_OVERLAY_SELECTOR = 'div.c760857e._45872ba';
+const MAX_MESSAGE_LENGTH_BEFORE_COLLAPSE = 300;
+const FILES_BLOCK_REGEX =           /<files>([\s\S]*?)<\/files>/
+const FILES_BLOCK_REGEX_GLOBAL =    /<files>([\s\S]*?)<\/files>/g
+
+/** @type {{ name: string, hash: string }[]} */
+const currentlyInjectedBatch = [];
+
 const prefix = "userscript-styles-deepseek"
 GM_addStyle(`
     #${prefix}-expert-file-ui {
@@ -37,6 +52,11 @@ GM_addStyle(`
         border-bottom:1px solid ${COLORS.border};
 
         display: none;
+    }
+    #${prefix}-file-list {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0;
     }
 
     .${prefix}-button {
@@ -71,13 +91,76 @@ GM_addStyle(`
     .${prefix}-x-button:hover {
         background-color: ${COLORS.border};
     }
+
+    [data-${prefix}-collapsed="true"],
+    [data-${prefix}-collapsed="false"] {
+        border: 2px solid transparent;
+        transition: border-color 200ms;
+    }
+
+    [data-${prefix}-collapsed="true"]:hover,
+    [data-${prefix}-collapsed="false"]:hover {
+        border: 2px solid ${COLORS.border};
+    }
+
+    [data-${prefix}-collapsed="true"] {
+        max-height: 300px;
+        overflow: hidden;
+        mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+    }
     
 `)
 
-const INPUT_SELECTOR = 'textarea[placeholder="Message DeepSeek"][name="search"]';
-const EXPERT_MODE_ACTIVE_SELECTOR = 'div[data-model-type="expert"][role="radio"][aria-checked="true"]';
-const MODE_TOGGLE_SELECTOR = 'div[data-model-type="expert"][role="radio"], div[data-model-type="default"][role="radio"]';
-const UPLOAD_OVERLAY_SELECTOR = 'div.c760857e._45872ba';
+async function getContentHash(text) {
+    const msgUint8 = new TextEncoder().encode(text);                           
+    const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', msgUint8);           
+    const hashArray = Array.from(new Uint8Array(hashBuffer));                     
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function notify(title, body) {
+    if (Notification.permission === 'granted') {
+        new Notification(title, { body });
+    } else if (Notification.permission !== 'denied') {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            new Notification(title, { body });
+        }
+    }
+}
+
+async function parseInjectedFilesFromTextarea() {
+    const input = getInputElement();
+    if (!input) return [];
+    const content = input.value;
+    const filesBlockMatch = content.match(FILES_BLOCK_REGEX);
+    if (!filesBlockMatch) return [];
+
+    const block = filesBlockMatch[1];
+    const fileTagRegex = /<([a-zA-Z0-9._-]+)(?:\s+version="([^"]+)")?>([\s\S]*?)<\/\1>/g;
+    const parsed = [];
+    let match;
+    while ((match = fileTagRegex.exec(block)) !== null) {
+        const tagName = match[1];
+        const version = match[2] || null;
+        const fileContent = match[3];
+        const hash = await getContentHash(fileContent);
+        // Extract original name (strip version suffix if present in tag name)
+        let originalName = tagName;
+        if (version) {
+            // version attribute present, tag name is the original name
+            originalName = tagName;
+        } else {
+            // try to detect if tag name contains a timestamp suffix (from previous versioning)
+            const suffixMatch = tagName.match(/^(.*)-(\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})$/);
+            if (suffixMatch) {
+                originalName = suffixMatch[1];
+            }
+        }
+        parsed.push({ name: originalName, hash, content: fileContent, version });
+    }
+    return parsed;
+}
 
 const ALLOWED_EXTS = new Set([
     'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
@@ -92,7 +175,23 @@ const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
 ).set;
 
 function isExpertModeActive() {
-    return !!document.querySelector(EXPERT_MODE_ACTIVE_SELECTOR);
+    if (document.querySelector(MODE_TOGGLE_SELECTOR) != null) {
+        // chat start screen
+        return !!document.querySelector(EXPERT_MODE_ACTIVE_SELECTOR);
+    } else {
+        // ongoing chat
+        const header = document.querySelector(ONGOING_CHAT_MODE_SELECTOR);
+        if (header == null) {
+            console.warn("[deepseek-dnd-intercept]: can't find either expert mode selector!");
+            return false;
+        }
+        return header
+            .innerText
+            .trim()
+            .toLowerCase()
+            .split("\n")
+            .some(chunk => chunk.trim() === "expert");
+    }
 }
 
 function isTextFile(file) {
@@ -117,7 +216,7 @@ function setTextareaValue(element, value) {
 }
 
 function removeFilesBlock(text) {
-    return text.replace(/<files>[\s\S]*?<\/files>/g, '');
+    return text.replace(FILES_BLOCK_REGEX_GLOBAL, '');
 }
 
 function injectFiles() {
@@ -155,8 +254,7 @@ function ensureUIContainer() {
     container.appendChild(header);
 
     const list = document.createElement('ul');
-    list.id = 'ds-file-list';
-    list.style.cssText = 'list-style:none;padding:0;margin:8px 0';
+    list.id = `${prefix}-file-list`;
     container.appendChild(list);
 
     const btnRow = document.createElement('div');
@@ -185,7 +283,7 @@ function refreshUI() {
     container.style.display = expert ? 'block' : 'none';
     if (!expert) attachedFiles = [];
 
-    const list = document.getElementById('ds-file-list');
+    const list = document.getElementById(`${prefix}-file-list`);
     if (!list) return;
     list.innerHTML = '';
 
@@ -211,11 +309,31 @@ function refreshUI() {
     });
 }
 
+const collapsed_attr_name = `data-${prefix}-collapsed`
+
+/**
+ * @param {HTMLElement} node 
+ */
+function injectCollapsed(node) {
+    if (node.hasAttribute(collapsed_attr_name)) return;
+    
+    const isLong = node.textContent.length > MAX_MESSAGE_LENGTH_BEFORE_COLLAPSE;
+    node.setAttribute(collapsed_attr_name, isLong ? "true" : "false");
+    node.setAttribute("title", "Double-click to toggle collapsed/expanded")
+
+    node.addEventListener("dblclick", () => {
+        const isCollapsed = node.getAttribute(collapsed_attr_name) === "true";
+        node.setAttribute(collapsed_attr_name, isCollapsed ? "false" : "true");
+    });
+} 
+
 function setupModeDetection() {
     new MutationObserver((mutations) => {
         for (const m of mutations) {
             for (const node of m.addedNodes) {
-                if (node.nodeType !== 1) continue;
+                if (node.nodeType !== 1) continue; 
+                
+                // mode change observing
                 if (node.matches?.(MODE_TOGGLE_SELECTOR)) {
                     observeModeElement(node);
                 } else if (node.querySelectorAll) {
@@ -223,6 +341,15 @@ function setupModeDetection() {
                         observeModeElement(cand);
                     }
                 }
+
+                // ds-message collapse injection
+                if (node.matches?.(MESSAGE_SELECTOR)) {
+                    injectCollapsed(nodel);
+                } else if (node.querySelector(MESSAGE_SELECTOR) != null) {
+                    node.querySelectorAll(MESSAGE_SELECTOR)
+                        .forEach(n => injectCollapsed(n));
+                }
+
             }
             for (const node of m.removedNodes) {
                 if (node.nodeType !== 1) continue;
