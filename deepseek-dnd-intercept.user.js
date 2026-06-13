@@ -25,8 +25,8 @@ const MESSAGE_SELECTOR = '.ds-message:not(:has(> .ds-assistant-message-main-cont
 
 const UPLOAD_OVERLAY_SELECTOR = 'div.c760857e._45872ba';
 const MAX_MESSAGE_LENGTH_BEFORE_COLLAPSE = 300;
-const FILES_BLOCK_REGEX =           /<files>([\s\S]*?)<\/files>/
-const FILES_BLOCK_REGEX_GLOBAL =    /<files>([\s\S]*?)<\/files>/g
+const FILES_BLOCK_REGEX = /<files>([\s\S]*?)<\/files>/
+const FILES_BLOCK_REGEX_GLOBAL = /<files>([\s\S]*?)<\/files>/g
 
 /** @type {{ name: string, hash: string }[]} */
 const currentlyInjectedBatch = [];
@@ -112,9 +112,9 @@ GM_addStyle(`
 `)
 
 async function getContentHash(text) {
-    const msgUint8 = new TextEncoder().encode(text);                           
-    const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', msgUint8);           
-    const hashArray = Array.from(new Uint8Array(hashBuffer));                     
+    const msgUint8 = new TextEncoder().encode(text);
+    const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', msgUint8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
@@ -316,7 +316,7 @@ const collapsed_attr_name = `data-${prefix}-collapsed`
  */
 function injectCollapsed(node) {
     if (node.hasAttribute(collapsed_attr_name)) return;
-    
+
     const isLong = node.textContent.length > MAX_MESSAGE_LENGTH_BEFORE_COLLAPSE;
     node.setAttribute(collapsed_attr_name, isLong ? "true" : "false");
     node.setAttribute("title", "Double-click to toggle collapsed/expanded")
@@ -325,14 +325,14 @@ function injectCollapsed(node) {
         const isCollapsed = node.getAttribute(collapsed_attr_name) === "true";
         node.setAttribute(collapsed_attr_name, isCollapsed ? "false" : "true");
     });
-} 
+}
 
 function setupModeDetection() {
     new MutationObserver((mutations) => {
         for (const m of mutations) {
             for (const node of m.addedNodes) {
-                if (node.nodeType !== 1) continue; 
-                
+                if (node.nodeType !== 1) continue;
+
                 // mode change observing
                 if (node.matches?.(MODE_TOGGLE_SELECTOR)) {
                     observeModeElement(node);
