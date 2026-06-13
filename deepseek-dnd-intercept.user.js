@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name         DeepSeek File Drop Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.21
-// @description  Renames unsupported text files on drop and adds expert-mode file injection with hashing, versioning, and persistent history (saved only after conversation gets a real URL)
+// @version      0.16
+// @description  Renames unsupported text files on drop and adds expert-mode file injection
 // @author       KraXen72
 // @match        https://chat.deepseek.com/*
 // @grant        GM_addStyle
-// @grant        GM_notification
 // @run-at       document-start
 // ==/UserScript==
 
@@ -29,7 +28,7 @@ const MAX_MESSAGE_LENGTH_BEFORE_COLLAPSE = 300;
 const FILES_BLOCK_REGEX = /<files>([\s\S]*?)<\/files>/
 const FILES_BLOCK_REGEX_GLOBAL = /<files>([\s\S]*?)<\/files>/g
 
-/** @type {{ name: string, hash: string, version?: string }[]} */
+/** @type {{ name: string, hash: string }[]} */
 const currentlyInjectedBatch = [];
 
 const prefix = "userscript-styles-deepseek"
@@ -119,16 +118,15 @@ async function getContentHash(text) {
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-function notify(title, body) {
-    GM_notification({ title, text: body })
-}
-
-function encodeFileNameForTag(name) {
-    return name.replace(/[^a-zA-Z0-9._-]/g, (ch) => '_' + ch.charCodeAt(0).toString(16));
-}
-
-function decodeFileNameFromTag(encoded) {
-    return encoded.replace(/_[0-9a-f]{2,4}/g, (m) => String.fromCharCode(parseInt(m.slice(1), 16)));
+async function notify(title, body) {
+    if (Notification.permission === 'granted') {
+        new Notification(title, { body });
+    } else if (Notification.permission !== 'denied') {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            new Notification(title, { body });
+        }
+    }
 }
 
 async function parseInjectedFilesFromTextarea() {
@@ -143,141 +141,25 @@ async function parseInjectedFilesFromTextarea() {
     const parsed = [];
     let match;
     while ((match = fileTagRegex.exec(block)) !== null) {
-        const encodedTagName = match[1];
+        const tagName = match[1];
         const version = match[2] || null;
         const fileContent = match[3];
         const hash = await getContentHash(fileContent);
-        const originalName = decodeFileNameFromTag(encodedTagName);
+        // Extract original name (strip version suffix if present in tag name)
+        let originalName = tagName;
+        if (version) {
+            // version attribute present, tag name is the original name
+            originalName = tagName;
+        } else {
+            // try to detect if tag name contains a timestamp suffix (from previous versioning)
+            const suffixMatch = tagName.match(/^(.*)-(\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})$/);
+            if (suffixMatch) {
+                originalName = suffixMatch[1];
+            }
+        }
         parsed.push({ name: originalName, hash, content: fileContent, version });
     }
     return parsed;
-}
-
-async function refreshInjectedBatchFromTextarea() {
-    currentlyInjectedBatch.length = 0;
-    const parsed = await parseInjectedFilesFromTextarea();
-    for (const { name, hash, version } of parsed) {
-        currentlyInjectedBatch.push({ name, hash, version });
-    }
-}
-
-// Persistent storage for injected files per conversation
-function getConversationKey() {
-    // Use pathname + search (excluding hash) to identify the conversation
-    return window.location.pathname + window.location.search;
-}
-
-function loadPersistentHistory() {
-    const key = getConversationKey();
-    if (key.trim() === "") return [];
-    const stored = localStorage.getItem(`ds_injected_${key}`);
-    if (stored) {
-        try {
-            return JSON.parse(stored);
-        } catch (e) {
-            return [];
-        }
-    }
-    return [];
-}
-
-function clearPersistentHistory() {
-    const key = getConversationKey();
-    if (key.trim() === "") return;
-    localStorage.removeItem(`ds_injected_${key}`);
-}
-
-function savePersistentHistory(history) {
-    const key = getConversationKey();
-    if (key.trim() === "") return;
-    localStorage.setItem(`ds_injected_${key}`, JSON.stringify(history));
-}
-
-function addToPersistentHistory(name, hash, version = null) {
-    if (getConversationKey().trim() === "") return; // Only save when we have a real conversation key
-    const history = loadPersistentHistory();
-    const filtered = history.filter(entry => !(entry.name === name && entry.hash === hash));
-    filtered.push({ name, hash, version, injectedAt: Date.now() });
-    savePersistentHistory(filtered);
-}
-
-function removeFromPersistentHistory(name, hash) {
-    if (getConversationKey().trim() === "") return;
-    const history = loadPersistentHistory();
-    const filtered = history.filter(entry => !(entry.name === name && entry.hash === hash));
-    if (filtered.length !== history.length) {
-        savePersistentHistory(filtered);
-    }
-}
-
-function isInPersistentHistory(name, hash) {
-    const history = loadPersistentHistory();
-    return history.some(entry => entry.name === name && entry.hash === hash);
-}
-
-let currentConversationKey = null;
-
-async function onConversationChanged() {
-    const newKey = getConversationKey();
-    if (newKey === currentConversationKey) return;
-
-    const wasEmpty = currentConversationKey?.trim() === "";
-    const isNowNonEmpty = newKey.trim() !== "";
-
-    currentConversationKey = newKey;
-
-    // Clear pending attached files (they belong to previous conversation)
-    attachedFiles = [];
-    refreshUI();
-    // Re-parse textarea for the new conversation (might have existing file block)
-    await refreshInjectedBatchFromTextarea();
-
-    // If we just moved from empty to real conversation, migrate current files to persistent history
-    if (wasEmpty && isNowNonEmpty) {
-        const input = getInputElement();
-        if (input) {
-            const parsed = await parseInjectedFilesFromTextarea();
-            for (const file of parsed) {
-                addToPersistentHistory(file.name, file.hash, file.version);
-            }
-            if (parsed.length > 0) {
-                notify('Conversation saved', `Injected files have been saved to this conversation's history.`);
-            }
-        }
-    }
-}
-
-function setupUrlObserver() {
-    // Override pushState and replaceState to detect SPA navigation
-    const originalPushState = history.pushState;
-    const originalReplaceState = history.replaceState;
-
-    history.pushState = function (...args) {
-        originalPushState.apply(this, args);
-        onConversationChanged();
-    };
-
-    history.replaceState = function (...args) {
-        originalReplaceState.apply(this, args);
-        onConversationChanged();
-    };
-
-    window.addEventListener('popstate', () => onConversationChanged());
-
-    // Initial call
-    onConversationChanged();
-}
-
-function getLatestVersionForName(name) {
-    const history = loadPersistentHistory();
-    const entries = history.filter(entry => entry.name === name);
-    if (entries.length === 0) return null;
-    return entries[entries.length - 1].version || null;
-}
-
-function hasDifferentHashForName(name, currentHash) {
-    const history = loadPersistentHistory();
-    return history.some(entry => entry.name === name && entry.hash !== currentHash);
 }
 
 const ALLOWED_EXTS = new Set([
@@ -294,8 +176,10 @@ const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
 
 function isExpertModeActive() {
     if (document.querySelector(MODE_TOGGLE_SELECTOR) != null) {
+        // chat start screen
         return !!document.querySelector(EXPERT_MODE_ACTIVE_SELECTOR);
     } else {
+        // ongoing chat
         const header = document.querySelector(ONGOING_CHAT_MODE_SELECTOR);
         if (header == null) {
             console.warn("[deepseek-dnd-intercept]: can't find either expert mode selector!");
@@ -335,82 +219,24 @@ function removeFilesBlock(text) {
     return text.replace(FILES_BLOCK_REGEX_GLOBAL, '');
 }
 
-async function injectFiles() {
+function injectFiles() {
     const input = getInputElement();
     if (!input || attachedFiles.length === 0) return;
 
-    // Refresh current batch from textarea (in case of external edits)
-    await refreshInjectedBatchFromTextarea();
-
-    const filesToInject = [];
-    for (const file of attachedFiles) {
-        const hash = await getContentHash(file.content);
-
-        // Check persistent history for duplicate (same name+hash)
-        if (isInPersistentHistory(file.name, hash)) {
-            notify('Duplicate file', `"${file.name}" (same content) has already been injected in this conversation. Skipping.`);
-            continue;
-        }
-
-        let version = null;
-        // If same name but different hash exists in history, generate version timestamp
-        if (hasDifferentHashForName(file.name, hash)) {
-            const now = new Date();
-            const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
-            version = timestamp;
-        }
-
-        filesToInject.push({ name: file.name, content: file.content, hash, version });
-    }
-
-    if (filesToInject.length === 0) return;
-
     let block = '<files>\n';
-    for (const f of filesToInject) {
-        const encodedName = encodeFileNameForTag(f.name);
-        const tag = f.version ? `${encodedName} version="${f.version}"` : encodedName;
-        block += `<${tag}>\n${f.content}\n</${encodedName}>\n`;
-
-        // Add to persistent history (will only save if key is non-empty)
-        addToPersistentHistory(f.name, f.hash, f.version);
+    for (const { name, content } of attachedFiles) {
+        block += `<${name}>\n${content}\n</${name}>\n`;
     }
     block += '</files>';
 
     const remaining = removeFilesBlock(input.value);
     setTextareaValue(input, block + remaining);
-
-    // Update current batch from textarea
-    await refreshInjectedBatchFromTextarea();
 }
 
-async function uninjectFiles() {
+function clearFilesBlock() {
     const input = getInputElement();
     if (!input) return;
-
-    // Remove the <files> block from textarea
     setTextareaValue(input, removeFilesBlock(input.value));
-
-    // Remove from persistent history using the currently injected batch
-    for (const file of currentlyInjectedBatch) {
-        removeFromPersistentHistory(file.name, file.hash);
-    }
-
-    // Also remove using attachedFiles (in case batch was stale or hash mismatch)
-    for (const file of attachedFiles) {
-        const hash = await getContentHash(file.content);
-        removeFromPersistentHistory(file.name, hash);
-    }
-
-    // Refresh the in-memory batch (now empty)
-    await refreshInjectedBatchFromTextarea();
-
-    // Do NOT clear attachedFiles – they remain in the pending list
-    refreshUI();
-}
-
-async function clearPersistentHistoryOnly() {
-    clearPersistentHistory();
-    notify('History cleared', 'All injected file records have been removed from this conversation.');
 }
 
 function getUIContainer() {
@@ -418,7 +244,7 @@ function getUIContainer() {
 }
 
 function ensureUIContainer() {
-    if (getUIContainer()) return;
+    if (getUIContainer()) return; // already exists, do not recreate
 
     const container = document.createElement('div');
     container.id = `${prefix}-expert-file-ui`;
@@ -437,14 +263,13 @@ function ensureUIContainer() {
     const makeButton = (text, onClick) => {
         const btn = document.createElement('button');
         btn.textContent = text;
-        btn.addEventListener('click', () => onClick().catch(console.error));
+        btn.addEventListener('click', onClick);
         btn.classList.add(`${prefix}-button`)
         return btn;
     };
 
-    btnRow.appendChild(makeButton('Inject', async () => { await injectFiles(); }));
-    btnRow.appendChild(makeButton('Un‑inject', async () => { await uninjectFiles(); }));
-    btnRow.appendChild(makeButton('Clear History', async () => { await clearPersistentHistoryOnly(); }));
+    btnRow.appendChild(makeButton('Inject', injectFiles));
+    btnRow.appendChild(makeButton('Clear', clearFilesBlock));
 
     container.appendChild(btnRow);
     document.body.appendChild(container);
@@ -456,10 +281,7 @@ function refreshUI() {
     const container = getUIContainer();
     if (!container) return;
     container.style.display = expert ? 'block' : 'none';
-    if (!expert) {
-        attachedFiles = [];
-        currentlyInjectedBatch.length = 0;
-    }
+    if (!expert) attachedFiles = [];
 
     const list = document.getElementById(`${prefix}-file-list`);
     if (!list) return;
@@ -489,6 +311,9 @@ function refreshUI() {
 
 const collapsed_attr_name = `data-${prefix}-collapsed`
 
+/**
+ * @param {HTMLElement} node 
+ */
 function injectCollapsed(node) {
     if (node.hasAttribute(collapsed_attr_name)) return;
 
@@ -519,7 +344,7 @@ function setupModeDetection() {
 
                 // ds-message collapse injection
                 if (node.matches?.(MESSAGE_SELECTOR)) {
-                    injectCollapsed(node);
+                    injectCollapsed(nodel);
                 } else if (node.querySelector(MESSAGE_SELECTOR) != null) {
                     node.querySelectorAll(MESSAGE_SELECTOR)
                         .forEach(n => injectCollapsed(n));
@@ -576,30 +401,20 @@ document.addEventListener('drop', async (e) => {
         e.preventDefault();
         e.stopImmediatePropagation();
 
-        // Refresh current batch from textarea (for UI, but duplicate check uses persistent history)
-        await refreshInjectedBatchFromTextarea();
-
         const files = [...e.dataTransfer.files];
-        const newAttachments = [];
         for (const file of files) {
             const content = await new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = () => resolve(reader.result);
                 reader.readAsText(file);
             });
-            const hash = await getContentHash(content);
-            // Use persistent history to prevent re-adding already-injected files
-            if (isInPersistentHistory(file.name, hash)) {
-                notify('Duplicate file', `"${file.name}" (same content) has already been injected in this conversation. Not adding.`);
-                continue;
-            }
-            newAttachments.push({ name: file.name, ext: file.name.split('.').pop(), content });
+            attachedFiles.push({ name: file.name, ext: file.name.split('.').pop(), content });
         }
-        attachedFiles.push(...newAttachments);
         refreshUI();
         return;
     }
 
+    // Instant mode: rename unsupported text files, then forward
     e.preventDefault();
     e.stopPropagation();
     const files = [...e.dataTransfer.files];
@@ -623,15 +438,14 @@ function forwardDrop(originalEvent, processedFiles) {
     originalEvent.target.dispatchEvent(newEvent);
 }
 
+// Hide the “Expert Mode doesn’t support file uploads” overlay via CSS
 const style = document.createElement('style');
 style.textContent = `${UPLOAD_OVERLAY_SELECTOR} { display: none !important; }`;
 document.head.appendChild(style);
 
-async function onReady() {
+function onReady() {
     ensureUIContainer();
     setupModeDetection();
-    await refreshInjectedBatchFromTextarea();
-    setupUrlObserver();
 }
 
 if (document.readyState === 'loading') {
