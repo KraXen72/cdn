@@ -1,1 +1,6 @@
 node_modules
+/userscripts/perplexity/old/SearchModalOpener.txt
+/userscripts/perplexity/old/SearchModelMenu.txt
+/userscripts/perplexity/old/SearchModelMenuItems.txt
+/userscripts/perplexity/old/ask-input.txt
+/userscripts/perplexity/old/modal-html-dump.txt

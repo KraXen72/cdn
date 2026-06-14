@@ -7,6 +7,7 @@
 // @match        https://chat.deepseek.com/*
 // @grant        GM_addStyle
 // @run-at       document-start
+// @license      AGPL-3.0-or-later
 // ==/UserScript==
 
 const COLORS = {

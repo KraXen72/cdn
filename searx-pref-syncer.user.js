@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         SearXNG Preference Syncer
 // @namespace    http://tampermonkey.net
-// @version      2.3
+// @version      2.4
 // @description  Sync SearXNG preferences between instances
-// @author       You
+// @author       KraXen72
 // @match        https://searx.tiekoetter.com/preferences
 // @match        https://search.rhscz.eu/preferences
 // @match        https://searx.rhscz.eu/preferences
@@ -12,6 +12,7 @@
 // @grant        GM_getValue
 // @grant        GM_registerMenuCommand
 // @require      https://cdn.jsdelivr.net/npm/js-cookie@3.0.8/dist/js.cookie.min.js
+// @license      AGPL-3.0-or-later
 // ==/UserScript==
 
 const blacklist = [

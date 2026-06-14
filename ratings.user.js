@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         TMDB Watchlist — OMDb Ratings
 // @namespace    https://github.com/user/ratings-inject
-// @version      2.0.2
+// @version      2.0.3
 // @description  Injects IMDb, Rotten Tomatoes & Metacritic scores into TMDB watchlist cards, cached 3 months
-// @author       user
+// @author       KraXen72
 // @match        https://www.themoviedb.org/u/*/watchlist*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -12,6 +12,7 @@
 // @grant        GM_addStyle
 // @connect      www.omdbapi.com
 // @run-at       document-idle
+// @license      AGPL-3.0-or-later
 // ==/UserScript==
 'use strict';
 
