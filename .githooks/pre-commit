@@ -1,0 +1,4 @@
+#!/bin/bash
+# Pre-commit hook: regenerate index.html and include it in the commit
+python3 "$(git rev-parse --show-toplevel)/generate-index.py" &&
+git add "$(git rev-parse --show-toplevel)/index.html"
