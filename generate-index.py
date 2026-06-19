@@ -107,9 +107,9 @@ def collect_entries() -> dict[str, list[tuple[str, str]]]:
 
     sections: dict[str, list[tuple[str, str]]] = {}
     if tools:
-        sections["Tools"] = tools
+        sections["tools"] = tools
     if userscripts:
-        sections["Userscripts"] = userscripts
+        sections["userscripts"] = userscripts
     return sections
 
 
