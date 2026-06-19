@@ -24,6 +24,20 @@ def is_excluded(path: str) -> bool:
     return any(exclude in path for exclude in EXCLUDED)
 
 
+CATEGORY_HEADINGS = {
+    "tools": "Tools",
+    "userscripts": "Userscripts",
+    "artifacts": "Artifacts",
+}
+
+
+def humanize_category(name: str) -> str:
+    """Turn a directory name into a display heading."""
+    if name in CATEGORY_HEADINGS:
+        return CATEGORY_HEADINGS[name]
+    return name.replace("-", " ").replace("_", " ").title().strip()
+
+
 def scan_folder(folder: Path, prefix: str) -> list[tuple[str, str]]:
     """Scan a folder for indexable entries.
 
@@ -71,14 +85,15 @@ def scan_folder(folder: Path, prefix: str) -> list[tuple[str, str]]:
     return entries
 
 
-def collect_entries() -> list[tuple[str, str]]:
-    """Collect all entries for the index page.
+def collect_entries() -> dict[str, list[tuple[str, str]]]:
+    """Collect all entries grouped by category.
 
-    Returns list of (display_name, href) tuples.
+    Returns dict mapping category heading -> list of (display_name, href).
     """
-    entries = []
+    sections: dict[str, list[tuple[str, str]]] = {}
 
     # 1. Top-level {name}.html files
+    top_level: list[tuple[str, str]] = []
     for item in sorted(SCRIPT_DIR.glob("*.html")):
         if item.name == "index.html":
             continue
@@ -86,7 +101,9 @@ def collect_entries() -> list[tuple[str, str]]:
             continue
         if is_excluded(item.name):
             continue
-        entries.append((item.stem, item.name))
+        top_level.append((item.stem, item.name))
+    if top_level:
+        sections["Other"] = top_level
 
     # 2. Top-level folders (one level deep)
     for item in sorted(SCRIPT_DIR.iterdir()):
@@ -96,20 +113,33 @@ def collect_entries() -> list[tuple[str, str]]:
             continue
         if is_excluded(item.name):
             continue
-        entries.extend(scan_folder(item, prefix=item.name))
+        entries = scan_folder(item, prefix=item.name)
+        if entries:
+            category = humanize_category(item.name)
+            sections.setdefault(category, []).extend(entries)
 
-    # Sort entries alphabetically by display name
-    entries.sort(key=lambda x: x[0].lower())
+    # Sort entries within each section
+    for entries in sections.values():
+        entries.sort(key=lambda x: x[0].lower())
 
-    return entries
+    return sections
 
 
-def generate_html(entries: list[tuple[str, str]]) -> str:
-    """Generate the index.html content."""
-    entries_html = "\n".join(
-        f'            <li><a href="{href}">{name}</a></li>'
-        for name, href in entries
-    )
+def generate_html(sections: dict[str, list[tuple[str, str]]]) -> str:
+    """Generate the index.html content from categorized sections."""
+    sections_html = ""
+
+    for heading, entries in sections.items():
+        entries_html = "\n".join(
+            f'            <li><a href="{href}">{name}</a></li>'
+            for name, href in entries
+        )
+        sections_html += f'''        <h2>{heading}</h2>
+        <ul>
+{entries_html}
+        </ul>
+
+'''
 
     return f'''<!DOCTYPE html>
 <html lang="en">
@@ -215,11 +245,7 @@ def generate_html(entries: list[tuple[str, str]]) -> str:
 <body>
 
     <div class="container">
-        <h2>utils</h2>
-        <ul>
-{entries_html}
-        </ul>
-    </div>
+{sections_html}    </div>
 
 </body>
 
@@ -234,7 +260,8 @@ def main():
     output_path = SCRIPT_DIR / "index.html"
     output_path.write_text(html_content, encoding="utf-8")
     
-    print(f"[generate-index.py] Generated index.html with {len(entries)} entries")
+    total = sum(len(v) for v in entries.values())
+    print(f"[generate-index.py] Generated index.html with {total} entries")
 
 
 if __name__ == "__main__":
