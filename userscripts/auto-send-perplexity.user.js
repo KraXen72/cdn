@@ -1,13 +1,13 @@
 // ==UserScript==
-// @name Auto-send for Perplexity
-// @namespace https://docs.scriptcat.org/
-// @version 0.8.0
-// @description Configure model/thinking from URL and submit quickly.
-// @author KraXen72
-// @match https://www.perplexity.ai/*
-// @icon https://www.google.com/s2/favicons?sz=64&domain=www.perplexity.ai
-// @license AGPL-3.0-or-later
-// @grant none
+// @name         Auto-send for Perplexity
+// @namespace    https://docs.scriptcat.org/
+// @version      0.7.0
+// @description  Configure model/thinking from URL and submit quickly.
+// @author       KraXen72
+// @match        https://www.perplexity.ai/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=www.perplexity.ai
+// @license      AGPL-3.0-or-later
+// @grant        none
 // @noframes
 // ==/UserScript==
 
@@ -15,12 +15,12 @@
 
 const params = new URLSearchParams(window.location.search);
 
-const requestedQuery   = params.get("us_query") ?? "";
-const requestedModel   = params.get("us_model") ?? "";
-const hasRequestedQuery    = requestedQuery.trim() !== "";
-const hasRequestedModel    = requestedModel.trim() !== "";
+const requestedQuery = params.get("us_query") ?? "";
+const requestedModel = params.get("us_model") ?? "";
+const hasRequestedQuery = requestedQuery.trim() !== "";
+const hasRequestedModel = requestedModel.trim() !== "";
 const hasRequestedThinking = params.has("thinking");
-const requestedThinking    = parseBooleanParam(params.get("thinking"));
+const requestedThinking = parseBooleanParam(params.get("thinking"));
 
 // examples: vivaldi custom search engines (preserve these comments verbatim!)
 // Format: us_model=<family> or us_model=<family>_<version>
@@ -37,70 +37,36 @@ const requestedThinking    = parseBooleanParam(params.get("thinking"));
 // Family definitions: map alias words -> the ordered word tokens that must appear in a menu label.
 // The resolver reads live menu labels; nothing here is pinned to a specific version.
 const MODEL_FAMILIES = {
-  best:         ["best"],
-  sonar:        ["sonar"],
-  gpt:          ["gpt"],
-  claude_sonnet:["claude", "sonnet"],
-  claude_opus:  ["claude", "opus"],
-  gemini:       ["gemini"],
-  kimi:         ["kimi"],
-  nemotron:     ["nemotron"],
+  best:          ["best"],
+  sonar:         ["sonar"],
+  gpt:           ["gpt"],
+  claude_sonnet: ["claude", "sonnet"],
+  claude_opus:   ["claude", "opus"],
+  gemini:        ["gemini"],
+  kimi:          ["kimi"],
+  nemotron:      ["nemotron"],
 };
 
 const SEL = {
-  composer:        "[data-ask-input-container]",
-  editable:        '[contenteditable="true"]',
-  submitButton:    'button[aria-label="Submit"]',
-  menuTrigger:     'button[aria-haspopup="menu"]',
-  menu:            '[role="menu"]',
-  modelRadios:     '[role="menuitemradio"]',
-  selectedRadio:   '[role="menuitemradio"][aria-checked="true"]',
-  thinkingCheckbox:'[role="menuitemcheckbox"]',
+  composer: '[data-ask-input-container]',
+  editable: '[contenteditable="true"]',
+  submitButton: 'button[aria-label="Submit"]',
+  menuTrigger: 'button[aria-haspopup="menu"]',
+  menu: '[role="menu"]',
+  modelRadios: '[role="menuitemradio"]',
+  selectedRadio: '[role="menuitemradio"][aria-checked="true"]',
+  thinkingCheckbox: '[role="menuitemcheckbox"]',
 };
 
-// ── Boot / retry state ────────────────────────────────────────────────────────
+let runStarted = false;
+main().catch((error) => console.error("[Auto-send for Perplexity] fatal error", error));
 
-// "idle"    – not yet started (or last attempt failed and can be retried)
-// "running" – an attempt is currently in progress
-// "done"    – succeeded; no further action needed
-let bootState = "idle";
+async function main() {
+  if (runStarted) return;
+  runStarted = true;
 
-function hasWork() {
-  return hasRequestedQuery || hasRequestedModel || hasRequestedThinking;
-}
-
-async function boot() {
-  if (!hasWork() || bootState !== "idle") return;
-
-  bootState = "running";
-  try {
-    await attempt();
-    bootState = "done";
-    hydrationObserver.disconnect();
-  } catch (err) {
-    bootState = "idle";
-    console.warn("[Auto-send for Perplexity] retryable failure:", err.message);
-  }
-}
-
-// Retry whenever the tab becomes visible or regains focus (covers the
-// "typed URL, tabbed away, came back" scenario) and on bfcache restore.
-document.addEventListener("visibilitychange", () => { if (!document.hidden) boot(); });
-window.addEventListener("focus",    boot);
-window.addEventListener("pageshow", boot);
-
-// Long-tail fallback: retry on any significant DOM change until done.
-const hydrationObserver = new MutationObserver(boot);
-hydrationObserver.observe(document.documentElement, { childList: true, subtree: true });
-
-boot();
-
-// ── Core attempt ──────────────────────────────────────────────────────────────
-
-async function attempt() {
-  if (!hasWork()) {
+  if (!hasRequestedQuery && !hasRequestedModel && !hasRequestedThinking) {
     console.info("[Auto-send for Perplexity] nothing requested; exiting.");
-    bootState = "done"; // nothing to do is a permanent terminal state
     return;
   }
 
@@ -139,8 +105,6 @@ async function attempt() {
   console.log("[Auto-send for Perplexity] submitted.");
 }
 
-// ── Utilities ─────────────────────────────────────────────────────────────────
-
 function parseBooleanParam(value) {
   if (value == null) return false;
   const normalized = value.trim().toLowerCase();
@@ -159,10 +123,8 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// ── Model param parsing ───────────────────────────────────────────────────────
-
 // Parse "us_model" param into { familyKey, version: [major,minor] | null }.
-// Accepted formats: gpt  claude_sonnet  claude_sonnet_4.6  gpt_5.4
+// Accepted formats:   gpt   claude_sonnet   claude_sonnet_4.6   gpt_5.4
 // The last token is treated as a version ONLY if it looks like "N.N".
 function parseModelParam(raw) {
   const tokens = raw.trim().toLowerCase().replace(/[^a-z0-9.]+/g, "_").replace(/^_|_$/g, "").split("_");
@@ -170,13 +132,15 @@ function parseModelParam(raw) {
   const versionMatch = /^(\d+)\.(\d+)$/.exec(last);
   const version = versionMatch ? [parseInt(versionMatch[1], 10), parseInt(versionMatch[2], 10)] : null;
   const familyTokens = version ? tokens.slice(0, -1) : tokens;
-  return { familyKey: familyTokens.join("_"), version };
+  const familyKey = familyTokens.join("_");
+  return { familyKey, version };
 }
 
 // Parse a visible menu label like "Claude Sonnet 4.6" into:
 // { words: ["claude","sonnet"], version: [4,6] | null }
 function parseMenuLabel(label) {
   const words = label.toLowerCase().replace(/[^a-z0-9.]+/g, " ").trim().split(/\s+/);
+  // last word that looks like N.N is the version
   const last = words[words.length - 1];
   const vm = /^(\d+)\.(\d+)$/.exec(last);
   const version = vm ? [parseInt(vm[1], 10), parseInt(vm[2], 10)] : null;
@@ -189,13 +153,13 @@ function compareVersions(a, b) {
   return a[0] !== b[0] ? a[0] - b[0] : a[1] - b[1];
 }
 
-// Given live menu candidates and a parsed model param, return the best matching
-// label string, or null.
+// Given a live array of { label, element } candidates and a parsed model param,
+// return the best matching label string, or null.
 function resolveLiveLabel(candidates, familyKey, requestedVersion) {
   const familyWords = MODEL_FAMILIES[familyKey];
   if (!familyWords) return null;
 
-  // Every family word must appear in the candidate word list, in order.
+  // Filter: every family word must appear in the candidate word list, in order.
   const matches = candidates.filter(({ parsed }) => {
     let searchFrom = 0;
     for (const fw of familyWords) {
@@ -208,6 +172,7 @@ function resolveLiveLabel(candidates, familyKey, requestedVersion) {
 
   if (matches.length === 0) return null;
 
+  // If a specific version was requested, require exact match.
   if (requestedVersion !== null) {
     const exact = matches.find(({ parsed }) =>
       parsed.version !== null && compareVersions(parsed.version, requestedVersion) === 0
@@ -215,12 +180,14 @@ function resolveLiveLabel(candidates, familyKey, requestedVersion) {
     return exact?.label ?? null;
   }
 
+  // Otherwise pick the highest version among matches.
   const withVersion = matches.filter(({ parsed }) => parsed.version !== null);
   if (withVersion.length > 0) {
     withVersion.sort((a, b) => compareVersions(b.parsed.version, a.parsed.version));
     return withVersion[0].label;
   }
 
+  // No version at all (e.g. "Best") - just return the first match.
   return matches[0].label;
 }
 
@@ -237,20 +204,21 @@ function resolveTarget(modelParam, thinking, hasModel, hasThinking) {
     familyKey,
     requestedVersion: version,
     thinking: hasThinking ? Boolean(thinking) : null,
-    // baseLabel and triggerLabel are resolved live from the open menu.
+    // baseLabel is resolved live from the open menu; seed with null here.
     baseLabel: null,
     triggerLabel: null,
   };
 }
-
-// ── DOM helpers ───────────────────────────────────────────────────────────────
 
 function waitForElement(selector, root = document, timeout = 5_000) {
   const query = () => (root === document ? document : root).querySelector(selector);
 
   return new Promise((resolve, reject) => {
     const initial = query();
-    if (initial) { resolve(initial); return; }
+    if (initial) {
+      resolve(initial);
+      return;
+    }
 
     const observedRoot = root === document ? document.documentElement : root;
     const observer = new MutationObserver(() => {
@@ -278,8 +246,8 @@ function waitForElement(selector, root = document, timeout = 5_000) {
 async function waitForComposer(timeout) {
   const pickComposer = () => {
     const composers = [...document.querySelectorAll(SEL.composer)];
-    return composers.find((el) => el.querySelector(SEL.editable))
-      ?? composers.find((el) => el.querySelector(SEL.submitButton))
+    return composers.find((element) => element.querySelector(SEL.editable))
+      ?? composers.find((element) => element.querySelector(SEL.submitButton))
       ?? composers[0]
       ?? null;
   };
@@ -294,26 +262,27 @@ async function waitForComposer(timeout) {
   return composer;
 }
 
-// ── Model trigger ─────────────────────────────────────────────────────────────
+function findModelTrigger(composer) {
+  const buttons = [...composer.querySelectorAll(SEL.menuTrigger)];
+  const ranked = buttons
+    .filter((button) => !button.matches(SEL.submitButton))
+    .map((button) => ({ button, score: scoreTrigger(button) }))
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score);
 
-const ALL_FAMILY_WORDS = [...new Set(Object.values(MODEL_FAMILIES).flat())];
+  return ranked[0]?.button ?? null;
+}
 
 function scoreTrigger(button) {
   const label = button.getAttribute("aria-label") ?? normText(button);
   if (!label) return 0;
   if (label === "Model" || label === "Orchestrator") return 2;
   if (label.endsWith(" Thinking")) return 4;
-  if (ALL_FAMILY_WORDS.some((w) => label.toLowerCase().includes(w))) return 5;
+  // A valid model trigger has a label that contains at least one recognised family word.
+  const lowerLabel = label.toLowerCase();
+  const allFamilyWords = [...new Set(Object.values(MODEL_FAMILIES).flat())];
+  if (allFamilyWords.some((w) => lowerLabel.includes(w))) return 5;
   return 0;
-}
-
-function findModelTrigger(composer) {
-  const ranked = [...composer.querySelectorAll(SEL.menuTrigger)]
-    .filter((button) => !button.matches(SEL.submitButton))
-    .map((button) => ({ button, score: scoreTrigger(button) }))
-    .filter((entry) => entry.score > 0)
-    .sort((a, b) => b.score - a.score);
-  return ranked[0]?.button ?? null;
 }
 
 async function waitForModelTrigger(composer, timeout) {
@@ -349,13 +318,12 @@ function triggerMatchesTarget(trigger, target) {
   return label.trim() === target.triggerLabel;
 }
 
-// ── Model menu ────────────────────────────────────────────────────────────────
-
 function isModelMenu(menu) {
   if (!menu?.isConnected) return false;
+  const allFamilyWords = [...new Set(Object.values(MODEL_FAMILIES).flat())];
   return [...menu.querySelectorAll(SEL.modelRadios)].some((item) => {
     const label = getModelItemLabel(item).toLowerCase();
-    return ALL_FAMILY_WORDS.some((w) => label.includes(w));
+    return allFamilyWords.some((w) => label.includes(w));
   });
 }
 
@@ -397,21 +365,33 @@ async function openModelMenu(trigger) {
     },
     () => {
       const rect = trigger.getBoundingClientRect();
-      const options = { bubbles: true, cancelable: true, clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2, button: 0 };
+      const options = {
+        bubbles: true,
+        cancelable: true,
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+        button: 0,
+      };
       trigger.dispatchEvent(new PointerEvent("pointerdown", options));
-      trigger.dispatchEvent(new PointerEvent("pointerup",   options));
-      trigger.dispatchEvent(new MouseEvent("click",         options));
+      trigger.dispatchEvent(new PointerEvent("pointerup", options));
+      trigger.dispatchEvent(new MouseEvent("click", options));
     },
   ];
 
   for (const attempt of attempts) {
     attempt();
-    try { return await waitForModelMenu(1_500); } catch { await sleep(80); }
+    try {
+      return await waitForModelMenu(1_500);
+    } catch {
+      await sleep(80);
+    }
   }
+
   throw new Error('Timeout waiting for selector: [role="menu"]');
 }
 
 function getModelItemLabel(item) {
+  // Prefer the translate="no" span Perplexity uses for model names.
   const explicitLabel = item.querySelector("[translate='no']");
   if (explicitLabel) return normText(explicitLabel);
   return normText(item);
@@ -427,7 +407,7 @@ function readMenuCandidates(menu) {
 function readMenuState(menu) {
   const selected = menu.querySelector(SEL.selectedRadio);
   const thinkingRow = [...menu.querySelectorAll(SEL.thinkingCheckbox)]
-    .find((el) => normText(el).includes("Thinking"));
+    .find((element) => normText(element).includes("Thinking"));
   const thinkingSwitch = thinkingRow?.querySelector('[role="switch"]') ?? null;
 
   return {
@@ -440,6 +420,7 @@ function readMenuState(menu) {
 async function configureMenu(menu, trigger, target) {
   let currentMenu = menu;
 
+  // Resolve baseLabel live from the actual menu items.
   const candidates = readMenuCandidates(currentMenu);
   const resolvedLabel = resolveLiveLabel(candidates, target.familyKey, target.requestedVersion);
   if (!resolvedLabel) {
@@ -447,8 +428,8 @@ async function configureMenu(menu, trigger, target) {
     throw new Error(`No menu item matched family "${target.familyKey}" (version ${JSON.stringify(target.requestedVersion)}). Available: ${available}`);
   }
 
-  target.baseLabel    = resolvedLabel;
-  target.triggerLabel = target.thinking ? `${resolvedLabel} Thinking` : resolvedLabel;
+  target.baseLabel = resolvedLabel;
+  target.triggerLabel = (target.thinking) ? `${resolvedLabel} Thinking` : resolvedLabel;
 
   let state = readMenuState(currentMenu);
 
@@ -457,20 +438,26 @@ async function configureMenu(menu, trigger, target) {
     if (!item) throw new Error(`Model item "${target.baseLabel}" not found in menu.`);
 
     item.click();
+
     try {
       await waitForAttr(item, "aria-checked", "true", 1_500);
     } catch {
       currentMenu = await openModelMenu(trigger);
     }
 
-    if (!currentMenu.isConnected) currentMenu = await openModelMenu(trigger);
+    if (!currentMenu.isConnected) {
+      currentMenu = await openModelMenu(trigger);
+    }
+
     state = readMenuState(currentMenu);
   }
 
   if (target.thinking === null || state.thinking === target.thinking) return;
 
-  const { thinkingSwitch } = state;
-  if (!thinkingSwitch) throw new Error("Thinking switch not available for this model.");
+  const thinkingSwitch = state.thinkingSwitch;
+  if (!thinkingSwitch) {
+    throw new Error("Thinking switch not available for this model.");
+  }
 
   thinkingSwitch.click();
   await waitForAttr(thinkingSwitch, "aria-checked", String(target.thinking), 1_500);
@@ -478,7 +465,10 @@ async function configureMenu(menu, trigger, target) {
 
 function waitForAttr(element, attribute, expectedValue, timeout = 1_500) {
   return new Promise((resolve, reject) => {
-    if (element.getAttribute(attribute) === expectedValue) { resolve(); return; }
+    if (element.getAttribute(attribute) === expectedValue) {
+      resolve();
+      return;
+    }
 
     const observer = new MutationObserver(() => {
       if (element.getAttribute(attribute) !== expectedValue) return;
@@ -497,11 +487,13 @@ function waitForAttr(element, attribute, expectedValue, timeout = 1_500) {
 }
 
 function waitForTriggerLabel(trigger, expectedLabel, timeout = 3_000) {
-  const hasExpectedLabel = () =>
-    (trigger.getAttribute("aria-label") ?? normText(trigger)).trim() === expectedLabel;
+  const hasExpectedLabel = () => (trigger.getAttribute("aria-label") ?? normText(trigger)).trim() === expectedLabel;
 
   return new Promise((resolve) => {
-    if (hasExpectedLabel()) { resolve(); return; }
+    if (hasExpectedLabel()) {
+      resolve();
+      return;
+    }
 
     const observer = new MutationObserver(() => {
       if (!hasExpectedLabel()) return;
@@ -510,7 +502,12 @@ function waitForTriggerLabel(trigger, expectedLabel, timeout = 3_000) {
       resolve();
     });
 
-    observer.observe(trigger, { attributes: true, childList: true, subtree: true, attributeFilter: ["aria-label"] });
+    observer.observe(trigger, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+      attributeFilter: ["aria-label"],
+    });
 
     const timer = setTimeout(() => {
       observer.disconnect();
@@ -520,8 +517,6 @@ function waitForTriggerLabel(trigger, expectedLabel, timeout = 3_000) {
   });
 }
 
-// ── Composer helpers ──────────────────────────────────────────────────────────
-
 function setComposerQuery(composer, query) {
   const editable = composer.querySelector(SEL.editable);
   if (!editable) throw new Error("contenteditable not found inside composer.");
@@ -529,16 +524,19 @@ function setComposerQuery(composer, query) {
   editable.focus();
   editable.textContent = query.trim();
   editable.dispatchEvent(new InputEvent("input", {
-    bubbles: true, cancelable: true, inputType: "insertText", data: query.trim(),
+    bubbles: true,
+    cancelable: true,
+    inputType: "insertText",
+    data: query.trim(),
   }));
 }
 
 async function refocusComposerInput(composer) {
-  const editable = composer.querySelector(SEL.editable)
-    ?? await waitForElement(SEL.editable, composer, 5_000);
+  const editable = composer.querySelector(SEL.editable) ?? await waitForElement(SEL.editable, composer, 5_000);
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     editable.focus();
+
     const selection = window.getSelection?.();
     if (selection) {
       const range = document.createRange();
@@ -547,7 +545,11 @@ async function refocusComposerInput(composer) {
       selection.removeAllRanges();
       selection.addRange(range);
     }
-    if (document.activeElement === editable || editable.contains(document.activeElement)) return;
+
+    if (document.activeElement === editable || editable.contains(document.activeElement)) {
+      return;
+    }
+
     await sleep(50);
   }
 }
@@ -565,8 +567,8 @@ function installSpeedStyle() {
 [role="switch"],
 [role="menuitemcheckbox"] {
   transition-duration: 0ms !important;
-  animation-duration:  0ms !important;
-  animation-delay:     0ms !important;
+  animation-duration: 0ms !important;
+  animation-delay: 0ms !important;
 }`;
 
   document.head.appendChild(style);
