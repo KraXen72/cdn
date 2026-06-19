@@ -2,11 +2,10 @@
 """
 Generate index.html for top-level directory listing.
 
-Scans for:
+Scans recursively one level deep:
 - Top-level {name}.html files
-- Folders with index.html
-- Folders with dist/index.html (if no root index.html)
-- Subfolders containing only HTML files (includes those HTML files)
+- Per folder: index.html, dist/index.html, individual .html files, .user.js files,
+  and sub-subfolder index.html entries
 """
 
 import os
@@ -25,18 +24,51 @@ def is_excluded(path: str) -> bool:
     return any(exclude in path for exclude in EXCLUDED)
 
 
-def folder_has_only_html_files(folder: Path) -> bool:
-    """Check if folder contains only HTML files (no subdirs, no other files)."""
-    has_html = False
-    for item in folder.iterdir():
-        if item.is_file():
-            if item.suffix == ".html":
-                has_html = True
-            else:
-                return False
-        elif item.is_dir():
-            return False
-    return has_html
+def scan_folder(folder: Path, prefix: str) -> list[tuple[str, str]]:
+    """Scan a folder for indexable entries.
+
+    Returns list of (display_name, href) tuples with paths relative to repo root.
+    """
+    entries = []
+
+    # If folder has its own index.html, use that as the sole entry
+    if (folder / "index.html").exists():
+        entries.append((folder.name, f"{prefix}/index.html"))
+        return entries
+
+    # Check for dist/index.html (e.g. built SPAs)
+    if (folder / "dist" / "index.html").exists():
+        entries.append((folder.name, f"{prefix}/dist/index.html"))
+        return entries
+
+    # Individual .html files (non-index, non-hidden)
+    for item in sorted(folder.glob("*.html")):
+        if item.name == "index.html":
+            continue
+        if item.stem.startswith("_"):
+            continue
+        if is_excluded(str(item.relative_to(SCRIPT_DIR))):
+            continue
+        entries.append((item.stem, f"{prefix}/{item.name}"))
+
+    # .user.js files (userscripts)
+    for item in sorted(folder.glob("*.user.js")):
+        if is_excluded(str(item.relative_to(SCRIPT_DIR))):
+            continue
+        entries.append((item.stem, f"{prefix}/{item.name}"))
+
+    # Subfolders with their own index.html
+    for subfolder in sorted(folder.iterdir()):
+        if not subfolder.is_dir():
+            continue
+        if subfolder.name.startswith("."):
+            continue
+        if is_excluded(str(subfolder.relative_to(SCRIPT_DIR))):
+            continue
+        if (subfolder / "index.html").exists():
+            entries.append((subfolder.name, f"{prefix}/{subfolder.name}/index.html"))
+
+    return entries
 
 
 def collect_entries() -> list[tuple[str, str]]:
@@ -47,44 +79,28 @@ def collect_entries() -> list[tuple[str, str]]:
     entries = []
 
     # 1. Top-level {name}.html files
-    for item in SCRIPT_DIR.glob("*.html"):
+    for item in sorted(SCRIPT_DIR.glob("*.html")):
         if item.name == "index.html":
-            continue
-        if is_excluded(item.name):
             continue
         if item.stem.startswith("_"):
             continue
-        display_name = item.stem
-        entries.append((display_name, item.name))
+        if is_excluded(item.name):
+            continue
+        entries.append((item.stem, item.name))
 
-    # 2. Folders
-    for item in SCRIPT_DIR.iterdir():
+    # 2. Top-level folders (one level deep)
+    for item in sorted(SCRIPT_DIR.iterdir()):
         if not item.is_dir():
             continue
         if item.name.startswith("."):
             continue
         if is_excluded(item.name):
             continue
+        entries.extend(scan_folder(item, prefix=item.name))
 
-        # Check for index.html in folder root
-        if (item / "index.html").exists():
-            display_name = item.name
-            entries.append((display_name, f"{item.name}/index.html"))
-        # Check for dist/index.html
-        elif (item / "dist" / "index.html").exists():
-            display_name = item.name
-            entries.append((display_name, f"{item.name}/dist/index.html"))
-        # Check if folder has only HTML files - include each HTML file
-        elif folder_has_only_html_files(item):
-            for html_file in sorted(item.glob("*.html")):
-                if html_file.stem.startswith("_"):
-                    continue
-                display_name = html_file.stem
-                entries.append((display_name, f"{item.name}/{html_file.name}"))
-    
     # Sort entries alphabetically by display name
     entries.sort(key=lambda x: x[0].lower())
-    
+
     return entries
 
 

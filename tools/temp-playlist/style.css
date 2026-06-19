@@ -1,0 +1,203 @@
+:root {
+	--flexoki-bg: #100F0F;
+	--flexoki-bg-2: #1C1B1A;
+	--flexoki-ui: #282726;
+	--flexoki-ui-2: #343331;
+	--flexoki-ui-3: #403E3C;
+	--flexoki-tx-3: #575653;
+	--flexoki-tx-2: #878580;
+	--flexoki-tx: #CECDC3;
+
+	--flexoki-red: #D14D41;
+	--flexoki-orange: #DA702C;
+	--flexoki-yellow: #D0A215;
+	--flexoki-green: #879A39;
+	--flexoki-cyan: #3AA99F;
+	--flexoki-blue: #4385BE;
+	--flexoki-purple: #8B7EC8;
+	--flexoki-magenta: #CE5D97;
+
+}
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+
+	font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
+}
+
+body {
+	background: radial-gradient(1200px 600px at 50% -10%, #1b1a19 0%, var(--flexoki-bg) 60%);
+	color: var(--flexoki-tx);
+	font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100vh;
+	padding: 28px;
+}
+
+.container {
+	width: 100%;
+	max-width: 700px;
+	background-color: var(--flexoki-bg-2);
+	border: 1px solid var(--flexoki-ui-2);
+	border-radius: 12px;
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+}
+
+header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding-bottom: 10px;
+}
+
+h1 {
+	font-size: 1.75rem;
+	font-weight: 600;
+	color: var(--flexoki-tx);
+	letter-spacing: -0.02em;
+}
+
+.description {
+	font-size: 0.95rem;
+	color: var(--flexoki-tx-2);
+	margin-top: 0;
+}
+
+.input-group {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	background: var(--flexoki-bg);
+	border: 1px solid var(--flexoki-ui-2);
+	border-radius: 6px;
+	padding: 14px 16px 12px;
+}
+
+label {
+	font-size: 0.72rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--flexoki-tx-2);
+}
+
+textarea {
+	width: 100%;
+	background-color: transparent;
+	border: none;
+	padding: 10px 2px 2px;
+	color: var(--flexoki-tx);
+	font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+	font-size: 0.9rem;
+	resize: vertical;
+	outline: none;
+	--sb-track-color: var(--flexoki-ui);
+	--sb-thumb-color: var(--flexoki-cyan);
+	--sb-size: 12px;
+	--sb-border: 1px;
+}
+
+textarea::-webkit-resizer {
+	background: linear-gradient(135deg, transparent 0 55%, var(--flexoki-ui-3) 55% 100%);
+	border-radius: 3px;
+	width: calc(var(--sb-size) - 4px);
+	height: calc(var(--sb-size) - 4px);
+}
+
+textarea::-webkit-scrollbar-corner {
+	background: var(--flexoki-bg);
+}
+
+textarea::-webkit-scrollbar {
+	width: var(--sb-size);
+	height: var(--sb-size);
+}
+
+textarea::-webkit-scrollbar-track {
+	background: var(--sb-track-color);
+	border-radius: 5px;
+}
+
+textarea::-webkit-scrollbar-thumb {
+	background: var(--sb-thumb-color);
+	border-radius: 5px;
+	border: var(--sb-border) solid var(--sb-track-color);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+	textarea {
+		scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+	}
+}
+
+textarea:focus {
+	outline: none;
+}
+
+textarea::placeholder {
+	color: var(--flexoki-ui-3);
+}
+
+#inputUrls {
+	min-height: 300px;
+}
+
+#outputUrl {
+	min-height: 100px;
+}
+
+.status-bar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 0.8rem;
+	color: var(--flexoki-tx-2);
+	height: 20px;
+}
+
+.video-count {
+	color: var(--flexoki-blue);
+}
+
+button {
+	background-color: var(--flexoki-tx);
+	color: var(--flexoki-bg);
+	border-radius: 6px;
+	padding: 12px 18px;
+	font-size: 0.95rem;
+	font-weight: 500;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+
+	border-style: solid;
+	border-width: 1px;
+	border-color: transparent;
+}
+
+button:not(:disabled):hover {
+	background-color: var(--flexoki-cyan);
+}
+
+button:not(:disabled):active {
+	transform: translateY(1px);
+}
+
+button:disabled {
+	border: 1px solid var(--flexoki-ui-2);
+	opacity: 0.7;
+	cursor: not-allowed;
+	color: var(--flexoki-tx-2);
+	background-color: transparent;
+}

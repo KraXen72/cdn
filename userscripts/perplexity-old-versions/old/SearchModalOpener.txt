@@ -1,0 +1,75 @@
+const __vite__mapDeps = (i, m=__vite__mapDeps, d=(m.f || (m.f = ["assets/SettingsModal-BFubojrp.js", "assets/rolldown-runtime-CNgF_TGW.js", "assets/layout-sidebar-DBWZLRo4.js", "assets/vite-CC3ayoWd.js", "assets/vendors-DwcbDYjC.js", "assets/aether-core-D0TrdQ11.js", "assets/pplx-icons-DuU4ocuu.js", "assets/platform-core-BAq6iFnX.js", "assets/i18n-L3TT4UlR.js", "assets/lexical-Ds7GcVzM.js", "assets/layout-sidebar-pinned-spaces-DXnRB93u.js", "assets/spa-shell-BbY_239e.js", "assets/react-query-6hyt4Rfs.js", "assets/pplx-stream-HidCmsS6.js", "assets/platform-components-BYumWOSk.js", "assets/experimentation-BvTZdvGZ.js", "assets/spa-metadata-B7J4J8UU.js", "assets/layout-aux-CLRO5SxM.js", "assets/bootstrap-Dby4bnXr.js", "assets/Sidebar-Dbj59vnq.js", "assets/page-components-home-TXfnbBaN.js", "assets/ask-input-DsnDwDA_.js", "assets/computer-command-menu-Bgb4sBw8.js", "assets/layout-banner-FdOCpg3B.js", "assets/widgets-home-D-i8jicL.js", "assets/computer-ask-input-Rl3wDIPR.js", "assets/device-typeahead-CuuuXEV9.js", "assets/layout-floating-BKozJ4Ym.js", "assets/getApiConsoleUrl-CMFpDL-p.js", "assets/useComputerQuerySettingsVariation-Cr3v-uII.js", "assets/useComputerUsageAnalyticsVariation-VotQNIEa.js", "assets/useComputerUserCredentialsVaultVariation-BQNEnip5.js", "assets/useIsPersonalSearchEnabled-DEuzz9ve.js", "assets/useSettingsHash-DRD7Tadg.js", "assets/TabBar-CJ32p6eB.js", "assets/framer-motion-CO2Szyte.js", "assets/PageLoading-Dw_2nG3x.js", "assets/SettingsGroup-CIV2Zwu4.js"]))) => i.map(i => d[i]);
+import {o as e} from "./rolldown-runtime-CNgF_TGW.js";
+import {$ as t} from "./vendors-DwcbDYjC.js";
+import {mn as n, nr as r} from "./platform-core-BAq6iFnX.js";
+import {t as i} from "./vite-CC3ayoWd.js";
+import {J as a, K as o, to as s} from "./spa-shell-BbY_239e.js";
+import {t as c} from "./useSettingsHash-DRD7Tadg.js";
+var l = e(t(), 1)
+  , u = n(async () => {
+    let {SettingsModal: e} = await i(async () => {
+        let {SettingsModal: e} = await import(`./SettingsModal-BFubojrp.js`);
+        return {
+            SettingsModal: e
+        }
+    }
+    , __vite__mapDeps([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]));
+    return {
+        default: e
+    }
+}
+, {
+    critical: !0
+})
+  , d = e => {
+    if (typeof window > `u` || !o(window.location.hash))
+        return;
+    let {pathname: t, search: n} = window.location;
+    e.replace(`${t}${n}`, `clear settings hash`),
+    window.dispatchEvent(new HashChangeEvent(`hashchange`))
+}
+  , f = l.memo(function() {
+    let {openModal: e} = s()
+      , t = r()
+      , n = c()
+      , i = o(n)
+      , f = (0,
+    l.useRef)(null)
+      , p = (0,
+    l.useCallback)( () => {
+        f.current = null,
+        d(t)
+    }
+    , [t]);
+    return (0,
+    l.useEffect)( () => {
+        if (!i) {
+            f.current &&= (f.current.closeModal(),
+            null);
+            return
+        }
+        let t = a(n);
+        if (f.current) {
+            f.current.updateModal({
+                initialAccountPath: t
+            });
+            return
+        }
+        f.current = e(u, {
+            initialAccountPath: t,
+            onClose: p
+        }, {
+            replace: !0
+        })
+    }
+    , [n, i, e, p]),
+    (0,
+    l.useEffect)( () => () => {
+        f.current &&= (f.current.closeModal(),
+        null)
+    }
+    , []),
+    null
+});
+export {f as SettingsModalOpener};
+//# sourceMappingURL=https://pplx-static-sourcemaps.perplexity.ai/_spa/assets/SettingsModalOpener-BVOHkwGe.js.map

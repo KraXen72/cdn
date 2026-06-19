@@ -1,0 +1,714 @@
+const __vite__mapDeps = (i, m=__vite__mapDeps, d=(m.f || (m.f = ["assets/ask-input-DsnDwDA_.js", "assets/rolldown-runtime-CNgF_TGW.js", "assets/vite-CC3ayoWd.js", "assets/layout-sidebar-DBWZLRo4.js", "assets/vendors-DwcbDYjC.js", "assets/aether-core-D0TrdQ11.js", "assets/pplx-icons-DuU4ocuu.js", "assets/platform-core-BAq6iFnX.js", "assets/i18n-L3TT4UlR.js", "assets/lexical-Ds7GcVzM.js", "assets/layout-sidebar-pinned-spaces-DXnRB93u.js", "assets/spa-shell-BbY_239e.js", "assets/react-query-6hyt4Rfs.js", "assets/pplx-stream-HidCmsS6.js", "assets/platform-components-BYumWOSk.js", "assets/experimentation-BvTZdvGZ.js", "assets/spa-metadata-B7J4J8UU.js", "assets/layout-aux-CLRO5SxM.js", "assets/bootstrap-Dby4bnXr.js", "assets/computer-command-menu-Bgb4sBw8.js", "assets/layout-banner-FdOCpg3B.js"]))) => i.map(i => d[i]);
+import {o as e} from "./rolldown-runtime-CNgF_TGW.js";
+import {$ as t, Q as n, et as r} from "./vendors-DwcbDYjC.js";
+import {i} from "./pplx-icons-DuU4ocuu.js";
+import {v as a} from "./layout-sidebar-pinned-spaces-DXnRB93u.js";
+import {St as o, _ as s, o as c, x as l} from "./aether-core-D0TrdQ11.js";
+import {ht as u, mn as d, mr as f, rt as p, xn as m} from "./platform-core-BAq6iFnX.js";
+import {t as h} from "./vite-CC3ayoWd.js";
+import {gn as g, mr as _} from "./layout-sidebar-DBWZLRo4.js";
+import {$r as v, pa as y, va as b} from "./spa-shell-BbY_239e.js";
+import {Nt as x, Oa as S} from "./spa-metadata-B7J4J8UU.js";
+import {F as C, I as w, P as T, R as E} from "./i18n-L3TT4UlR.js";
+import {l as D, r as O} from "./experimentation-BvTZdvGZ.js";
+import {Rt as k, dn as A, pn as j} from "./ask-input-DsnDwDA_.js";
+var M = r()
+  , N = e(t(), 1)
+  , P = (e, t) => {
+    let {value: n, loading: r} = O({
+        flag: `computer-effort-toggle`,
+        defaultValue: e,
+        subjectType: `visitor_id`,
+        shortCircuitCases: t
+    });
+    return (0,
+    N.useMemo)( () => ({
+        variation: n,
+        loading: r
+    }), [n, r])
+}
+  , F = (e, t) => {
+    let {value: n, loading: r} = D({
+        flag: `computer-effort-ui`,
+        defaultValue: e,
+        subjectType: `visitor_id`,
+        shortCircuitCases: t
+    });
+    return (0,
+    N.useMemo)( () => ({
+        variation: n,
+        loading: r
+    }), [n, r])
+}
+  , I = ({reason: e}) => {
+    let {organization: t} = x({
+        reason: e
+    });
+    return (0,
+    N.useMemo)( () => ({
+        disabledModelPreferences: t?.settings?.disabled_model_preferences ?? u
+    }), [t?.settings?.disabled_model_preferences])
+}
+  , L = (0,
+N.memo)(function({model: e}) {
+    let {getModelProvider: t} = v({
+        reason: `search-model-menu-item-icon`
+    })
+      , n = b(e, t(e));
+    return n ? (0,
+    M.jsx)(o, {
+        icon: n,
+        size: `small`
+    }) : null
+});
+function R(e) {
+    let {$t: t} = E();
+    if (e.audience === `internal`)
+        return {
+            label: t({
+                defaultMessage: `Internal`,
+                id: `f59741002e`
+            }),
+            variant: `neutral`
+        };
+    if (e.is_default)
+        return {
+            label: t({
+                defaultMessage: `Default`,
+                id: `b27c7c5ec9`
+            }),
+            variant: `neutral`
+        };
+    if (e.subscription_tier === `max`)
+        return {
+            label: t({
+                defaultMessage: `Max`,
+                id: `c558546db1`
+            }),
+            variant: `neutral`
+        };
+    if (e.has_new_tag)
+        return {
+            label: t({
+                defaultMessage: `New`,
+                id: `80743709ad`
+            }),
+            variant: `info`
+        }
+}
+var z = d(async () => {
+    let {AskInputModelUpsellPopover: e} = await h(async () => {
+        let {AskInputModelUpsellPopover: e} = await import(`./ask-input-DsnDwDA_.js`).then(e => e.n);
+        return {
+            AskInputModelUpsellPopover: e
+        }
+    }
+    , __vite__mapDeps([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]));
+    return {
+        default: e
+    }
+}
+)
+  , B = (0,
+N.memo)(function({modelConfig: e, gateReason: t, gateSearchModelSelection: n, onModelSelectionAttempt: r}) {
+    let {isMobileStyle: o} = l()
+      , s = R(e)
+      , c = e.non_reasoning_model ?? e.reasoning_model
+      , u = (0,
+    N.useCallback)( () => {
+        if (c) {
+            let e = n(c);
+            r?.({
+                model: c,
+                gated: e
+            })
+        }
+    }
+    , [c, n, r]);
+    if (!c)
+        return null;
+    let d = (0,
+    M.jsx)(`div`, {
+        className: `opacity-50 hover:opacity-100 transition-opacity`,
+        children: (0,
+        M.jsx)(a.Item, {
+            onSelect: u,
+            badge: s?.label,
+            badgeVariant: s?.variant,
+            leadingAccessory: (0,
+            M.jsx)(L, {
+                model: c
+            }),
+            trailingAccessory: i(`lock`),
+            children: e.label
+        })
+    });
+    return o ? d : (0,
+    M.jsx)(z, {
+        gateReason: t,
+        onClick: u,
+        children: d
+    })
+})
+  , V = (0,
+N.memo)(function({checked: e, onCheckedChange: t, modelConfig: n, requireModelVariants: r=!0, label: i, subtitle: a, ...o}) {
+    let {$t: c} = E()
+      , l = (0,
+    N.useRef)(null)
+      , u = (0,
+    N.useCallback)(e => {
+        l.current !== e && (l.current = e,
+        queueMicrotask( () => {
+            l.current === e && (l.current = null)
+        }
+        ),
+        t(e))
+    }
+    , [t])
+      , d = (0,
+    N.useMemo)( () => r && (!n?.non_reasoning_model || !n?.reasoning_model), [n, r]);
+    if (d) {
+        let t = c({
+            defaultMessage: `{modelName} does not support reasoning`,
+            id: `9f04679b8f`
+        }, {
+            modelName: n.label ?? `This model`
+        })
+          , r = c({
+            defaultMessage: `{modelName} is a reasoning-only model`,
+            id: `cad87851f1`
+        }, {
+            modelName: n.label ?? `This model`
+        });
+        return (0,
+        M.jsx)(s, {
+            content: e ? r : t,
+            side: `left`,
+            children: (0,
+            M.jsx)(H, {
+                checked: e,
+                onCheckedChange: u,
+                disabled: d,
+                label: i,
+                subtitle: a
+            })
+        })
+    }
+    return (0,
+    M.jsx)(H, {
+        checked: e,
+        onCheckedChange: u,
+        disabled: d,
+        label: i,
+        subtitle: a,
+        ...o
+    })
+})
+  , H = ({checked: e, onCheckedChange: t, disabled: n, label: r, subtitle: i, ...o}) => (0,
+M.jsx)(a.SwitchItem, {
+    checked: e,
+    onCheckedChange: t,
+    disabled: n,
+    subtitle: i,
+    ...o,
+    children: r ?? (0,
+    M.jsx)(w, {
+        defaultMessage: `Thinking`,
+        id: `898f84381d`
+    })
+});
+function U({allowTextOnlyModels: e=!0}={}) {
+    return {
+        allowTextOnlyModels: e
+    }
+}
+var W = e(n(), 1)
+  , G = T({
+    defaultMessage: `Disabled by your organization`,
+    id: `2db68dc193`
+})
+  , K = (0,
+N.memo)(function({selection: e, modelConfig: t, onSelect: n, restrictions: r, disabledByOrganization: i=!1, disabledByMaxReached: o=!1, showHoverTooltips: c=!0, menuItemType: u=`radio`, ...d}) {
+    let {$t: p} = E()
+      , {isMobileStyle: m} = l()
+      , h = R(t)
+      , g = t.non_reasoning_model ?? t.reasoning_model
+      , _ = e.selected && e.reasoning ? t.reasoning_model ?? g : g
+      , v = e.selected && t.reasoning_model
+      , y = (0,
+    N.useCallback)(e => {
+        let r = e ? t.reasoning_model : t.non_reasoning_model;
+        if (!r) {
+            f.warn(`[SearchModelMenuItem] No model to select for reasoning change`, {
+                modelConfig: t,
+                reasoning: e
+            });
+            return
+        }
+        n(r, !0)
+    }
+    , [t, n])
+      , {allowTextOnlyModels: b} = U(r)
+      , x = t.text_only_model && !b
+      , S = x || i || o
+      , C = m && e.selected
+      , w = i ? p(G) : C && t.description ? t.description : t.subheading ?? void 0
+      , T = (0,
+    N.useMemo)( () => (0,
+    M.jsx)(`span`, {
+        translate: `no`,
+        children: t.label
+    }), [t.label])
+      , D = (0,
+    N.useMemo)( () => u !== `radio` || !g || !_ ? null : (0,
+    M.jsx)(a.RadioItem, {
+        value: _,
+        subtitle: w,
+        badge: h?.label,
+        badgeVariant: h?.variant,
+        leadingAccessory: (0,
+        M.jsx)(L, {
+            model: g
+        }),
+        disabled: S,
+        ...d,
+        children: T
+    }), [u, _, w, h, S, d, T, g])
+      , O = (0,
+    N.useMemo)( () => u !== `checkbox` || !g ? null : (0,
+    M.jsx)(a.CheckboxItem, {
+        checked: e.selected,
+        onCheckedChange: e => {
+            n(g, e)
+        }
+        ,
+        subtitle: w,
+        badge: h?.label,
+        badgeVariant: h?.variant,
+        leadingAccessory: (0,
+        M.jsx)(L, {
+            model: g
+        }),
+        disabled: S,
+        ...d,
+        children: T
+    }), [u, g, w, h, S, d, T, e.selected, n])
+      , k = (0,
+    N.useMemo)( () => g ? (0,
+    M.jsxs)(`div`, {
+        className: (0,
+        W.default)(`rounded-lg`, {
+            "bg-subtle": e.selected
+        }),
+        children: [u === `radio` ? D : O, v && !i && (0,
+        M.jsx)(V, {
+            checked: e.reasoning,
+            modelConfig: t,
+            onCheckedChange: y
+        })]
+    }) : null, [g, u, D, O, v, i, e.reasoning, e.selected, t, y]);
+    return g ? c && !m && x ? (0,
+    M.jsx)(s, {
+        content: p({
+            defaultMessage: `{modelName} is a text only model. Images are not supported with this model.`,
+            id: `935a403924`
+        }, {
+            modelName: t.label
+        }),
+        side: `right`,
+        children: k
+    }) : c && !m && t.description ? (0,
+    M.jsx)(s, {
+        content: t.description,
+        side: `right`,
+        children: k
+    }) : k : null
+})
+  , q = (0,
+N.memo)(function({canSelectSearchModel: e, gateSearchModelSelection: t, onModelSelectionAttempt: n, ...r}) {
+    let {modelConfig: i, disabledByOrganization: a=!1} = r
+      , {isMax: o} = p()
+      , s = m()
+      , c = i.non_reasoning_model ?? i.reasoning_model;
+    return c != null && !e(c) && !a ? (0,
+    M.jsx)(B, {
+        modelConfig: i,
+        gateReason: s ? i.subscription_tier === `max` && !o ? `max_required` : `subscription` : `auth`,
+        gateSearchModelSelection: t,
+        onModelSelectionAttempt: n
+    }) : (0,
+    M.jsx)(K, {
+        ...r
+    })
+});
+function J(e, t) {
+    return {
+        selected: e === t.non_reasoning_model || e === t.reasoning_model,
+        reasoning: e === t.reasoning_model
+    }
+}
+var Y = C({
+    bestLabel: {
+        defaultMessage: `Best`,
+        id: `7dfd95b8ad`
+    },
+    bestSubtitle: {
+        defaultMessage: `Selects the best available model`,
+        id: `750cc620c1`
+    }
+})
+  , X = (0,
+N.memo)(function({selectedModel: e, mode: t, onModelChange: n, canSelectSearchModel: r, gateSearchModelSelection: i, onModelSelectionAttempt: a}) {
+    let {$t: o} = E()
+      , {getDefaultModelForMode: s} = v({
+        reason: `search-model-menu-item-best`
+    })
+      , c = s(t)
+      , l = (0,
+    N.useMemo)( () => ({
+        label: o(Y.bestLabel),
+        non_reasoning_model: c,
+        reasoning_model: null,
+        subheading: o(Y.bestSubtitle),
+        has_new_tag: !1,
+        subscription_tier: null,
+        text_only_model: !1
+    }), [o, c]);
+    return (0,
+    M.jsx)(q, {
+        selection: J(e, l),
+        modelConfig: l,
+        onSelect: n,
+        canSelectSearchModel: r,
+        gateSearchModelSelection: i,
+        onModelSelectionAttempt: a
+    })
+})
+  , Z = C({
+    hint: {
+        defaultMessage: `Select up to {maxModels} models`,
+        id: `38a97f8643`
+    },
+    hintMax: {
+        defaultMessage: `Deselect one to choose another`,
+        id: `bb2bf09b0f`
+    },
+    hintMin: {
+        defaultMessage: `Select at least {minModels} models`,
+        id: `4a21baee1c`
+    }
+})
+  , Q = ({selectedCount: e, minModels: t=2, maxModels: n=3}) => (0,
+M.jsx)(`div`, {
+    className: `px-3 py-2`,
+    children: (0,
+    M.jsx)(c, {
+        variant: `tinyRegular`,
+        color: `light`,
+        children: (0,
+        M.jsx)(w, {
+            ...(0,
+            N.useMemo)( () => e < t ? Z.hintMin : e >= n ? Z.hintMax : Z.hint, [e, t, n]),
+            values: {
+                minModels: t,
+                maxModels: n
+            }
+        })
+    })
+})
+  , ee = (0,
+N.memo)(function({selectedModels: e, onModelsChange: t, config: n, canSelectSearchModel: r, gateSearchModelSelection: i, restrictions: a, showHoverTooltips: o=!0, getDisabledByOrganization: s, onModelSelectionAttempt: c, maxModels: l=3, minModels: u=2}) {
+    let d = (0,
+    N.useCallback)( (r, a) => {
+        if (i(r)) {
+            c?.({
+                model: r,
+                gated: !0,
+                selectedModels: e
+            });
+            return
+        }
+        let o = n.find(e => e.reasoning_model === r || e.non_reasoning_model === r);
+        if (!o)
+            return;
+        let s = e.filter(e => e !== o.reasoning_model && e !== o.non_reasoning_model)
+          , l = a ? [...s, r] : s;
+        c?.({
+            model: r,
+            gated: !1,
+            selectedModels: l
+        }),
+        t(l)
+    }
+    , [n, i, c, t, e])
+      , f = (0,
+    N.useCallback)(t => e.reduce( (e, n) => {
+        let r = J(n, t);
+        return r.selected ? r : e
+    }
+    , {
+        selected: !1,
+        reasoning: !1
+    }), [e])
+      , p = e.length >= l;
+    return (0,
+    M.jsxs)(M.Fragment, {
+        children: [(0,
+        M.jsx)(Q, {
+            selectedCount: e.length,
+            minModels: u,
+            maxModels: l
+        }), n.map(t => {
+            let n = f(t);
+            return (0,
+            M.jsx)(q, {
+                selection: n,
+                modelConfig: t,
+                onSelect: d,
+                restrictions: a,
+                showHoverTooltips: o,
+                disabledByOrganization: s(t),
+                disabledByMaxReached: p && !n.selected,
+                menuItemType: `checkbox`,
+                canSelectSearchModel: r,
+                gateSearchModelSelection: i,
+                onModelSelectionAttempt: t => c?.({
+                    ...t,
+                    selectedModels: e
+                })
+            }, t.label)
+        }
+        )]
+    })
+})
+  , te = (0,
+N.memo)(function() {
+    let {$t: e} = E()
+      , t = m()
+      , {openVisitorLoginUpsell: n} = _({
+        enabled: !t
+    })
+      , r = g();
+    return (0,
+    M.jsx)(k, {
+        onSelect: (0,
+        N.useCallback)( () => {
+            if (!t) {
+                let t = new URL(window.location.href);
+                t.searchParams.set(`upsell`, `models`),
+                n({
+                    title: e({
+                        defaultMessage: `Sign in to choose a model`,
+                        id: `cc0a06e4ff`
+                    }),
+                    description: e({
+                        defaultMessage: `Access the latest AI models from Perplexity, OpenAI, Anthropic (Claude), Google Gemini and more`,
+                        id: `cbdcf534b4`
+                    }),
+                    origin: S.MODEL_SELECTOR,
+                    overrideRedirectUrl: t.toString()
+                });
+                return
+            }
+            r({
+                pitchMessage: {
+                    title: e({
+                        defaultMessage: `Upgrade to choose a model`,
+                        id: `eb3c11e21c`
+                    }),
+                    description: e({
+                        defaultMessage: `With Perplexity Pro, you get access to all the latest AI models in one subscription`,
+                        id: `bee9c4350f`
+                    })
+                },
+                origin: S.MODEL_SELECTOR
+            })
+        }
+        , [e, t, n, r]),
+        children: e({
+            defaultMessage: `Access the top AI models`,
+            id: `71022837d3`
+        })
+    })
+})
+  , ne = `switch-toggle`;
+function re(e) {
+    return e != null
+}
+function $(e) {
+    return e.audience === `internal`
+}
+var ie = (0,
+N.memo)(function({showSeparator: e=!1, searchModelGateCallback: t, canSelectSearchModelCallback: n, restrictions: r, showHoverTooltips: i=!0, onModelSelectionAttempt: a, ...o}) {
+    let s = `search-model-menu-items`
+      , {getConfigForSearchMode: c, getModelMode: l} = v({
+        reason: s
+    })
+      , {disabledModelPreferences: u} = I({
+        reason: s
+    })
+      , {variation: d} = P(!1)
+      , {variation: f} = F(`no-mode-selection`)
+      , p = d && f === ne
+      , m = o.multiple === !0
+      , h = m ? o.models : void 0
+      , _ = m ? void 0 : o.model
+      , y = (0,
+    N.useMemo)( () => {
+        if (m && h) {
+            let e = new Set(h.map(l).filter(re))
+              , t = Array.from(e);
+            return t.length === 0 ? c(`search`) : t.flatMap(e => c(e))
+        }
+        return c(_ && l(_) || `search`)
+    }
+    , [c, l, m, _, h])
+      , {gateSearchModelSelection: b} = A({
+        openPaywallUpsell: g()
+    })
+      , x = t ?? b
+      , S = j()
+      , C = n ?? S
+      , w = (0,
+    N.useCallback)(e => !!(e && u.includes(e)), [u])
+      , T = (0,
+    N.useCallback)(e => {
+        let t = w(e.non_reasoning_model)
+          , n = w(e.reasoning_model);
+        return t || n
+    }
+    , [w]);
+    return o.multiple ? (0,
+    M.jsx)(ee, {
+        selectedModels: o.models,
+        onModelsChange: o.onModelsChange,
+        config: y,
+        canSelectSearchModel: C,
+        gateSearchModelSelection: x,
+        showSeparator: e,
+        restrictions: r,
+        showHoverTooltips: i,
+        getDisabledByOrganization: T,
+        onModelSelectionAttempt: a
+    }) : (0,
+    M.jsx)(ae, {
+        selectedModel: o.model,
+        onModelChange: o.onModelChange,
+        onModelDeselect: o.onModelDeselect,
+        config: y,
+        canSelectSearchModel: C,
+        gateSearchModelSelection: x,
+        showSeparator: e,
+        restrictions: r,
+        showHoverTooltips: i,
+        getDisabledByOrganization: T,
+        showComputerEffortSwitchToggle: p,
+        onModelSelectionAttempt: a
+    })
+})
+  , ae = ({selectedModel: e, onModelChange: t, onModelDeselect: n, config: r, canSelectSearchModel: i, gateSearchModelSelection: o, showSeparator: s=!1, restrictions: c, showHoverTooltips: l=!0, getDisabledByOrganization: u, showComputerEffortSwitchToggle: d=!1, onModelSelectionAttempt: f}) => {
+    let {$t: m} = E()
+      , {getModelMode: h} = v({
+        reason: `search-model-menu-items-single`
+    })
+      , g = (0,
+    N.useCallback)(r => {
+        if (r === e && n) {
+            n();
+            return
+        }
+        let i = o(r);
+        f?.({
+            model: r,
+            gated: i
+        }),
+        !i && t(r)
+    }
+    , [e, n, o, f, t])
+      , _ = h(e)
+      , {hasAccessToProFeatures: b} = p()
+      , x = (0,
+    N.useMemo)( () => r.find(t => t.non_reasoning_model === e || t.reasoning_model === e) ?? r[0], [r, e])
+      , S = x?.reasoning_model === e
+      , C = !!(d && _ === y.ASI && x)
+      , T = C ? r.filter(e => !$(e)) : r
+      , D = C ? r.filter(e => $(e)) : []
+      , O = (0,
+    N.useCallback)(t => {
+        if (!x)
+            return;
+        let n = t ? x.reasoning_model ?? x.non_reasoning_model : x.non_reasoning_model ?? x.reasoning_model;
+        !n || n === e || g(n)
+    }
+    , [g, x, e]);
+    return (0,
+    M.jsxs)(a.RadioGroup, {
+        value: e,
+        onValueChange: g,
+        children: [(_ === y.SEARCH || _ === y.BROWSER_AGENT) && (b ? (0,
+        M.jsx)(X, {
+            selectedModel: e,
+            mode: _,
+            onModelChange: g,
+            canSelectSearchModel: i,
+            gateSearchModelSelection: o,
+            onModelSelectionAttempt: f
+        }) : (0,
+        M.jsx)(te, {})), s && b && (0,
+        M.jsx)(a.Separator, {}), T.map(t => (0,
+        M.jsx)(q, {
+            selection: J(e, t),
+            modelConfig: t,
+            onSelect: g,
+            restrictions: c,
+            showHoverTooltips: l,
+            disabledByOrganization: u(t),
+            menuItemType: `radio`,
+            canSelectSearchModel: i,
+            gateSearchModelSelection: o,
+            onModelSelectionAttempt: f
+        }, t.label)), C && x && (0,
+        M.jsx)(V, {
+            checked: S,
+            modelConfig: x,
+            onCheckedChange: O,
+            requireModelVariants: !1,
+            subtitle: m({
+                defaultMessage: `Thinks harder, goes further on complex tasks`,
+                id: `bad201a4a1`
+            }),
+            label: (0,
+            M.jsx)(w, {
+                defaultMessage: `High effort`,
+                id: `23fb386db9`
+            })
+        }), D.length > 0 && (0,
+        M.jsx)(a.Submenu, {
+            triggerElement: (0,
+            M.jsx)(a.SubmenuItem, {
+                textValue: `Internal`,
+                children: (0,
+                M.jsx)(w, {
+                    defaultMessage: `Internal`,
+                    id: `aa4c0571d2`
+                })
+            }),
+            children: D.map(t => (0,
+            M.jsx)(q, {
+                selection: J(e, t),
+                modelConfig: t,
+                onSelect: g,
+                restrictions: c,
+                showHoverTooltips: l,
+                disabledByOrganization: u(t),
+                menuItemType: `radio`,
+                canSelectSearchModel: i,
+                gateSearchModelSelection: o,
+                onModelSelectionAttempt: f
+            }, t.label))
+        })]
+    })
+}
+;
+export {R as n, F as r, ie as t};
+//# sourceMappingURL=https://pplx-static-sourcemaps.perplexity.ai/_spa/assets/SearchModelMenuItems-CQU8iqCF.js.map

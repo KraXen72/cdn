@@ -1,0 +1,372 @@
+import {o as e, r as t} from "./rolldown-runtime-CNgF_TGW.js";
+import {$ as n, N as r, et as i} from "./vendors-DwcbDYjC.js";
+import {i as a} from "./pplx-icons-DuU4ocuu.js";
+import {v as o} from "./layout-sidebar-pinned-spaces-DXnRB93u.js";
+import {St as s, f as c} from "./aether-core-D0TrdQ11.js";
+import {Yn as l, rt as u} from "./platform-core-BAq6iFnX.js";
+import {gn as d} from "./layout-sidebar-DBWZLRo4.js";
+import {$r as f, Qr as p, Zr as m, eo as h, ma as g, pa as _, va as v} from "./spa-shell-BbY_239e.js";
+import {C as y} from "./platform-components-BYumWOSk.js";
+import {F as b, R as x} from "./i18n-L3TT4UlR.js";
+import {dn as S, pn as C} from "./ask-input-DsnDwDA_.js";
+import {n as w, r as T, t as E} from "./SearchModelMenuItems-CQU8iqCF.js";
+var D = i(), O = e(n(), 1), k = 250, A = 270, j = b({
+    low: {
+        defaultMessage: `Efficient`,
+        id: `64a6e954fe`
+    },
+    medium: {
+        defaultMessage: `Balanced`,
+        id: `59ccb10933`
+    },
+    high: {
+        defaultMessage: `Advanced`,
+        id: `9036f9f24d`
+    },
+    lowSubtitle: {
+        defaultMessage: `Low cost and fastest`,
+        id: `a1510efad9`
+    },
+    mediumSubtitle: {
+        defaultMessage: `Balanced cost and capability`,
+        id: `a653b3615c`
+    },
+    highSubtitle: {
+        defaultMessage: `Most capable for complex tasks`,
+        id: `b9d94033b0`
+    },
+    otherModels: {
+        defaultMessage: `Other models`,
+        id: `53c53281d7`
+    }
+}), M;
+(function(e) {
+    e.LOW = `low`,
+    e.MEDIUM = `medium`,
+    e.HIGH = `high`
+}
+)(M ||= {});
+var N = {
+    [M.LOW]: g.ASI_SONNET,
+    [M.MEDIUM]: g.ASI_GPT_55,
+    [M.HIGH]: g.ASI_OPUS
+}
+  , P = r(N)
+  , F = new Set(Object.values(N))
+  , I = (0,
+O.memo)(function({model: e, config: t, selected: n, onSelect: r}) {
+    let {getModelLabel: i, getModelProvider: c} = f({
+        reason: `computer-presets-menu`
+    })
+      , l = C()
+      , u = w(t);
+    return (0,
+    D.jsx)(o.Item, {
+        leadingAccessory: (0,
+        D.jsx)(s, {
+            icon: v(e, c(e)),
+            size: `small`
+        }),
+        trailingAccessory: n ? a(`check`) : void 0,
+        badge: u?.label,
+        badgeVariant: u?.variant,
+        disabled: !l(e),
+        onSelect: r,
+        children: i(e) ?? e
+    })
+})
+  , L = (0,
+O.memo)(function({selectedModel: e, onModelChange: t, isOpen: n, onToggle: r}) {
+    let {$t: i} = x()
+      , {getConfigForSearchMode: l, getModelConfig: u, getModelLabel: p, getModelProvider: h} = f({
+        reason: `computer-presets-menu`
+    })
+      , {getPreferredSearchModel: g, setPreferredSearchModel: y} = m()
+      , {gateSearchModelSelection: b} = S({
+        openPaywallUpsell: d()
+    })
+      , w = C()
+      , [T,E] = (0,
+    O.useState)( () => {
+        let e = g(_.ASI);
+        return e ? P[e] ?? null : null
+    }
+    )
+      , L = (0,
+    O.useMemo)( () => l(_.ASI).flatMap(e => {
+        let t = e.non_reasoning_model;
+        return t && !F.has(t) ? [{
+            model: t,
+            config: e
+        }] : []
+    }
+    ), [l])
+      , R = (0,
+    O.useCallback)(e => u(e)?.label ?? p(e) ?? e, [u, p])
+      , z = (0,
+    O.useMemo)( () => T ? i(j[T]) : R(e), [i, T, e, R])
+      , B = (0,
+    O.useCallback)(e => w(e) ? b(e) ? !0 : (t(e),
+    !1) : (b(e),
+    !0), [w, b, t])
+      , V = (0,
+    O.useCallback)(e => {
+        let t = N[e];
+        B(t) || (y(_.ASI, t),
+        E(e))
+    }
+    , [B, y])
+      , H = (0,
+    O.useCallback)(e => {
+        B(e) || (y(_.ASI, e),
+        E(null))
+    }
+    , [B, y])
+      , U = e => {
+        let t = N[e];
+        return (0,
+        D.jsxs)(`span`, {
+            className: `flex flex-col gap-0.5`,
+            children: [(0,
+            D.jsxs)(`span`, {
+                className: `flex items-center gap-1.5`,
+                children: [(0,
+                D.jsx)(`span`, {
+                    children: i(j[e])
+                }), (0,
+                D.jsx)(`span`, {
+                    "aria-hidden": !0,
+                    className: `text-quiet`,
+                    children: i({
+                        defaultMessage: `·`,
+                        id: `67d789f719`
+                    })
+                }), (0,
+                D.jsx)(s, {
+                    icon: v(t, h(t)),
+                    size: `tiny`,
+                    color: `light`
+                }), (0,
+                D.jsx)(`span`, {
+                    className: `text-quiet truncate`,
+                    children: R(t)
+                })]
+            }), (0,
+            D.jsx)(`span`, {
+                className: `text-quiet`,
+                children: i(j[`${e}Subtitle`])
+            })]
+        })
+    }
+    ;
+    return (0,
+    D.jsxs)(o, {
+        isOpen: n,
+        onToggle: r,
+        minWidthPx: A,
+        maxWidthPx: A,
+        triggerElement: (0,
+        D.jsx)(c, {
+            variant: `text`,
+            size: `small`,
+            "aria-label": z,
+            trailingAccessory: a(`chevron-down`),
+            pill: !0,
+            children: z
+        }),
+        align: `end`,
+        children: [(0,
+        D.jsx)(o.RadioGroup, {
+            value: T ?? ``,
+            onValueChange: e => V(e),
+            closeOnSelect: !0,
+            children: Object.values(M).map(e => (0,
+            D.jsx)(o.RadioItem, {
+                value: e,
+                textValue: i(j[e]),
+                children: U(e)
+            }, e))
+        }), L.length > 0 && (0,
+        D.jsxs)(D.Fragment, {
+            children: [(0,
+            D.jsx)(o.Separator, {}), (0,
+            D.jsx)(o.Submenu, {
+                triggerElement: (0,
+                D.jsx)(o.SubmenuItem, {
+                    textValue: i(j.otherModels),
+                    children: i(j.otherModels)
+                }),
+                minWidthPx: k,
+                maxWidthPx: k,
+                children: L.map( ({model: t, config: n}) => (0,
+                D.jsx)(I, {
+                    model: t,
+                    config: n,
+                    selected: T === null && t === e,
+                    onSelect: () => H(t)
+                }, t))
+            })]
+        })]
+    })
+})
+  , R = t({
+    SearchModelMenu: () => H
+})
+  , z = `effort-dropdown`
+  , B = b({
+    model: {
+        defaultMessage: `Model`,
+        id: `c4b3d7d146`
+    },
+    orchestrator: {
+        defaultMessage: `Orchestrator`,
+        id: `e8e7cb5b23`
+    }
+})
+  , V = (0,
+O.memo)(function({enabled: e=!0, isOpen: t, onToggle: n, restrictions: r, ...i}) {
+    let[s,d] = (0,
+    O.useState)(!1)
+      , {$t: m} = x()
+      , g = y()
+      , {isLoaded: b, getModelLabel: S, getModelConfig: C, getDefaultModelForMode: w, getModelMode: k, getModelProvider: A, default_models: j} = f({
+        reason: `search-model-menu`
+    })
+      , {hasAccessToProFeatures: M} = u()
+      , N = p()
+      , {variation: P} = T(`no-mode-selection`)
+      , {session: F} = l()
+      , {trackEvent: I} = h(F)
+      , R = t ?? s
+      , V = n ?? d
+      , H = i.multiple === !0
+      , U = H ? void 0 : i.model
+      , W = H ? i.models : void 0
+      , G = H ? void 0 : i.onModelChange
+      , K = H ? i.onModelsChange : void 0
+      , q = (0,
+    O.useMemo)( () => {
+        if (!(H || !U))
+            return k(U) ?? _.SEARCH
+    }
+    , [k, H, U])
+      , J = (0,
+    O.useMemo)( () => {
+        if (H) {
+            let e = W?.[0]
+              , t = W?.length ?? 0;
+            return t === 1 && e ? S(e) ?? m(B.model) : m({
+                defaultMessage: `{count, plural, one {# model} other {# models}}`,
+                id: `9147f47b12`
+            }, {
+                count: t
+            })
+        }
+        if (!U)
+            return m(B.model);
+        let e = q ?? _.SEARCH
+          , t = U === w(e) && e !== _.BROWSER_AGENT;
+        return !M || t ? e === _.ASI ? m(B.orchestrator) : m(B.model) : S(U) ?? m(B.model)
+    }
+    , [S, m, M, H, U, W, w, q])
+      , Y = (0,
+    O.useMemo)( () => {
+        if (H) {
+            let e = W?.[0];
+            return e ? v(e, A(e)) : a(`sparkles`)
+        }
+        return U ? v(U, A(U)) : a(`sparkles`)
+    }
+    , [A, H, U, W])
+      , X = (0,
+    O.useRef)(!1);
+    (0,
+    O.useEffect)( () => {
+        if (!e || !b || X.current)
+            return;
+        X.current = !0;
+        let t = e => Object.values(j).includes(e);
+        if (H && W && K) {
+            let e = W.filter(e => !!C(e) || t(e));
+            e.length !== W.length && K(e);
+            return
+        }
+        U && !C(U) && !t(U) && G && G(N)
+    }
+    , [e, b, C, j, N, H, G, K, U, W]);
+    let ee = (0,
+    O.useMemo)( () => g ? (0,
+    D.jsx)(c, {
+        variant: `text`,
+        size: `small`,
+        "aria-label": J,
+        icon: Y,
+        rounded: !0
+    }) : (0,
+    D.jsx)(c, {
+        variant: `text`,
+        size: `small`,
+        "aria-label": J,
+        trailingAccessory: a(`chevron-down`),
+        pill: !0,
+        children: J
+    }), [g, J, Y])
+      , Z = !H && !!G && q === _.ASI && P === z
+      , Q = (0,
+    O.useMemo)( () => H || q !== _.ASI || !U ? null : {
+        variant: Z ? `preset_selector` : `model_selector`,
+        selectedModel: U
+    }, [Z, H, U, q])
+      , $ = (0,
+    O.useCallback)(e => {
+        e && Q && I(`computer model picker opened`, Q),
+        V(e)
+    }
+    , [Q, V, I])
+      , te = (0,
+    O.useCallback)(e => {
+        Q && I(`computer model picker selected`, {
+            ...Q,
+            previousModel: Q.selectedModel,
+            selectedModel: e
+        }),
+        G?.(e)
+    }
+    , [Q, G, I]);
+    return Z ? U ? (0,
+    D.jsx)(L, {
+        selectedModel: U,
+        onModelChange: te,
+        isOpen: R,
+        onToggle: $
+    }) : null : (0,
+    D.jsx)(o, {
+        isOpen: R,
+        onToggle: $,
+        triggerElement: ee,
+        align: `end`,
+        children: (0,
+        D.jsx)(E, {
+            ...i.multiple !== !0 && q === _.ASI ? {
+                ...i,
+                onModelChange: te
+            } : i,
+            restrictions: r,
+            showSeparator: !0
+        })
+    })
+})
+  , H = (0,
+O.memo)(function({enabled: e=!0, ...t}) {
+    let n = (0,
+    O.useRef)(t);
+    return (0,
+    D.jsx)(V, {
+        ...(0,
+        O.useMemo)( () => e ? (n.current = t,
+        t) : n.current, [e, t]),
+        enabled: e
+    })
+});
+export {R as n, H as t};
+//# sourceMappingURL=https://pplx-static-sourcemaps.perplexity.ai/_spa/assets/SearchModelMenu-DyLy7OU9.js.map
