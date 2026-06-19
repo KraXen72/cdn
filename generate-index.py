@@ -24,20 +24,6 @@ def is_excluded(path: str) -> bool:
     return any(exclude in path for exclude in EXCLUDED)
 
 
-CATEGORY_HEADINGS = {
-    "tools": "Tools",
-    "userscripts": "Userscripts",
-    "artifacts": "Artifacts",
-}
-
-
-def humanize_category(name: str) -> str:
-    """Turn a directory name into a display heading."""
-    if name in CATEGORY_HEADINGS:
-        return CATEGORY_HEADINGS[name]
-    return name.replace("-", " ").replace("_", " ").title().strip()
-
-
 def scan_folder(folder: Path, prefix: str) -> list[tuple[str, str]]:
     """Scan a folder for indexable entries.
 
@@ -65,11 +51,11 @@ def scan_folder(folder: Path, prefix: str) -> list[tuple[str, str]]:
             continue
         entries.append((item.stem, f"{prefix}/{item.name}"))
 
-    # .user.js files (userscripts)
+    # .user.js files (userscripts) — show full filename
     for item in sorted(folder.glob("*.user.js")):
         if is_excluded(str(item.relative_to(SCRIPT_DIR))):
             continue
-        entries.append((item.stem, f"{prefix}/{item.name}"))
+        entries.append((item.name, f"{prefix}/{item.name}"))
 
     # Subfolders with their own index.html
     for subfolder in sorted(folder.iterdir()):
@@ -86,14 +72,11 @@ def scan_folder(folder: Path, prefix: str) -> list[tuple[str, str]]:
 
 
 def collect_entries() -> dict[str, list[tuple[str, str]]]:
-    """Collect all entries grouped by category.
+    """Collect all entries into Tools and Userscripts sections."""
+    tools: list[tuple[str, str]] = []
+    userscripts: list[tuple[str, str]] = []
 
-    Returns dict mapping category heading -> list of (display_name, href).
-    """
-    sections: dict[str, list[tuple[str, str]]] = {}
-
-    # 1. Top-level {name}.html files
-    top_level: list[tuple[str, str]] = []
+    # Top-level {name}.html files
     for item in sorted(SCRIPT_DIR.glob("*.html")):
         if item.name == "index.html":
             continue
@@ -101,11 +84,9 @@ def collect_entries() -> dict[str, list[tuple[str, str]]]:
             continue
         if is_excluded(item.name):
             continue
-        top_level.append((item.stem, item.name))
-    if top_level:
-        sections["Other"] = top_level
+        tools.append((item.stem, item.name))
 
-    # 2. Top-level folders (one level deep)
+    # Top-level folders
     for item in sorted(SCRIPT_DIR.iterdir()):
         if not item.is_dir():
             continue
@@ -114,14 +95,21 @@ def collect_entries() -> dict[str, list[tuple[str, str]]]:
         if is_excluded(item.name):
             continue
         entries = scan_folder(item, prefix=item.name)
-        if entries:
-            category = humanize_category(item.name)
-            sections.setdefault(category, []).extend(entries)
+        if not entries:
+            continue
+        if item.name == "userscripts":
+            userscripts.extend(entries)
+        else:
+            tools.extend(entries)
 
-    # Sort entries within each section
-    for entries in sections.values():
-        entries.sort(key=lambda x: x[0].lower())
+    tools.sort(key=lambda x: x[0].lower())
+    userscripts.sort(key=lambda x: x[0].lower())
 
+    sections: dict[str, list[tuple[str, str]]] = {}
+    if tools:
+        sections["Tools"] = tools
+    if userscripts:
+        sections["Userscripts"] = userscripts
     return sections
 
 
@@ -134,7 +122,7 @@ def generate_html(sections: dict[str, list[tuple[str, str]]]) -> str:
             f'            <li><a href="{href}">{name}</a></li>'
             for name, href in entries
         )
-        sections_html += f'''        <h2>{heading}</h2>
+        sections_html += f'''        <h3>{heading}</h3>
         <ul>
 {entries_html}
         </ul>
@@ -147,7 +135,7 @@ def generate_html(sections: dict[str, list[tuple[str, str]]]) -> str:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Utils Index</title>
+    <title>cdn</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 
@@ -201,7 +189,15 @@ def generate_html(sections: dict[str, list[tuple[str, str]]]) -> str:
             color: var(--heading-color);
             border-bottom: 2px solid var(--flexoki-cyan);
             padding-bottom: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            font-size: var(--font-scale);
+        }}
+
+        h3 {{
+            font-family: var(--font-main);
+            color: var(--heading-color);
+            margin-bottom: 12px;
+            margin-top: 24px;
             font-size: var(--font-scale);
         }}
 
@@ -245,6 +241,7 @@ def generate_html(sections: dict[str, list[tuple[str, str]]]) -> str:
 <body>
 
     <div class="container">
+        <h2>cdn</h2>
 {sections_html}    </div>
 
 </body>
