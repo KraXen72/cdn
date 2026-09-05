@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Skeletonisation — DWN explainer</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#121a2d; --muted:#91a0b8; --text:#eef3fb;
+    --road:#48566f; --walk:#d9d6c6; --line:#5ee1b2; --accent:#7aa7ff; --bad:#ff8f8f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+  main{max-width:980px;margin:auto;padding:28px}
+  h1{font-size:28px;margin:0 0 8px}
+  .sub{color:var(--muted);margin-bottom:22px}
+  .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}
+  .card{background:var(--panel);border:1px solid #22304d;border-radius:16px;padding:18px}
+  svg{width:100%;height:auto;display:block;background:#0e1527;border-radius:12px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  button{background:#1a2640;color:var(--text);border:1px solid #314365;border-radius:10px;padding:9px 12px;cursor:pointer}
+  button.active{background:var(--accent);color:#08111f;border-color:transparent;font-weight:700}
+  .stepTitle{font-size:18px;font-weight:700;margin-bottom:8px}
+  .explain{color:#c8d2e1}
+  .note{margin-top:14px;padding:12px;border-left:3px solid var(--accent);background:#0f1729;color:#cbd7e8}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:13px}
+  .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+  .fade{transition:opacity .35s ease, transform .35s ease}
+  .hidden{opacity:0;transform:scale(.985);pointer-events:none}
+  .visible{opacity:1;transform:scale(1)}
+  code{background:#0a1323;padding:2px 5px;border-radius:5px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+  <h1>What is skeletonisation?</h1>
+  <div class="sub">Turn a walkable <b>area</b> into a thin <b>centre line</b> that can later become graph edges.</div>
+
+  <div class="grid">
+    <div class="card">
+      <svg viewBox="0 0 560 420" aria-label="Animated skeletonisation example">
+        <rect x="0" y="0" width="560" height="420" fill="#0e1527"/>
+        <!-- road -->
+        <rect x="0" y="275" width="560" height="95" rx="8" fill="#48566f"/>
+        <text x="28" y="328" fill="#d6deeb" font-size="18">road</text>
+
+        <!-- sidewalk polygon -->
+        <path id="poly" d="M55 170
+          C120 155, 175 158, 225 168
+          C270 177, 305 150, 360 152
+          C420 154, 465 176, 505 165
+          L505 255
+          C455 267, 415 250, 360 251
+          C300 252, 267 274, 215 257
+          C165 241, 110 247, 55 255 Z"
+          fill="#d9d6c6" opacity="0" stroke="#f3f1e7" stroke-width="2"/>
+
+        <!-- sample medial branches -->
+        <g id="raw" opacity="0" stroke="#ff8f8f" stroke-width="3" fill="none">
+          <path d="M66 213 C125 205, 170 205, 221 213 C275 221, 310 198, 361 200 C414 202, 458 218, 494 209"/>
+          <path d="M120 207 L96 175"/><path d="M154 207 L151 247"/><path d="M214 212 L229 171"/>
+          <path d="M286 211 L270 258"/><path d="M360 200 L378 154"/><path d="M420 207 L438 253"/>
+        </g>
+
+        <!-- final centerline -->
+        <path id="final" d="M68 213 C125 205, 170 205, 221 213 C275 221, 310 198, 361 200 C414 202, 458 218, 493 209"
+          fill="none" stroke="#5ee1b2" stroke-width="6" stroke-linecap="round" opacity="0"/>
+
+        <circle id="a" cx="68" cy="213" r="7" fill="#7aa7ff" opacity="0"/>
+        <circle id="b" cx="493" cy="209" r="7" fill="#7aa7ff" opacity="0"/>
+      </svg>
+
+      <div class="legend">
+        <span><i class="dot" style="background:#d9d6c6"></i>walkable polygon</span>
+        <span><i class="dot" style="background:#ff8f8f"></i>raw skeleton candidates</span>
+        <span><i class="dot" style="background:#5ee1b2"></i>clean centre line</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div id="stepTitle" class="stepTitle"></div>
+      <div id="text" class="explain"></div>
+
+      <div class="controls">
+        <button data-step="0">1. Area</button>
+        <button data-step="1">2. Skeleton</button>
+        <button data-step="2">3. Clean</button>
+        <button data-step="3">4. Graph-ready</button>
+      </div>
+
+      <div class="note">
+        In your DWN pipeline, skeletonisation is mainly useful when you have a polygon
+        saying “pedestrians can walk somewhere inside this area” but still need a single route line.
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const steps = [
+  {
+    title:"1. Start with an area",
+    text:"BGT may give you a sidewalk as a polygon: a surface with width. Routing cannot directly use that as a simple path, so we want to reduce it to a representative line through the middle.",
+    poly:1, raw:0, final:0, nodes:0
+  },
+  {
+    title:"2. Find the internal skeleton",
+    text:"A skeletonisation algorithm looks for points that are roughly centred between the polygon boundaries. Conceptually, it finds the 'spine' of the shape. Naive methods often create many little side branches.",
+    poly:1, raw:1, final:0, nodes:0
+  },
+  {
+    title:"3. Remove bad branches",
+    text:"Those short branches are usually geometry artefacts, not real pedestrian routes. Filtering and pruning removes them, leaving the main centre line.",
+    poly:1, raw:.22, final:1, nodes:0
+  },
+  {
+    title:"4. Turn the line into graph geometry",
+    text:"The cleaned centre line can then be split at junctions, crossings and connections. Its endpoints and intersections become graph nodes; the line segments become graph edges.",
+    poly:.5, raw:0, final:1, nodes:1
+  }
+];
+const ids = ["poly","raw","final","a","b"];
+function setOpacity(id,v){ document.getElementById(id).style.opacity=v; }
+function show(i){
+  const s=steps[i];
+  document.getElementById("stepTitle").textContent=s.title;
+  document.getElementById("text").textContent=s.text;
+  setOpacity("poly",s.poly); setOpacity("raw",s.raw); setOpacity("final",s.final);
+  setOpacity("a",s.nodes); setOpacity("b",s.nodes);
+  document.querySelectorAll("button").forEach((b,j)=>b.classList.toggle("active",j===i));
+}
+document.querySelectorAll("button").forEach(b=>b.onclick=()=>show(+b.dataset.step));
+show(0);
+</script>
+</body>
+</html>
