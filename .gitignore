@@ -4,3 +4,4 @@ node_modules
 /userscripts/perplexity/old/SearchModelMenuItems.txt
 /userscripts/perplexity/old/ask-input.txt
 /userscripts/perplexity/old/modal-html-dump.txt
+*:Zone.Identifier

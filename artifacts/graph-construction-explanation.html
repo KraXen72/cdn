@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DWN Graph Construction</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2d;--text:#eef3fb;--muted:#94a3b8;--side:#67e8b4;--cross:#fbbf24;--node:#7aa7ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,sans-serif}
+main{max-width:1000px;margin:auto;padding:28px}.sub{color:var(--muted);margin-bottom:18px}
+.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}.card{background:var(--panel);border:1px solid #22304d;border-radius:16px;padding:18px}
+svg{width:100%;background:#0e1527;border-radius:12px;display:block}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button{background:#1a2640;color:var(--text);border:1px solid #314365;border-radius:10px;padding:8px 11px;cursor:pointer}
+button.active{background:#7aa7ff;color:#08111f;font-weight:700}.title{font-size:18px;font-weight:700;margin-bottom:8px}.text{color:#cbd5e1}
+.note{margin-top:14px;border-left:3px solid #7aa7ff;padding:10px 12px;background:#0f1729;color:#cbd5e1}
+.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:10px}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px}
+g{transition:opacity .35s ease}@media(max-width:760px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body><main>
+<h1>Graph construction in the DWN pipeline</h1>
+<div class="sub">Turn sidewalk centre lines into one routable, topologically correct pedestrian network.</div>
+<div class="grid">
+<div class="card">
+<svg viewBox="0 0 680 460" aria-label="Graph construction steps">
+<rect width="680" height="460" fill="#0e1527"/>
+<g id="tiles" opacity="0"><line x1="340" y1="0" x2="340" y2="460" stroke="#64748b" stroke-width="3" stroke-dasharray="9 8"/><text x="285" y="25" fill="#94a3b8">tile A</text><text x="355" y="25" fill="#94a3b8">tile B</text></g>
+<rect x="0" y="205" width="680" height="75" rx="8" fill="#475569"/><text x="18" y="250" fill="#dbe4f0">road</text>
+<g id="lines" fill="none" stroke="#67e8b4" stroke-width="6" stroke-linecap="round">
+<path d="M45 155 L175 155 L330 155"/><path d="M350 155 L510 155 L635 155"/>
+<path d="M45 330 L180 330 L330 330"/><path d="M350 330 L500 330 L635 330"/>
+<path d="M175 155 L175 95"/><path d="M500 330 L500 390"/></g>
+<g id="nodes" opacity="0" fill="#7aa7ff">
+<circle cx="45" cy="155" r="7"/><circle cx="175" cy="155" r="7"/><circle cx="250" cy="155" r="7"/><circle cx="340" cy="155" r="7"/><circle cx="510" cy="155" r="7"/><circle cx="635" cy="155" r="7"/>
+<circle cx="45" cy="330" r="7"/><circle cx="180" cy="330" r="7"/><circle cx="250" cy="330" r="7"/><circle cx="340" cy="330" r="7"/><circle cx="500" cy="330" r="7"/><circle cx="635" cy="330" r="7"/><circle cx="175" cy="95" r="7"/><circle cx="500" cy="390" r="7"/></g>
+<g id="crossing" opacity="0"><line x1="250" y1="155" x2="250" y2="330" stroke="#fbbf24" stroke-width="7" stroke-linecap="round"/><text x="260" y="245" fill="#fbbf24">crossing</text></g>
+<g id="stitch" opacity="0"><line x1="330" y1="155" x2="350" y2="155" stroke="#a78bfa" stroke-width="8"/><line x1="330" y1="330" x2="350" y2="330" stroke="#a78bfa" stroke-width="8"/><text x="286" y="120" fill="#c4b5fd">stitch seam</text></g>
+<g id="level" opacity="0"><path d="M410 72 L410 395" stroke="#fb7185" stroke-width="4" stroke-dasharray="7 7"/><text x="420" y="92" fill="#fb7185">do not connect</text><text x="420" y="110" fill="#fb7185">different level</text></g>
+<g id="attrs" opacity="0"><rect x="355" y="112" width="190" height="74" rx="9" fill="#172033" stroke="#334155"/><text x="368" y="135" fill="#dbeafe">edge attributes</text><text x="368" y="155" fill="#cbd5e1">width • surface • incline</text><text x="368" y="174" fill="#cbd5e1">kerb • tactile • source</text></g>
+</svg>
+<div class="legend"><span><i class="dot" style="background:#67e8b4"></i>sidewalk line</span><span><i class="dot" style="background:#7aa7ff"></i>node</span><span><i class="dot" style="background:#fbbf24"></i>crossing</span><span><i class="dot" style="background:#a78bfa"></i>tile stitch</span></div>
+</div>
+<div class="card">
+<div id="title" class="title"></div><div id="text" class="text"></div>
+<div class="controls">
+<button data-step="0">1. Lines</button><button data-step="1">2. Nodes</button><button data-step="2">3. Crossings</button><button data-step="3">4. Stitch</button><button data-step="4">5. Levels</button><button data-step="5">6. Attributes</button>
+</div>
+<div class="note">Graph construction is mostly about explicit connectivity: a line that merely looks close to another line is not routable unless the graph topology says they connect.</div>
+</div></div>
+<script>
+const steps=[
+["1. Start with centre lines","Previous stages give sidewalk centre lines. They are still just geometry; routing needs explicit topology.",["lines"]],
+["2. Create nodes and edges","Create nodes at endpoints, junctions, intersections and connection points. The pieces between nodes become graph edges.",["lines","nodes"]],
+["3. Insert crossings","Crossings become graph edges between opposite sidewalks. Their endpoints must split the sidewalk geometry so the crossing is actually traversable.",["lines","nodes","crossing"]],
+["4. Stitch tiles","Tiles overlap. At seams, duplicate overlap geometry is reconciled and continuous paths are connected deterministically into one graph.",["lines","nodes","crossing","tiles","stitch"]],
+["5. Respect levels","Features may overlap in 2D without touching in reality. Different bridge/tunnel or BGT height levels must not be snapped together accidentally.",["lines","nodes","crossing","tiles","stitch","level"]],
+["6. Attach routing attributes","Keep accessibility and provenance data on nodes/edges: width, incline, surface, kerb, tactile paving, source, etc. QA can then flag dangling nodes, islands and duplicates.",["lines","nodes","crossing","tiles","stitch","attrs"]]
+];
+const ids=["lines","nodes","crossing","tiles","stitch","level","attrs"];
+function show(i){const [t,x,vis]=steps[i];title.textContent=t;text.textContent=x;ids.forEach(id=>document.getElementById(id).style.opacity=vis.includes(id)?1:0);document.querySelectorAll("button").forEach((b,j)=>b.classList.toggle("active",j===i))}
+document.querySelectorAll("button").forEach(b=>b.onclick=()=>show(+b.dataset.step));show(0);
+</script></main></body></html>
