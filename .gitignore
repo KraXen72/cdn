@@ -5,3 +5,7 @@ node_modules
 /userscripts/perplexity/old/ask-input.txt
 /userscripts/perplexity/old/modal-html-dump.txt
 *:Zone.Identifier
+
+# Private timesheet exports and generated workbooks
+/tools/timesheet-convert/*.csv
+/tools/timesheet-convert/*.xlsx
