@@ -19,7 +19,8 @@ for plain timesheet exports, not complex Excel templates.
 
 The scrollable preview shows the first 500 data rows; export includes all rows.
 Local CSV and XLSX files in this directory are gitignored because they may
-contain private timesheet data. The Pages workflow publishes tracked files only.
+contain private timesheet data. GitHub Pages deploys directly from the repository's
+`master` branch; no custom deployment workflow is needed.
 
 ## Verification
 
