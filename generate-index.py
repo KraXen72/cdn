@@ -16,6 +16,10 @@ EXCLUDED = [
     "clipper-issue-repro"
 ]
 
+# Files in these top-level directories remain available by URL but are omitted
+# from the generated directory listing.
+UNLISTED_DIRECTORIES = {"artifacts"}
+
 SCRIPT_DIR = Path(__file__).parent.resolve()
 
 
@@ -91,6 +95,8 @@ def collect_entries() -> dict[str, list[tuple[str, str]]]:
         if not item.is_dir():
             continue
         if item.name.startswith("."):
+            continue
+        if item.name in UNLISTED_DIRECTORIES:
             continue
         if is_excluded(item.name):
             continue
