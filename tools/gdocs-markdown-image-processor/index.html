@@ -57,40 +57,53 @@
 		<section class="card export-card" aria-labelledby="export-heading">
 			<div class="card-header export-header">
 				<div>
-					<h2 id="export-heading">Portable ZIP</h2>
-					<p class="section-description">Replaces every encoded image with a relative Markdown link and packages the real image files.</p>
+					<p class="eyebrow">ZIP export</p>
+					<h2 id="export-heading">Download portable Markdown</h2>
+					<p class="section-description">Replace embedded data with relative links and package the Markdown with real image files.</p>
 				</div>
 				<span id="image-count" class="count-badge">No images found</span>
 			</div>
 
 			<div class="export-settings">
-				<label class="form-field" for="document-name">
-					<span>Markdown filename</span>
+				<label class="form-field document-field" for="document-name">
+					<span class="field-label">Markdown file</span>
 					<input id="document-name" type="text" placeholder="index.md" autocomplete="off">
-					<small>Defaults to <code>index.md</code>; <code>.md</code> is added automatically.</small>
+					<small>Leave blank to use <code>index.md</code></small>
 				</label>
 
 				<fieldset class="form-field location-field">
-					<legend>Image location</legend>
-					<label class="radio-option">
-						<input type="radio" name="image-location" value="folder" checked>
-						<span>Inside a folder</span>
-					</label>
+					<legend class="field-label">Image files</legend>
+					<div class="location-options">
+						<label class="radio-option">
+							<input type="radio" name="image-location" value="folder" checked>
+							<span>
+								<strong>Subfolder</strong>
+								<small>Keeps the archive tidy</small>
+							</span>
+						</label>
+						<label class="radio-option">
+							<input type="radio" name="image-location" value="same">
+							<span>
+								<strong>Same folder</strong>
+								<small>Places files beside Markdown</small>
+							</span>
+						</label>
+					</div>
 					<label class="folder-name" for="image-folder">
 						<span class="sr-only">Image folder name</span>
+						<span class="path-affix" aria-hidden="true">./</span>
 						<input id="image-folder" type="text" value="images" aria-label="Image folder name" autocomplete="off">
-					</label>
-					<label class="radio-option">
-						<input type="radio" name="image-location" value="same">
-						<span>Same folder as Markdown</span>
+						<span class="path-affix" aria-hidden="true">/</span>
 					</label>
 				</fieldset>
-			</div>
 
-			<div class="export-actions">
-				<button id="download-zip" class="btn btn-primary download-button" type="button" disabled>Download ZIP</button>
-				<p id="export-status" class="status" role="status" aria-live="polite"></p>
+				<div class="export-submit">
+					<span class="field-label" aria-hidden="true">Archive</span>
+					<button id="download-zip" class="btn btn-primary download-button" type="button" disabled>Download ZIP</button>
+					<small>Markdown + extracted images</small>
+				</div>
 			</div>
+			<p id="export-status" class="status" role="status" aria-live="polite"></p>
 		</section>
 
 		<section id="images" class="images" aria-labelledby="images-heading" hidden>

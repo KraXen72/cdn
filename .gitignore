@@ -9,3 +9,4 @@ node_modules
 # Private timesheet exports and generated workbooks
 /tools/timesheet-convert/*.csv
 /tools/timesheet-convert/*.xlsx
+gdocs-ui*.png
