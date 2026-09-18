@@ -501,7 +501,7 @@ if candidate.equals_exact(current, tolerance):
  },
  conflict:{
   badge:"CONFLICT",cls:"conflict",title:"BGT changes the same facade area",
-  bullets:["The newer source reshapes the same sidewalk/building boundary.","The source delta overlaps the correction, so create a conflict record."],
+  bullets:["The newer source changes the same sidewalk/building boundary.","The source delta overlaps the correction, so create a conflict record."],
   code:`if overlaps(source_delta, operation):
     return CONFLICT`,
   delta:"conflictDelta",result:.15,base:true,problem:false,ops:true
