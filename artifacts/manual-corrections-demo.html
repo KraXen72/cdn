@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Scenwise DWN — Manual Corrections Demo</title>
+<title>Scenwise DWN: Manual Corrections Demo</title>
 <style>
 :root{
   --bg:#100f0f;--bg2:#1c1b1a;--ui:#282726;--ui2:#343331;--ui3:#403e3c;
@@ -138,7 +138,7 @@ svg{width:100%;height:100%;display:block}
       <h1>Durable manual corrections across regenerated BGT data</h1>
       <ul>
         <li>Correct normalized source data before fusion.</li>
-        <li>Store semantic operations, not graph patches.</li>
+        <li>Store semantic operations. Leave graph output unchanged.</li>
         <li>Replay automatically when source changes are unrelated.</li>
         <li>Review only overlapping or unanchored changes.</li>
       </ul>
@@ -147,10 +147,10 @@ svg{width:100%;height:100%;display:block}
       <div class="hero-meta">
         <div class="meta"><b>Patch model</b><span>semantic operation log</span></div>
         <div class="meta"><b>Geometry</b><span>ADD_AREA / REMOVE_AREA</span></div>
-        <div class="meta"><b>Replay</b><span>SAFE / SATISFIED / CONFLICT</span></div>
+        <div class="meta"><b>Replay</b><span>SAFE / SATISFIED / CONFLICT / REVIEW</span></div>
         <div class="meta"><b>Editor</b><span>QGIS + thin Scenwise plugin</span></div>
       </div>
-      <div class="note">Simulated geometry. Intended to show the design and realistic next implementation steps.</div>
+      <div class="note">Simulated geometry. This page shows the proposed design and a two-week implementation target.</div>
     </div>
   </section>
 
@@ -207,29 +207,52 @@ svg{width:100%;height:100%;display:block}
               <rect width="900" height="500" fill="#111"/>
               <rect width="900" height="500" fill="url(#g)"/>
 
+              <!-- curved road -->
               <path d="M70 340 C235 300 520 300 835 350 L835 448 C550 407 260 401 70 438 Z"
                     fill="#343331" stroke="#403e3c" stroke-width="2"/>
               <path d="M88 390 C270 350 525 353 818 399"
                     fill="none" stroke="#575653" stroke-width="3" stroke-dasharray="18 16"/>
 
+              <!-- simulated BGT sidewalk: curved polygon following the road -->
               <g id="baseSource">
-                <path d="M92 241 C235 214 510 217 810 263 L800 320 C520 280 260 284 100 307 Z"
+                <path d="M92 241
+                         C235 214 510 217 810 263
+                         L800 320
+                         C520 280 260 284 100 307
+                         Z"
                       fill="#878580" fill-opacity=".25" stroke="#a6a49c" stroke-width="3"/>
               </g>
 
+              <!-- surrounding buildings -->
               <path d="M76 72 L225 70 L236 157 L88 166 Z"
                     fill="#403e3c" stroke="#575653" stroke-width="2"/>
               <path d="M615 74 L790 80 L784 168 L606 158 Z"
                     fill="#403e3c" stroke="#575653" stroke-width="2"/>
 
+              <!-- irregular main building; facade protrudes into the mapped sidewalk -->
               <path id="mainBuilding"
-                    d="M326 82 L472 91 L486 190 L470 230 L462 245 L452 270
-                       Q410 291 365 270 L355 245 L335 228 L320 190 Z"
+                    d="M326 82
+                       L472 91
+                       L486 190
+                       L470 230
+                       L462 245
+                       L452 270
+                       Q410 291 365 270
+                       L355 245
+                       L335 228
+                       L320 190
+                       Z"
                     fill="#403e3c" stroke="#6f6d66" stroke-width="3"/>
 
+              <!-- bad source overlap -->
               <g id="problemHighlight">
-                <path d="M335 228 C378 223 425 224 470 230 L462 245 L452 270
-                         Q410 291 365 270 L355 245 Z"
+                <path d="M335 228
+                         C378 223 425 224 470 230
+                         L462 245
+                         L452 270
+                         Q410 291 365 270
+                         L355 245
+                         Z"
                       fill="url(#badOverlap)" stroke="#d14d41" stroke-width="2"/>
                 <path d="M405 216 L405 190" stroke="#d14d41" stroke-width="2"/>
                 <text x="405" y="178" text-anchor="middle" fill="#d97970" font-size="14" font-weight="650">
@@ -237,61 +260,95 @@ svg{width:100%;height:100%;display:block}
                 </text>
               </g>
 
+              <!-- newer BGT: unrelated change at the far end -->
               <g id="safeDelta" class="delta" style="display:none">
-                <path d="M706 248 C746 252 780 258 810 263 L800 320
-                         C765 313 738 308 714 305 L720 282 Z"
+                <path d="M706 248
+                         C746 252 780 258 810 263
+                         L800 320
+                         C765 313 738 308 714 305
+                         L720 282
+                         Z"
                       fill="#da702c" fill-opacity=".30" stroke="#da702c" stroke-width="3" stroke-dasharray="8 6"/>
               </g>
 
+              <!-- newer BGT already contains the user's curved cut-out -->
               <g id="satisfiedDelta" class="delta" style="display:none">
                 <path d="M92 241
                          C185 224 270 218 335 228
-                         L355 245 L365 270
+                         L355 245
+                         L365 270
                          Q410 291 452 270
-                         L462 245 L470 230
+                         L462 245
+                         L470 230
                          C575 226 690 241 810 263
                          L800 320
-                         C520 280 260 284 100 307 Z"
+                         C520 280 260 284 100 307
+                         Z"
                       fill="#4385be" fill-opacity=".20" stroke="#4385be" stroke-width="4"/>
-                <path d="M335 228 L355 245 L365 270 Q410 291 452 270 L462 245 L470 230"
-                      fill="none" stroke="#79a9cf" stroke-width="6"
-                      stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- explicit inner/facade boundary, kept above all fills -->
+                <path d="M335 228
+                         L355 245
+                         L365 270
+                         Q410 291 452 270
+                         L462 245
+                         L470 230"
+                      fill="none" stroke="#79a9cf" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
               </g>
 
+              <!-- newer BGT changed the same facade area -->
               <g id="conflictDelta" class="delta" style="display:none">
-                <path d="M320 220 C365 211 432 214 486 226 L474 257
-                         Q420 304 352 281 L337 255 Z"
+                <path d="M320 220
+                         C365 211 432 214 486 226
+                         L474 257
+                         Q420 304 352 281
+                         L337 255
+                         Z"
                       fill="#da702c" fill-opacity=".26" stroke="#da702c" stroke-width="3" stroke-dasharray="8 6"/>
               </g>
 
+              <!-- source identity changed -->
               <g id="splitDelta" class="delta" style="display:none">
                 <path d="M548 228 C550 246 548 268 545 296"
                       fill="none" stroke="#da702c" stroke-width="5"/>
                 <text x="560" y="300" fill="#c58a52" font-size="13">new source boundary / ID</text>
               </g>
 
+              <!-- user semantic operation -->
               <g id="opsLayer">
-                <path d="M335 228 C378 223 425 224 470 230 L462 245 L452 270
-                         Q410 291 365 270 L355 245 Z"
+                <path d="M335 228
+                         C378 223 425 224 470 230
+                         L462 245
+                         L452 270
+                         Q410 291 365 270
+                         L355 245
+                         Z"
                       fill="#d14d41" fill-opacity=".46" stroke="#d14d41" stroke-width="3"/>
                 <text x="407" y="257" text-anchor="middle" fill="#f1c0ba" font-size="14" font-weight="700">
                   REMOVE_AREA
                 </text>
               </g>
 
+              <!-- effective corrected sidewalk -->
               <g id="resultLayer">
                 <path d="M92 241
                          C185 224 270 218 335 228
-                         L355 245 L365 270
+                         L355 245
+                         L365 270
                          Q410 291 452 270
-                         L462 245 L470 230
+                         L462 245
+                         L470 230
                          C575 226 690 241 810 263
                          L800 320
-                         C520 280 260 284 100 307 Z"
+                         C520 280 260 284 100 307
+                         Z"
                       fill="none" stroke="#3aa99f" stroke-width="4"/>
-                <path d="M335 228 L355 245 L365 270 Q410 291 452 270 L462 245 L470 230"
-                      fill="none" stroke="#66bdb5" stroke-width="6"
-                      stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M335 228
+                         L355 245
+                         L365 270
+                         Q410 291 452 270
+                         L462 245
+                         L470 230"
+                      fill="none" stroke="#66bdb5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
               </g>
 
               <g fill="#878580" font-size="13">
@@ -302,7 +359,7 @@ svg{width:100%;height:100%;display:block}
               <text x="487" y="287" fill="#66bdb5" font-size="13" font-weight="650">corrected facade edge</text>
             </svg>
           </div>
-          <div class="legend">
+<div class="legend">
             <span><i class="sw" style="background:#403e3c"></i> building</span>
             <span><i class="sw" style="background:#878580"></i> source sidewalk</span>
             <span><i class="sw" style="background:#d14d41"></i> user removes</span>
@@ -315,9 +372,8 @@ svg{width:100%;height:100%;display:block}
           <span id="badge" class="badge safe">SAFE</span>
           <h2 id="title">Fix sidewalk overlapping a building</h2>
           <ul id="bullets">
-            <li>User edits normal geometry.</li>
-            <li>Store REMOVE_AREA + ADD_AREA.</li>
-            <li>Keep source ID/version + expected local state.</li>
+            <li>Curved source sidewalk crosses an irregular building facade.</li>
+            <li>User removes the overlap; store REMOVE_AREA with source context.</li>
           </ul>
           <pre class="code" id="code">state = source
 state = state.difference(remove_area)</pre>
@@ -332,7 +388,7 @@ state = state.difference(remove_area)</pre>
         <div class="op"><span class="tag">near-term</span><b>REMOVE_AREA</b><ul><li>Trim wrong surface.</li><li>Spatial mask.</li></ul></div>
         <div class="op"><span class="tag">near-term</span><b>SET_ATTRIBUTE</b><ul><li>Correct semantic value.</li><li>Simple replay.</li></ul></div>
         <div class="op"><span class="tag">next</span><b>SUPPRESS_FEATURE</b><ul><li>Ignore bad source object.</li><li>Keep provenance.</li></ul></div>
-        <div class="op"><span class="tag">later</span><b>ROAD_RELATIVE</b><ul><li>Road ID + side + chainage.</li><li>Secondary anchor.</li></ul></div>
+        <div class="op"><span class="tag">later</span><b>ROAD_RELATIVE</b><ul><li>Road-relative anchor.</li><li>Road ID plus side/chainage.</li></ul></div>
       </div>
 
       <div class="cases">
@@ -354,7 +410,7 @@ if source_delta.buffer(tol).intersects(operation.geometry.buffer(tol)):
       <div class="editors">
         <div class="editor">
           <span class="tag">debugging</span><b>Raw QGIS</b>
-          <ul><li>Immediate.</li><li>Excellent inspection tools.</li><li>Too open-ended for nontechnical operators.</li></ul>
+          <ul><li>Available now.</li><li>Useful for inspection; too open-ended for nontechnical operators.</li></ul>
         </div>
         <div class="editor chosen">
           <span class="tag">recommended</span><b>QGIS + thin Scenwise plugin</b>
@@ -362,7 +418,7 @@ if source_delta.buffer(tol).intersects(operation.geometry.buffer(tol)):
         </div>
         <div class="editor">
           <span class="tag">later</span><b>Web editor</b>
-          <ul><li>Cleaner operator UX.</li><li>Vector tiles for context.</li><li>Edit only selected/local geometry.</li><li>Same backend correction model.</li></ul>
+          <ul><li>Simpler operator UI.</li><li>Vector tiles for context.</li><li>Edit only selected/local geometry.</li><li>Same backend correction model.</li></ul>
         </div>
       </div>
     </div>
@@ -374,11 +430,11 @@ if source_delta.buffer(tol).intersects(operation.geometry.buffer(tol)):
           <span class="tag">week 1</span><b>Core replay</b>
           <ul>
             <li>Operation dataclasses.</li>
-            <li>ADD_AREA / REMOVE_AREA / SET_ATTRIBUTE.</li>
-            <li>SAFE / SATISFIED / CONFLICT.</li>
-            <li>Spatial conflict tests.</li>
-            <li>Small cached BGT sample.</li>
-            <li>QGIS visualization.</li>
+            <li>ADD_AREA / REMOVE_AREA.</li>
+            <li>SET_ATTRIBUTE after geometry replay works.</li>
+            <li>SAFE / SATISFIED replay paths.</li>
+            <li>Conflict tests.</li>
+            <li>Cached BGT sample in QGIS.</li>
           </ul>
         </div>
         <div class="week">
@@ -394,9 +450,8 @@ if source_delta.buffer(tol).intersects(operation.geometry.buffer(tol)):
       </div>
       <div class="note">
         <ul>
-          <li>No automatic arbitrary split/merge conflation yet.</li>
-          <li>No production PostGIS correction schema required for the first proof.</li>
-          <li>No full web editor required.</li>
+          <li>Split/merge handling stays manual in the first version.</li>
+          <li>The production PostGIS schema and web editor can wait.</li>
         </ul>
       </div>
     </div>
@@ -421,39 +476,44 @@ if source_delta.buffer(tol).intersects(operation.geometry.buffer(tol)):
 const scenarios={
  baseline:{
   badge:"SAFE",cls:"safe",title:"Fix sidewalk overlapping a building",
-  bullets:["Curved source sidewalk crosses an irregular building facade.","User removes only the impossible overlap.","Store REMOVE_AREA + source context."],
+  bullets:["Curved source sidewalk crosses an irregular building facade.","User removes the overlap; store REMOVE_AREA with source context."],
   code:`state = source
-state = state.difference(remove_area)`,delta:null,result:1,base:true,problem:true,ops:true
+state = state.difference(remove_area)`,
+  delta:null,result:1,base:true,problem:true,ops:true
  },
  safe:{
   badge:"SAFE",cls:"safe",title:"BGT changes elsewhere",
-  bullets:["A later BGT update changes the far end of the curved sidewalk.","The source delta does not touch the facade correction.","Replay automatically; no manual work."],
+  bullets:["A later BGT update changes the far end of the curved sidewalk.","The source delta does not touch the facade correction, so replay automatically."],
   code:`source_delta = expected_before.symmetric_difference(current_before)
 
 if not overlaps(source_delta, operation):
-    return SAFE`,delta:"safeDelta",result:1,base:true,problem:true,ops:true
+    return SAFE`,
+  delta:"safeDelta",result:1,base:true,problem:true,ops:true
  },
  satisfied:{
   badge:"SATISFIED",cls:"satisfied",title:"BGT now follows the building facade",
-  bullets:["Latest BGT already contains the same curved cut-out.","The facade-facing inner boundary is now part of the source geometry.","REMOVE_AREA becomes a no-op."],
+  bullets:["Latest BGT already contains the same curved cut-out.","REMOVE_AREA becomes a no-op; keep the edit history."],
   code:`candidate = apply(operation, current)
 
 if candidate.equals_exact(current, tolerance):
-    return SATISFIED`,delta:"satisfiedDelta",result:0,base:false,problem:false,ops:false
+    return SATISFIED`,
+  delta:"satisfiedDelta",result:0,base:false,problem:false,ops:false
  },
  conflict:{
   badge:"CONFLICT",cls:"conflict",title:"BGT changes the same facade area",
-  bullets:["The newer source reshapes the same sidewalk/building boundary.","The source delta overlaps the manual correction.","Do not guess; create a reviewable conflict."],
+  bullets:["The newer source reshapes the same sidewalk/building boundary.","The source delta overlaps the correction, so create a conflict record."],
   code:`if overlaps(source_delta, operation):
-    return CONFLICT`,delta:"conflictDelta",result:.15,base:true,problem:false,ops:true
+    return CONFLICT`,
+  delta:"conflictDelta",result:.15,base:true,problem:false,ops:true
  },
  split:{
   badge:"REVIEW",cls:"review",title:"Source split / missing ID",
-  bullets:["Original source ID cannot be resolved.","Do not use nearest-feature-wins.","Defer advanced conflation until real data justifies it."],
+  bullets:["The original source ID no longer resolves.","Keep the correction for review; do not attach it to the nearest feature."],
   code:`target = find_by_source_id(...)
 
 if target is None:
-    return REVIEW`,delta:"splitDelta",result:.15,base:true,problem:false,ops:true
+    return REVIEW`,
+  delta:"splitDelta",result:.15,base:true,problem:false,ops:true
  }
 };
 
@@ -461,15 +521,21 @@ function setScenario(name){
  document.querySelectorAll(".scenario").forEach(b=>b.classList.toggle("active",b.dataset.s===name));
  document.querySelectorAll(".delta").forEach(g=>g.style.display="none");
  const s=scenarios[name];
- if(s.delta) document.getElementById(s.delta).style.display="";
+
+ const deltaToggle=document.querySelector('[data-layer="delta"]');
+ if(s.delta && deltaToggle.checked) document.getElementById(s.delta).style.display="";
+
  const badge=document.getElementById("badge");
- badge.textContent=s.badge; badge.className="badge "+s.cls;
+ badge.textContent=s.badge;
+ badge.className="badge "+s.cls;
  document.getElementById("title").textContent=s.title;
  document.getElementById("bullets").innerHTML=s.bullets.map(x=>`<li>${x}</li>`).join("");
  document.getElementById("code").textContent=s.code;
- document.getElementById("resultLayer").style.opacity=s.result;
+
  document.getElementById("baseSource").style.display=s.base ? "" : "none";
  document.getElementById("problemHighlight").style.display=s.problem ? "" : "none";
+ document.getElementById("resultLayer").style.opacity=s.result;
+
  const opsToggle=document.querySelector('[data-layer="ops"]');
  document.getElementById("opsLayer").style.display=(s.ops && opsToggle.checked) ? "" : "none";
 }
