@@ -193,54 +193,97 @@ svg{width:100%;height:100%;display:block}
           </div>
 
           <div class="map">
-            <svg viewBox="0 0 900 500" aria-label="Simulated manual correction">
+            <svg viewBox="0 0 900 500" aria-label="Simulated BGT sidewalk incorrectly overlapping a building">
               <defs>
                 <pattern id="g" width="35" height="35" patternUnits="userSpaceOnUse">
                   <path d="M35 0L0 0 0 35" fill="none" stroke="#201f1e" stroke-width="1"/>
                 </pattern>
+                <pattern id="badOverlap" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <rect width="12" height="12" fill="#d14d41" fill-opacity=".34"/>
+                  <line x1="0" y1="0" x2="0" y2="12" stroke="#d14d41" stroke-width="4"/>
+                </pattern>
               </defs>
+
               <rect width="900" height="500" fill="#111"/>
               <rect width="900" height="500" fill="url(#g)"/>
+
+              <!-- buildings -->
+              <rect x="90" y="72" width="150" height="95" rx="4" fill="#403e3c" stroke="#575653" stroke-width="2"/>
+              <path d="M300 70H420V255H300Z" fill="#403e3c" stroke="#6f6d66" stroke-width="3"/>
+              <rect x="610" y="78" width="180" height="88" rx="4" fill="#403e3c" stroke="#575653" stroke-width="2"/>
+
+              <!-- road -->
               <rect x="80" y="315" width="740" height="120" rx="7" fill="#343331" stroke="#403e3c"/>
               <line x1="95" y1="375" x2="805" y2="375" stroke="#575653" stroke-width="3" stroke-dasharray="18 16"/>
-              <rect x="90" y="62" width="150" height="95" rx="5" fill="#403e3c"/>
-              <rect x="610" y="52" width="180" height="100" rx="5" fill="#403e3c"/>
-              <path d="M120 205L760 205L760 285L120 285Z" fill="#878580" fill-opacity=".22" stroke="#a6a49c" stroke-width="3"/>
 
+              <!-- simulated BGT sidewalk surface: wrong because it continues through the building -->
+              <g id="baseSource">
+                <path d="M120 205H760V285H120Z"
+                      fill="#878580" fill-opacity=".24" stroke="#a6a49c" stroke-width="3"/>
+              </g>
+
+              <!-- visual problem highlight -->
+              <g id="problemHighlight">
+                <rect x="300" y="205" width="120" height="50"
+                      fill="url(#badOverlap)" stroke="#d14d41" stroke-width="2"/>
+                <path d="M360 197V174" stroke="#d14d41" stroke-width="2"/>
+                <text x="360" y="163" text-anchor="middle" fill="#d97970" font-size="15" font-weight="650">
+                  sidewalk overlaps building
+                </text>
+              </g>
+
+              <!-- simulated newer-source deltas -->
               <g id="safeDelta" class="delta" style="display:none">
-                <path d="M710 205L760 205L760 285L724 285L724 257L710 257Z" fill="#da702c" fill-opacity=".34" stroke="#da702c" stroke-width="3" stroke-dasharray="8 6"/>
+                <path d="M700 205H760V285H725V260H700Z"
+                      fill="#da702c" fill-opacity=".34" stroke="#da702c" stroke-width="3" stroke-dasharray="8 6"/>
               </g>
 
               <g id="satisfiedDelta" class="delta" style="display:none">
-                <path d="M120 205L272 205L272 191L333 191L333 205L760 205L760 285L120 285Z" fill="#878580" fill-opacity=".22" stroke="#a6a49c" stroke-width="3"/>
-                <path d="M278 205L326 205L326 230L278 230Z" fill="#111"/>
+                <path d="M120 205H300V255H420V205H760V285H120Z"
+                      fill="#4385be" fill-opacity=".18" stroke="#4385be" stroke-width="4"/>
+                <rect x="300" y="205" width="120" height="50" fill="#403e3c"/>
               </g>
 
               <g id="conflictDelta" class="delta" style="display:none">
-                <path d="M248 188L347 188L347 238L248 238Z" fill="#da702c" fill-opacity=".34" stroke="#da702c" stroke-width="3" stroke-dasharray="8 6"/>
+                <path d="M282 194H438V270H282Z"
+                      fill="#da702c" fill-opacity=".25" stroke="#da702c" stroke-width="3" stroke-dasharray="8 6"/>
               </g>
 
               <g id="splitDelta" class="delta" style="display:none">
-                <line x1="450" y1="205" x2="450" y2="285" stroke="#da702c" stroke-width="5"/>
+                <line x1="545" y1="205" x2="545" y2="285" stroke="#da702c" stroke-width="5"/>
+                <text x="555" y="303" fill="#c58a52" font-size="13">source object split</text>
               </g>
 
+              <!-- semantic operation authored by the user -->
               <g id="opsLayer">
-                <path d="M278 205L326 205L326 230L278 230Z" fill="#d14d41" fill-opacity=".52" stroke="#d14d41" stroke-width="3"/>
-                <path d="M272 205L272 191L333 191L333 205Z" fill="#879a39" fill-opacity=".62" stroke="#879a39" stroke-width="3"/>
+                <rect x="300" y="205" width="120" height="50"
+                      fill="#d14d41" fill-opacity=".46" stroke="#d14d41" stroke-width="3"/>
+                <text x="360" y="235" text-anchor="middle" fill="#f1c0ba" font-size="15" font-weight="700">
+                  REMOVE_AREA
+                </text>
               </g>
 
+              <!-- effective corrected sidewalk boundary -->
               <g id="resultLayer">
-                <path d="M120 205L272 205L272 191L333 191L333 205L760 205L760 285L120 285Z" fill="none" stroke="#3aa99f" stroke-width="4"/>
-                <path d="M278 205L326 205L326 230L278 230Z" fill="#111" stroke="#3aa99f" stroke-width="2" stroke-dasharray="5 5"/>
+                <path d="M120 205H300V255H420V205H760V285H120Z"
+                      fill="none" stroke="#3aa99f" stroke-width="4"/>
               </g>
+
+              <!-- labels -->
+              <g fill="#878580" font-size="14">
+                <text x="135" y="245">simulated BGT sidewalk</text>
+                <text x="337" y="128" fill="#b2b0a8" font-weight="650">BUILDING</text>
+                <text x="418" y="389">ROAD</text>
+              </g>
+              <text x="438" y="247" fill="#66bdb5" font-size="14" font-weight="650">corrected edge follows facade</text>
             </svg>
           </div>
           <div class="legend">
-            <span><i class="sw" style="background:#878580"></i> source</span>
-            <span><i class="sw" style="background:#879a39"></i> add</span>
-            <span><i class="sw" style="background:#d14d41"></i> remove</span>
-            <span><i class="sw" style="background:#da702c"></i> source change</span>
-            <span><i class="sw" style="background:#3aa99f"></i> result</span>
+            <span><i class="sw" style="background:#403e3c"></i> building</span>
+            <span><i class="sw" style="background:#878580"></i> source sidewalk</span>
+            <span><i class="sw" style="background:#d14d41"></i> user removes</span>
+            <span><i class="sw" style="background:#da702c"></i> newer BGT change</span>
+            <span><i class="sw" style="background:#3aa99f"></i> corrected boundary</span>
           </div>
         </div>
 
@@ -253,8 +296,7 @@ svg{width:100%;height:100%;display:block}
             <li>Keep source ID/version + expected local state.</li>
           </ul>
           <pre class="code" id="code">state = source
-state = state.difference(remove_area)
-state = state.union(add_area)</pre>
+state = state.difference(remove_area)</pre>
         </aside>
       </div>
     </div>
@@ -354,31 +396,30 @@ if source_delta.buffer(tol).intersects(operation.geometry.buffer(tol)):
 <script>
 const scenarios={
  baseline:{
-  badge:"SAFE",cls:"safe",title:"Apply correction",
-  bullets:["User edits normal geometry.","Store REMOVE_AREA + ADD_AREA.","Keep source ID/version + expected local state."],
+  badge:"SAFE",cls:"safe",title:"Fix sidewalk overlapping a building",
+  bullets:["Simulated BGT sidewalk runs through a building footprint.","User trims the impossible overlap.","Store one REMOVE_AREA operation + source context."],
   code:`state = source
-state = state.difference(remove_area)
-state = state.union(add_area)`,delta:null,result:1
+state = state.difference(remove_area)`,delta:null,result:1
  },
  safe:{
-  badge:"SAFE",cls:"safe",title:"Unrelated BGT update",
-  bullets:["Source changed elsewhere.","Change footprint does not overlap the correction.","Replay automatically; no manual work."],
+  badge:"SAFE",cls:"safe",title:"BGT changes elsewhere",
+  bullets:["A later BGT update changes the far end of the sidewalk.","The source delta does not touch the building correction.","Replay automatically; no manual work."],
   code:`source_delta = expected_before.symmetric_difference(current_before)
 
 if not overlaps(source_delta, operation):
     return SAFE`,delta:"safeDelta",result:1
  },
  satisfied:{
-  badge:"SATISFIED",cls:"satisfied",title:"BGT already contains the fix",
-  bullets:["Latest BGT matches the intended result.","Operation becomes a no-op.","Keep history; retire later if desired."],
+  badge:"SATISFIED",cls:"satisfied",title:"BGT now clips around the building",
+  bullets:["Latest BGT contains the same corrected boundary.","REMOVE_AREA changes nothing.","Mark the operation SATISFIED; keep audit history."],
   code:`candidate = apply(operation, current)
 
 if candidate.equals_exact(current, tolerance):
     return SATISFIED`,delta:"satisfiedDelta",result:.25
  },
  conflict:{
-  badge:"CONFLICT",cls:"conflict",title:"BGT changed the same area",
-  bullets:["Source delta overlaps the correction.","Do not silently choose one version.","Create reviewable QA/conflict record."],
+  badge:"CONFLICT",cls:"conflict",title:"BGT changes the building edge",
+  bullets:["The newer source changes the same facade/sidewalk area.","The source delta overlaps the manual correction.","Do not guess; create a reviewable conflict."],
   code:`if overlaps(source_delta, operation):
     return CONFLICT`,delta:"conflictDelta",result:.15
  },
