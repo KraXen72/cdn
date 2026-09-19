@@ -1,32 +1,32 @@
-# Timesheet Prefixer
+# Timesheet converter
 
-Open `index.html` in a browser or serve this repository with `python3 -m http.server`.
-No build or backend is needed. SheetJS 0.20.3 loads from its official CDN.
+Converts a Simple Time Tracker CSV/XLSX export into the monthly Excel layout used
+by Scenwise. The generated filename includes the employee name.
 
-Import a Simple Time Tracker CSV or XLSX export, choose a worksheet and column,
-and edit the prefix (default `AITCIM: `). Description is preferred, then Comment.
-The first populated row is the header. Entirely empty rows are left untouched;
-empty cells in populated data rows receive the prefix. Multiline prefixing and
-skipping existing prefixes are enabled by default and can be switched off.
-The original/output toggle only changes the preview, not the download.
+## Development
 
-CSV values remain literal text to preserve leading zeros and prevent formula
-interpretation. XLSX cells outside the chosen column retain their values,
-formulas and number formats. The chosen column becomes text when a nonempty
-prefix is applied. Other worksheets are retained. Advanced Excel objects and
-styling are not guaranteed to survive a SheetJS round trip. This tool is intended
-for plain timesheet exports, not complex Excel templates.
+```sh
+npm install
+npm run dev
+```
 
-The scrollable preview shows the first 500 data rows; export includes all rows.
-Local CSV and XLSX files in this directory are gitignored because they may
-contain private timesheet data. GitHub Pages deploys directly from the repository's
-`master` branch; no custom deployment workflow is needed.
+Run the logic tests with `npm test`.
 
-## Verification
+GitHub Pages can serve this directory directly. Production uses SheetJS 0.20.3
+from its official CDN, so a build step is not required.
 
-Check both export formats: import, inspect the selected Comment column, download,
-and reopen the XLSX. Verify descriptions have the prefix while dates, durations,
-and other fields retain their original values and XLSX number formats. Also check
-multiline descriptions, existing prefixes, blank cells, an empty prefix, switching
-columns/worksheets, invalid input, and a narrow viewport. All transformation runs
-in the browser; loading a file does not issue an upload request.
+## Conversion rules
+
+- The period is inferred by comparing the export's first/last current-year dates
+  with every calendar month's start/end. The closest month wins; the period can
+  be overridden.
+- Records outside the selected period are omitted and summarized in a warning.
+- Exact tracked time is summed per day, then rounded to the nearest 15 minutes.
+  An exact 7½-minute midpoint rounds up. Rounding happens once per day, so it
+  does not compound across individual timer entries.
+- Duplicate daily descriptions are removed case-insensitively and the retained
+  descriptions are joined with `; `.
+- Combined descriptions over 130 characters become findings. Each can be edited
+  through checkboxes and explicitly resolved, even while still over the limit.
+- The workbook contains one row for every calendar day and a `SUM` formula in the
+  period-total cell.
