@@ -4,8 +4,9 @@ Generate index.html for top-level directory listing.
 
 Scans recursively one level deep:
 - Top-level {name}.html files
-- Per folder: index.html, dist/index.html, individual .html files, .user.js files,
-  and sub-subfolder index.html entries
+- Per folder: index.html, dist/index.html, individual .html files, and
+  sub-subfolder index.html entries
+- Userscripts and userstyles from their corresponding top-level folders
 """
 
 import os
@@ -20,12 +21,27 @@ EXCLUDED = [
 # from the generated directory listing.
 UNLISTED_DIRECTORIES = {"artifacts"}
 
+# Top-level folders whose matching files are rendered in dedicated sections.
+FILE_SECTIONS = {
+    "userscripts": "*.user.js",
+    "userstyles": "*.user.css",
+}
+
 SCRIPT_DIR = Path(__file__).parent.resolve()
 
 
 def is_excluded(path: str) -> bool:
     """Check if path contains any excluded substring."""
     return any(exclude in path for exclude in EXCLUDED)
+
+
+def scan_files(folder: Path, prefix: str, pattern: str) -> list[tuple[str, str]]:
+    """Return matching files as ``(display_name, href)`` entries."""
+    return [
+        (item.name, f"{prefix}/{item.name}")
+        for item in sorted(folder.glob(pattern))
+        if not is_excluded(str(item.relative_to(SCRIPT_DIR)))
+    ]
 
 
 def scan_folder(folder: Path, prefix: str) -> list[tuple[str, str]]:
@@ -55,12 +71,6 @@ def scan_folder(folder: Path, prefix: str) -> list[tuple[str, str]]:
             continue
         entries.append((item.stem, f"{prefix}/{item.name}"))
 
-    # .user.js files (userscripts) — show full filename
-    for item in sorted(folder.glob("*.user.js")):
-        if is_excluded(str(item.relative_to(SCRIPT_DIR))):
-            continue
-        entries.append((item.name, f"{prefix}/{item.name}"))
-
     # Subfolders with their own index.html
     for subfolder in sorted(folder.iterdir()):
         if not subfolder.is_dir():
@@ -76,9 +86,11 @@ def scan_folder(folder: Path, prefix: str) -> list[tuple[str, str]]:
 
 
 def collect_entries() -> dict[str, list[tuple[str, str]]]:
-    """Collect all entries into Tools and Userscripts sections."""
+    """Collect entries into tools and configured file sections."""
     tools: list[tuple[str, str]] = []
-    userscripts: list[tuple[str, str]] = []
+    file_sections: dict[str, list[tuple[str, str]]] = {
+        name: [] for name in FILE_SECTIONS
+    }
 
     # Top-level {name}.html files
     for item in sorted(SCRIPT_DIR.glob("*.html")):
@@ -100,22 +112,23 @@ def collect_entries() -> dict[str, list[tuple[str, str]]]:
             continue
         if is_excluded(item.name):
             continue
+        if pattern := FILE_SECTIONS.get(item.name):
+            file_sections[item.name].extend(scan_files(item, item.name, pattern))
+            continue
+
         entries = scan_folder(item, prefix=item.name)
         if not entries:
             continue
-        if item.name == "userscripts":
-            userscripts.extend(entries)
-        else:
-            tools.extend(entries)
+        tools.extend(entries)
 
     tools.sort(key=lambda x: x[0].lower())
-    userscripts.sort(key=lambda x: x[0].lower())
 
     sections: dict[str, list[tuple[str, str]]] = {}
     if tools:
         sections["tools"] = tools
-    if userscripts:
-        sections["userscripts"] = userscripts
+    for name, entries in file_sections.items():
+        if entries:
+            sections[name] = sorted(entries, key=lambda entry: entry[0].lower())
     return sections
 
 

@@ -1,0 +1,464 @@
+/* ==UserStyle==
+@name           flexoki: chatgpt
+@namespace      github.com/openstyles/stylus
+@version        1.3.0
+@description    Flexoki theme for ChatGPT
+@author         KraXen72
+==/UserStyle== */
+
+@-moz-document domain("chatgpt.com"), domain("chat.openai.com") {
+
+    /* light palette */
+    html,
+    .light,
+    .dark .light {
+        --flexoki-bg: #FFFCF0;
+        --flexoki-bg-2: #F2F0E5;
+        --flexoki-ui: #E6E4D9;
+        --flexoki-ui-2: #DAD8CE;
+        --flexoki-ui-3: #CECDC3;
+        --flexoki-tx-3: #B7B5AC;
+        --flexoki-tx-2: #6F6E69;
+        --flexoki-tx: #100F0F;
+
+        --flexoki-red: #AF3029;
+        --flexoki-orange: #BC5215;
+        --flexoki-yellow: #AD8301;
+        --flexoki-green: #66800B;
+        --flexoki-cyan: #24837B;
+        --flexoki-blue: #205EA6;
+        --flexoki-purple: #5E409D;
+        --flexoki-magenta: #A02F6F;
+
+        --flexoki-red-rgb: 175 48 41;
+        --flexoki-tx-rgb: 16 15 15;
+
+        --flexoki-message-bg: var(--flexoki-bg-2);
+        --flexoki-code-bg: var(--flexoki-bg-2);
+        --flexoki-control-bg: var(--flexoki-bg-2);
+        --flexoki-control-hover: var(--flexoki-ui);
+        --flexoki-control-press: var(--flexoki-ui-2);
+        --flexoki-elevated-bg: var(--flexoki-bg-2);
+        --flexoki-tertiary-text: var(--flexoki-tx-3);
+
+        /* root gray scale */
+        --gray-0: var(--flexoki-bg);
+        --gray-25: var(--flexoki-bg);
+        --gray-50: var(--flexoki-bg-2);
+        --gray-75: var(--flexoki-bg-2);
+        --gray-100: var(--flexoki-ui);
+        --gray-150: var(--flexoki-ui);
+        --gray-200: var(--flexoki-ui-2);
+        --gray-250: var(--flexoki-ui-2);
+        --gray-300: var(--flexoki-ui-3);
+        --gray-350: var(--flexoki-ui-3);
+        --gray-400: var(--flexoki-tx-3);
+        --gray-450: var(--flexoki-tx-3);
+        --gray-500: var(--flexoki-tx-2);
+        --gray-550: var(--flexoki-tx-2);
+        --gray-600: var(--flexoki-tx-2);
+        --gray-650: var(--flexoki-tx-2);
+        --gray-700: var(--flexoki-tx);
+        --gray-750: var(--flexoki-tx);
+        --gray-800: var(--flexoki-tx);
+        --gray-850: var(--flexoki-tx);
+        --gray-900: var(--flexoki-tx);
+        --gray-925: var(--flexoki-tx);
+        --gray-950: var(--flexoki-tx);
+        --gray-975: var(--flexoki-tx);
+        --gray-1000: var(--flexoki-tx);
+    }
+
+    /* dark palette */
+    .dark {
+        --flexoki-bg: #100F0F;
+        --flexoki-bg-2: #1C1B1A;
+        --flexoki-ui: #282726;
+        --flexoki-ui-2: #343331;
+        --flexoki-ui-3: #403E3C;
+        --flexoki-tx-3: #575653;
+        --flexoki-tx-2: #878580;
+        --flexoki-tx: #CECDC3;
+
+        --flexoki-red: #D14D41;
+        --flexoki-orange: #DA702C;
+        --flexoki-yellow: #D0A215;
+        --flexoki-green: #879A39;
+        --flexoki-cyan: #3AA99F;
+        --flexoki-blue: #4385BE;
+        --flexoki-purple: #8B7EC8;
+        --flexoki-magenta: #CE5D97;
+
+        --flexoki-red-rgb: 209 77 65;
+        --flexoki-tx-rgb: 206 205 195;
+
+        --flexoki-message-bg: var(--flexoki-ui);
+        --flexoki-code-bg: var(--flexoki-ui);
+        --flexoki-control-bg: var(--flexoki-ui);
+        --flexoki-control-hover: var(--flexoki-ui-2);
+        --flexoki-control-press: var(--flexoki-ui-3);
+        --flexoki-elevated-bg: var(--flexoki-ui);
+        --flexoki-tertiary-text: var(--flexoki-tx-2);
+
+        /* root gray scale */
+        --gray-0: var(--flexoki-tx);
+        --gray-25: var(--flexoki-tx);
+        --gray-50: var(--flexoki-tx);
+        --gray-75: var(--flexoki-tx);
+        --gray-100: var(--flexoki-tx);
+        --gray-150: var(--flexoki-tx);
+        --gray-200: var(--flexoki-tx-2);
+        --gray-250: var(--flexoki-tx-2);
+        --gray-300: var(--flexoki-tx-2);
+        --gray-350: var(--flexoki-tx-2);
+        --gray-400: var(--flexoki-tx-3);
+        --gray-450: var(--flexoki-tx-3);
+        --gray-500: var(--flexoki-tx-3);
+        --gray-550: var(--flexoki-ui-3);
+        --gray-600: var(--flexoki-ui-3);
+        --gray-650: var(--flexoki-ui-2);
+        --gray-700: var(--flexoki-ui-2);
+        --gray-750: var(--flexoki-ui);
+        --gray-800: var(--flexoki-bg-2);
+        --gray-850: var(--flexoki-bg-2);
+        --gray-900: var(--flexoki-bg);
+        --gray-925: var(--flexoki-bg);
+        --gray-950: var(--flexoki-bg);
+        --gray-975: var(--flexoki-bg);
+        --gray-1000: var(--flexoki-bg);
+    }
+
+    /* shared chatgpt bindings */
+    html,
+    .light,
+    .dark {
+        --brand-purple: var(--flexoki-purple);
+
+        /* backgrounds */
+        --bg-primary: var(--flexoki-bg);
+        --bg-secondary: var(--flexoki-bg-2);
+        --bg-secondary-surface: var(--flexoki-bg-2);
+        --bg-tertiary: var(--flexoki-ui);
+        --bg-elevated-primary: var(--flexoki-elevated-bg);
+        --bg-elevated-secondary: var(--flexoki-code-bg);
+        --component-sidebar-bg: var(--flexoki-bg-2);
+
+        /* main surfaces */
+        --main-surface-background: var(--flexoki-bg);
+        --main-surface-primary: var(--flexoki-bg);
+        --main-surface-secondary: var(--flexoki-bg-2);
+        --main-surface-tertiary: var(--flexoki-ui);
+        --main-surface-primary-inverse: var(--flexoki-tx);
+
+        /* messages and composer */
+        --message-surface: var(--flexoki-message-bg);
+        --composer-surface: var(--flexoki-message-bg);
+        --composer-surface-primary: var(--flexoki-bg);
+        --composer-blue-bg: var(--flexoki-message-bg);
+        --composer-blue-hover: var(--flexoki-control-hover);
+        --composer-blue-hover-tint: transparent;
+        --composer-blue-text: var(--flexoki-tx);
+        --keyboard-open-mask-bg: var(--flexoki-bg-2);
+        --user-message-background-color: var(--flexoki-message-bg);
+        --user-message-text-color: var(--flexoki-tx);
+        --default-theme-user-msg-bg: var(--flexoki-message-bg);
+        --default-theme-user-msg-text: var(--flexoki-tx);
+        --theme-user-msg-bg: var(--flexoki-message-bg);
+        --theme-user-msg-text: var(--flexoki-tx);
+
+        /* code blocks */
+        --code-block-surface: var(--flexoki-code-bg);
+        --codeblock-background-color: var(--flexoki-code-bg);
+
+        /* text */
+        --text-primary: var(--flexoki-tx);
+        --text-secondary: var(--flexoki-tx-2);
+        --text-tertiary: var(--flexoki-tertiary-text);
+        --text-quaternary: var(--flexoki-tx-3);
+        --text-placeholder: var(--flexoki-tx-2);
+        --text-primary-inverse: var(--flexoki-bg);
+        --text-inverted: var(--flexoki-bg);
+        --content-primary: var(--flexoki-tx);
+        --content-secondary: var(--flexoki-tx-2);
+
+        /* icons */
+        --dot-color: var(--flexoki-tx);
+        --icon-surface: var(--flexoki-tx-rgb);
+        --icon-primary: var(--flexoki-tx);
+        --icon-secondary: var(--flexoki-tx-2);
+        --icon-tertiary: var(--flexoki-tertiary-text);
+
+        /* accents */
+        --link: var(--flexoki-blue);
+        --link-hover: var(--flexoki-cyan);
+        --selection: var(--flexoki-blue);
+        --tag-blue: var(--flexoki-blue);
+        --tag-blue-light: var(--flexoki-cyan);
+        --hint-text: var(--flexoki-blue);
+        --hint-bg: var(--flexoki-ui);
+        --text-accent: var(--flexoki-blue);
+
+        /* errors */
+        --text-error: var(--flexoki-red);
+        --text-danger: var(--flexoki-red);
+        --text-status-error: var(--flexoki-red);
+        --surface-error: var(--flexoki-red-rgb);
+
+        /* borders */
+        --border-xlight: color-mix(in hsl, var(--flexoki-tx-3) 20%, transparent);
+        --border-light: color-mix(in hsl, var(--flexoki-tx-3) 35%, transparent);
+        --border-medium: color-mix(in hsl, var(--flexoki-tx-3) 50%, transparent);
+        --border-heavy: color-mix(in hsl, var(--flexoki-tx-3) 70%, transparent);
+        --border-xheavy: var(--flexoki-tx-3);
+        --border-sharp: color-mix(in hsl, var(--flexoki-tx-3) 35%, transparent);
+        --border-default: var(--border-light);
+        --border-extra-light: var(--border-xlight);
+
+        /* sidebar */
+        --sidebar-surface-primary: var(--flexoki-bg-2);
+        --sidebar-surface-secondary: var(--flexoki-ui);
+        --sidebar-surface-tertiary: var(--flexoki-ui-2);
+        --sidebar-surface: var(--flexoki-bg-2);
+        --sidebar-title-primary: var(--flexoki-tx-2);
+        --sidebar-body-primary: var(--flexoki-tx);
+        --sidebar-icon: var(--flexoki-tx-2);
+
+        /* controls */
+        --surface-hover: var(--flexoki-ui);
+        --main-surface-secondary-selected: var(--flexoki-ui);
+
+        --interactive-bg-secondary-default: transparent;
+        --interactive-bg-secondary-hover: var(--flexoki-ui);
+        --interactive-bg-secondary-press: var(--flexoki-ui-2);
+        --interactive-bg-secondary-inactive: transparent;
+        --interactive-bg-secondary-selected: var(--flexoki-ui);
+
+        --interactive-bg-tertiary-default: var(--flexoki-control-bg);
+        --interactive-bg-tertiary-hover: var(--flexoki-control-hover);
+        --interactive-bg-tertiary-press: var(--flexoki-control-press);
+        --interactive-bg-tertiary-inactive: var(--flexoki-control-bg);
+        --interactive-bg-tertiary-selected: var(--flexoki-control-bg);
+
+        --interactive-border-secondary-default: var(--border-light);
+        --interactive-border-secondary-hover: var(--border-light);
+        --interactive-border-secondary-press: var(--border-medium);
+        --interactive-border-secondary-inactive: var(--border-xlight);
+        --interactive-border-tertiary-default: var(--border-light);
+        --interactive-border-tertiary-hover: var(--border-medium);
+        --interactive-border-tertiary-press: var(--border-medium);
+        --interactive-border-tertiary-inactive: var(--border-xlight);
+
+        --interactive-label-secondary-default: var(--flexoki-tx);
+        --interactive-label-secondary-hover: var(--flexoki-tx);
+        --interactive-label-secondary-press: var(--flexoki-tx);
+        --interactive-label-secondary-inactive: var(--flexoki-tx-2);
+        --interactive-label-secondary-selected: var(--flexoki-tx);
+
+        --interactive-label-tertiary-default: var(--flexoki-tx-2);
+        --interactive-label-tertiary-hover: var(--flexoki-tx);
+        --interactive-label-tertiary-press: var(--flexoki-tx);
+        --interactive-label-tertiary-inactive: var(--flexoki-tx-2);
+        --interactive-label-tertiary-selected: var(--flexoki-tx);
+
+        --interactive-icon-secondary-default: var(--flexoki-tx);
+        --interactive-icon-secondary-hover: var(--flexoki-tx);
+        --interactive-icon-secondary-press: var(--flexoki-tx);
+        --interactive-icon-secondary-inactive: var(--flexoki-tx-2);
+        --interactive-icon-secondary-selected: var(--flexoki-tx);
+
+        --interactive-icon-tertiary-default: var(--flexoki-tx-2);
+        --interactive-icon-tertiary-hover: var(--flexoki-tx);
+        --interactive-icon-tertiary-press: var(--flexoki-tx);
+        --interactive-icon-tertiary-inactive: var(--flexoki-tx-2);
+        --interactive-icon-tertiary-selected: var(--flexoki-tx);
+
+        /* source badges */
+        --source-badge-bg: var(--flexoki-control-bg);
+
+        /* scrollbars */
+        --scrollbar-color: var(--flexoki-ui-3);
+        --scrollbar-color-hover: var(--flexoki-tx-3);
+        --utility-scrollbar: var(--flexoki-ui-3);
+    }
+
+    /* shared puik bindings */
+    :where(.puik-root),
+    :where(.puik-root [data-theme]) {
+        --alpha-base: var(--flexoki-tx);
+
+        --color-text: var(--flexoki-tx);
+        --color-text-emphasis: var(--flexoki-tx);
+        --color-text-prose: var(--flexoki-tx);
+        --color-text-primary: var(--flexoki-tx);
+        --color-text-secondary: var(--flexoki-tx-2);
+        --color-text-tertiary: var(--flexoki-tertiary-text);
+        --color-text-inverse: var(--flexoki-bg);
+
+        --color-surface: var(--flexoki-bg);
+        --color-surface-secondary: var(--flexoki-bg-2);
+        --color-surface-tertiary: var(--flexoki-ui);
+        --color-surface-elevated: var(--flexoki-elevated-bg);
+        --color-surface-elevated-secondary: var(--flexoki-code-bg);
+
+        --color-border-subtle: var(--border-xlight);
+        --color-border: var(--border-light);
+        --color-border-strong: var(--border-medium);
+
+        --user-message-background-color: var(--flexoki-message-bg);
+        --user-message-text-color: var(--flexoki-tx);
+        --codeblock-background-color: var(--flexoki-code-bg);
+        --scrollbar-color: var(--flexoki-ui-3);
+
+        --gray-0: var(--flexoki-bg);
+        --gray-25: var(--flexoki-bg);
+        --gray-50: var(--flexoki-bg-2);
+        --gray-75: var(--flexoki-bg-2);
+        --gray-100: var(--flexoki-ui);
+        --gray-150: var(--flexoki-ui);
+        --gray-200: var(--flexoki-ui-2);
+        --gray-250: var(--flexoki-ui-2);
+        --gray-300: var(--flexoki-ui-3);
+        --gray-350: var(--flexoki-ui-3);
+        --gray-400: var(--flexoki-tx-3);
+        --gray-450: var(--flexoki-tx-3);
+        --gray-500: var(--flexoki-tx-2);
+        --gray-550: var(--flexoki-tx-2);
+        --gray-600: var(--flexoki-tx-2);
+        --gray-650: var(--flexoki-tx-2);
+        --gray-700: var(--flexoki-tx-2);
+        --gray-750: var(--flexoki-tx);
+        --gray-800: var(--flexoki-tx);
+        --gray-850: var(--flexoki-tx);
+        --gray-900: var(--flexoki-tx);
+        --gray-925: var(--flexoki-tx);
+        --gray-950: var(--flexoki-tx);
+        --gray-975: var(--flexoki-tx);
+        --gray-1000: var(--flexoki-tx);
+    }
+
+    /* keep colored chat themes from recoloring user bubbles */
+    [data-chat-theme] {
+        --theme-user-msg-bg: var(--flexoki-message-bg) !important;
+        --theme-user-msg-text: var(--flexoki-tx) !important;
+    }
+
+    /* hardcoded white surfaces */
+    html:not(.dark) .bg-white,
+    html:not(.dark) .bg-white\!,
+    html:not(.dark) .\!bg-white,
+    .light .bg-white,
+    .light .bg-white\!,
+    .light .\!bg-white {
+        background-color: var(--flexoki-control-bg) !important;
+    }
+
+    /* reference chips */
+    [data-file-citation-group-identity] > button {
+        background-color: var(--flexoki-control-bg) !important;
+        color: var(--flexoki-tx-2) !important;
+    }
+
+    [data-file-citation-group-identity] > button:hover {
+        background-color: var(--flexoki-control-hover) !important;
+        color: var(--flexoki-tx) !important;
+    }
+
+    [data-file-citation-group-identity] > button svg {
+        color: var(--flexoki-tx) !important;
+    }
+
+    /* reasoning effort picker */
+    button.__composer-pill--neutral,
+    button.__composer-pill--neutral .text-token-text-tertiary {
+        color: var(--flexoki-tx-2) !important;
+    }
+
+    button.__composer-pill--neutral:hover,
+    button.__composer-pill--neutral:hover .text-token-text-tertiary,
+    button.__composer-pill--neutral[data-state="open"],
+    button.__composer-pill--neutral[data-state="open"] .text-token-text-tertiary {
+        color: var(--flexoki-tx) !important;
+    }
+
+    /* light popovers */
+    html:not(.dark) .popover,
+    .light.popover,
+    .light .popover,
+    .dark .light.popover {
+        --main-surface-primary: var(--flexoki-elevated-bg);
+        --main-surface-secondary: var(--flexoki-bg-2);
+        --main-surface-tertiary: var(--flexoki-ui);
+    }
+
+    /* dark popovers */
+    .dark :not(.light).popover,
+    .dark.popover,
+    .popover .dark {
+        --main-surface-primary: var(--flexoki-elevated-bg);
+        --main-surface-secondary: var(--flexoki-ui-2);
+        --main-surface-tertiary: var(--flexoki-ui-3);
+    }
+
+    /* dark sidebar popovers */
+    .dark .popover.sidebar {
+        --main-surface-secondary: var(--flexoki-ui) !important;
+    }
+
+    /* light canvas */
+    .light .canvas-open {
+        --main-surface-primary: var(--flexoki-bg);
+        --message-surface: var(--flexoki-bg-2);
+    }
+
+    /* main chat scrollbar */
+    [data-scroll-root] {
+        scrollbar-color: var(--flexoki-ui-3) var(--main-surface-primary) !important;
+    }
+
+    [data-scroll-root]:hover {
+        scrollbar-color: var(--flexoki-tx-3) var(--main-surface-primary) !important;
+    }
+
+    [data-scroll-root]::-webkit-scrollbar-track,
+    [data-scroll-root]::-webkit-scrollbar-corner,
+    [data-scroll-root]::-webkit-scrollbar-button {
+        background-color: var(--main-surface-primary);
+    }
+
+    [data-scroll-root]::-webkit-scrollbar-thumb {
+        background-color: var(--flexoki-ui-3);
+    }
+
+    [data-scroll-root]::-webkit-scrollbar-thumb:hover {
+        background-color: var(--flexoki-tx-3);
+    }
+
+    /* sidebar scrollbar */
+    nav[aria-label="Chat history"] {
+        scrollbar-color: var(--flexoki-ui-3) var(--sidebar-surface-primary) !important;
+    }
+
+    nav[aria-label="Chat history"]:hover {
+        scrollbar-color: var(--flexoki-tx-3) var(--sidebar-surface-primary) !important;
+    }
+
+    nav[aria-label="Chat history"]::-webkit-scrollbar-track,
+    nav[aria-label="Chat history"]::-webkit-scrollbar-corner,
+    nav[aria-label="Chat history"]::-webkit-scrollbar-button {
+        background-color: var(--sidebar-surface-primary);
+    }
+
+    nav[aria-label="Chat history"]::-webkit-scrollbar-thumb {
+        background-color: var(--flexoki-ui-3);
+    }
+
+    nav[aria-label="Chat history"]::-webkit-scrollbar-thumb:hover {
+        background-color: var(--flexoki-tx-3);
+    }
+
+    /* text selection */
+    ::selection {
+        background: var(--flexoki-blue);
+        color: var(--flexoki-bg);
+    }
+}
