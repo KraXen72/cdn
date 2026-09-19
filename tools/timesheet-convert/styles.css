@@ -18,9 +18,7 @@
 body { margin: 0; background: var(--bg); color: var(--text); font-size: 16px; line-height: 1.5; }
 main { width: min(1120px, calc(100% - 40px)); margin: 40px auto 64px; }
 a { color: var(--accent); }
-.back { display: inline-block; margin-bottom: 28px; text-decoration: none; }
 .hero { margin-bottom: 30px; }
-.eyebrow { color: var(--accent) !important; font-size: .78rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
 h1 { margin: 2px 0 8px; font-size: clamp(2rem, 6vw, 3.25rem); line-height: 1.05; letter-spacing: -.045em; }
 h2, h3, p { margin: 0; }
 .hero p, .section-heading p, #summary { color: var(--muted); }
@@ -75,7 +73,6 @@ tfoot { background: #2a2918; color: #f1e9bf; font-weight: 800; }
 
 @media (max-width: 680px) {
   main { width: min(100% - 24px, 1120px); margin-top: 20px; }
-  .back { margin-bottom: 18px; }
   .card { padding: 17px; border-radius: 11px; }
   .form-grid { grid-template-columns: 1fr; gap: 14px; }
   .preview-heading { align-items: flex-start; flex-wrap: wrap; }
