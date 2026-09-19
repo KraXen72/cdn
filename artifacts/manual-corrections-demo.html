@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scenwise DWN: Manual Corrections Demo</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#100f0f;--bg2:#1c1b1a;--ui:#282726;--ui2:#343331;--ui3:#403e3c;
+  --tx:#cecdc3;--tx2:#878580;--tx3:#575653;
+  --red:#d14d41;--orange:#da702c;--yellow:#d0a215;--green:#879a39;
+  --cyan:#3aa99f;--blue:#4385be;--purple:#8b7ec8;
+  --surface:#181716;--surface2:#151414;--map-bg:#111111;--grid:#201f1e;
+  --header-bg:rgba(16,15,15,.96);
+  --road:#343331;--road-edge:#403e3c;--road-marking:#575653;
+  --sidewalk:#878580;--building:#403e3c;
+  --source-stroke:#a6a49c;--building-stroke:#6f6d66;
+  --accent-text:#b8d8d4;--body-strong:#b8b6ae;--side-text:#b7b5ad;--code-text:#aaa8a0;
+  --note-text:#b9b08c;--safe-text:#a9b879;--satisfied-text:#79b8ce;
+  --conflict-text:#d97970;--review-text:#d6bb5f;
+  --building-label:#b2b0a8;--remove-text:#f1c0ba;--result-label:#66bdb5;--change-label:#c58a52;
+}
+
+[data-theme="light"]{
+  color-scheme:light;
+  --bg:#fffcf0;--bg2:#f2f0e5;--ui:#e6e4d9;--ui2:#dad8ce;--ui3:#cecdc3;
+  --tx:#100f0f;--tx2:#6f6e69;--tx3:#b7b5ac;
+  --red:#af3029;--orange:#bc5215;--yellow:#ad8301;--green:#66800b;
+  --cyan:#24837b;--blue:#205ea6;--purple:#5e409d;
+  --surface:#fffcf0;--surface2:#e6e4d9;--map-bg:#f2f0e5;--grid:#dad8ce;
+  --header-bg:rgba(255,252,240,.96);
+  --road:#dad8ce;--road-edge:#cecdc3;--road-marking:#878580;
+  --sidewalk:#878580;--building:#cecdc3;
+  --source-stroke:#6f6e69;--building-stroke:#878580;
+  --accent-text:#24837b;--body-strong:#403e3c;--side-text:#403e3c;--code-text:#575653;
+  --note-text:#826b16;--safe-text:#66800b;--satisfied-text:#205ea6;
+  --conflict-text:#af3029;--review-text:#8a6a05;
+  --building-label:#403e3c;--remove-text:#7a231f;--result-label:#1f6e68;--change-label:#8b3f12;
+}
+
+[data-theme="dark"]{color-scheme:dark}
+
+@media (prefers-color-scheme:light){
+  :root:not([data-theme]){
+    color-scheme:light;
+    --bg:#fffcf0;--bg2:#f2f0e5;--ui:#e6e4d9;--ui2:#dad8ce;--ui3:#cecdc3;
+    --tx:#100f0f;--tx2:#6f6e69;--tx3:#b7b5ac;
+    --red:#af3029;--orange:#bc5215;--yellow:#ad8301;--green:#66800b;
+    --cyan:#24837b;--blue:#205ea6;--purple:#5e409d;
+    --surface:#fffcf0;--surface2:#e6e4d9;--map-bg:#f2f0e5;--grid:#dad8ce;
+    --header-bg:rgba(255,252,240,.96);
+    --road:#dad8ce;--road-edge:#cecdc3;--road-marking:#878580;
+    --sidewalk:#878580;--building:#cecdc3;
+    --source-stroke:#6f6e69;--building-stroke:#878580;
+    --accent-text:#24837b;--body-strong:#403e3c;--side-text:#403e3c;--code-text:#575653;
+    --note-text:#826b16;--safe-text:#66800b;--satisfied-text:#205ea6;
+    --conflict-text:#af3029;--review-text:#8a6a05;
+    --building-label:#403e3c;--remove-text:#7a231f;--result-label:#1f6e68;--change-label:#8b3f12;
+  }
+}
+*{box-sizing:border-box}
+html{background:var(--bg);scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--tx);
+  font:13px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+button,input{font:inherit}
+.wrap{width:min(1320px,calc(100% - 28px));margin:auto}
+header{
+  position:sticky;top:0;z-index:20;background:var(--header-bg);
+  border-bottom:1px solid var(--ui)
+}
+.head{min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:9px}
+.mark{width:25px;height:25px;border-radius:6px;border:1px solid var(--ui3);background:var(--bg2);position:relative}
+.mark:after{content:"";position:absolute;inset:6px;border-left:2px solid var(--cyan);border-bottom:2px solid var(--cyan)}
+.brand strong{font-size:.86rem}
+.brand span{color:var(--tx2);font-size:.68rem}
+.actions{display:flex;gap:6px}
+.btn,.tab,.scenario{
+  border:1px solid var(--ui2);background:var(--bg2);color:var(--tx2);
+  border-radius:6px;cursor:pointer
+}
+.btn{padding:6px 9px}.btn:hover,.tab:hover,.scenario:hover{color:var(--tx);border-color:var(--ui3)}
+.theme-btn{width:32px;height:32px;padding:0;display:grid;place-items:center;font-size:1rem;line-height:1}
+.btn.primary{color:var(--accent-text);border-color:color-mix(in srgb,var(--cyan) 45%,var(--ui2));background:color-mix(in srgb,var(--cyan) 7%,var(--bg2))}
+main{padding:18px 0 38px}
+.card{border:1px solid var(--ui);background:var(--bg2);border-radius:9px}
+.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}
+.hero>div{padding:18px}
+.eyebrow{color:var(--cyan);font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+h1{font-size:2rem;line-height:1.05;letter-spacing:-.03em;margin:8px 0 12px;font-weight:640;max-width:22ch}
+h2{font-size:1.05rem;margin:0 0 9px;font-weight:650}
+h3{font-size:.84rem;margin:0 0 5px;font-weight:650}
+ul{margin:0;padding-left:18px}
+li{margin:4px 0}
+.muted{color:var(--tx2)}
+.hero ul{color:var(--body-strong)}
+.hero-meta{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.meta{padding:10px;border:1px solid var(--ui);border-radius:6px;background:var(--surface)}
+.meta b{display:block;font-size:.73rem}
+.meta span{color:var(--tx2);font-size:.68rem}
+.section{margin-top:12px;padding:14px}
+.pipe{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
+.p{
+  min-height:70px;padding:9px;border:1px solid var(--ui);border-radius:6px;background:var(--surface);position:relative
+}
+.p.active{border-color:color-mix(in srgb,var(--cyan) 50%,var(--ui2));box-shadow:inset 0 2px 0 var(--cyan)}
+.p b{font-size:.72rem;display:block}
+.p small{font-size:.64rem;color:var(--tx2);display:block;margin-top:4px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.tab{padding:5px 8px;border-color:var(--ui);background:var(--surface);font-size:.7rem}
+.tab.active{background:var(--ui2);color:var(--tx)}
+.panel{display:none}.panel.active{display:block}
+.demo{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,.7fr);gap:10px}
+.mapcard,.side{padding:10px}
+.toolbar{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.scenarios{display:flex;gap:4px;flex-wrap:wrap}
+.scenario{padding:5px 7px;font-size:.68rem;border-color:var(--ui)}
+.scenario.active{color:var(--accent-text);border-color:color-mix(in srgb,var(--cyan) 45%,var(--ui))}
+.layers{display:flex;gap:8px;color:var(--tx2);font-size:.65rem}
+.layers label{display:flex;gap:4px;align-items:center}
+.layers input{accent-color:var(--cyan)}
+.map{aspect-ratio:16/9;border:1px solid var(--ui);border-radius:7px;overflow:hidden;background:var(--map-bg)}
+svg{width:100%;height:100%;display:block}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:7px;color:var(--tx2);font-size:.64rem}
+.legend span{display:flex;align-items:center;gap:4px}
+.sw{width:9px;height:9px;border-radius:2px;display:inline-block}
+.badge{display:inline-block;padding:3px 6px;border-radius:4px;font-size:.62rem;font-weight:750;letter-spacing:.05em;margin-bottom:8px}
+.safe{color:var(--safe-text);border:1px solid rgba(135,154,57,.3);background:rgba(135,154,57,.08)}
+.satisfied{color:var(--satisfied-text);border:1px solid rgba(67,133,190,.3);background:rgba(67,133,190,.08)}
+.conflict{color:var(--conflict-text);border:1px solid rgba(209,77,65,.3);background:rgba(209,77,65,.08)}
+.review{color:var(--review-text);border:1px solid rgba(208,162,21,.3);background:rgba(208,162,21,.08)}
+.side ul{color:var(--side-text)}
+.code{
+  margin-top:9px;padding:8px;border:1px solid var(--ui);border-radius:6px;background:var(--surface2);
+  color:var(--code-text);font:11px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;overflow:auto
+}
+.ops,.cases,.editors,.weeks{display:grid;gap:7px;margin-top:9px}
+.ops{grid-template-columns:repeat(5,1fr)}
+.op,.case,.editor,.week{padding:10px;border:1px solid var(--ui);border-radius:6px;background:var(--surface)}
+.tag{display:inline-block;padding:2px 5px;border-radius:4px;border:1px solid var(--ui2);font-size:.6rem;color:var(--tx2);margin-bottom:5px}
+.op b,.case b,.editor b,.week b{display:block;font-size:.74rem}
+.op ul,.case ul,.editor ul,.week ul{color:var(--tx2);font-size:.68rem}
+.cases{grid-template-columns:repeat(5,1fr)}
+.editors{grid-template-columns:repeat(3,1fr)}
+.editor.chosen{border-color:color-mix(in srgb,var(--cyan) 45%,var(--ui))}
+.weeks{grid-template-columns:1fr 1fr}
+.note{margin-top:9px;padding:8px 10px;border-left:2px solid var(--yellow);background:rgba(208,162,21,.04);color:var(--note-text);font-size:.69rem}
+.presenter{
+  display:none;position:fixed;right:14px;bottom:14px;width:min(380px,calc(100vw - 28px));
+  padding:12px;border:1px solid color-mix(in srgb,var(--cyan) 30%,var(--ui));border-radius:8px;background:var(--surface);z-index:40
+}
+.presenter.show{display:block}
+.presenter ol{margin:6px 0 0;padding-left:18px;color:var(--side-text);font-size:.7rem}
+.x{float:right;background:none;border:0;color:var(--tx2);cursor:pointer}
+@media(max-width:1050px){
+  .hero,.demo{grid-template-columns:1fr}.pipe{grid-template-columns:repeat(4,1fr)}
+  .ops{grid-template-columns:repeat(2,1fr)}.cases{grid-template-columns:repeat(2,1fr)}.editors{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  .wrap{width:min(100% - 18px,1320px)}.pipe{grid-template-columns:1fr 1fr}
+  .ops,.cases,.weeks{grid-template-columns:1fr}.hero-meta{grid-template-columns:1fr}.brand span{display:none}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap head">
+    <div class="brand">
+      <div class="mark"></div>
+      <div><strong>Scenwise DWN</strong> <span>manual corrections</span></div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="notesBtn">Presenter notes</button>
+      <button class="btn primary" id="guidedBtn">Start demo</button>
+      <button class="btn theme-btn" id="themeBtn" type="button" aria-label="Switch color theme" title="Switch color theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="card">
+      <div class="eyebrow">Near-term architecture</div>
+      <h1>Durable manual corrections across regenerated BGT data</h1>
+      <ul>
+        <li>Correct normalized source data before fusion.</li>
+        <li>Store semantic operations. Leave graph output unchanged.</li>
+        <li>Replay automatically when source changes are unrelated.</li>
+        <li>Review only overlapping or unanchored changes.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="hero-meta">
+        <div class="meta"><b>Patch model</b><span>semantic operation log</span></div>
+        <div class="meta"><b>Geometry</b><span>ADD_AREA / REMOVE_AREA</span></div>
+        <div class="meta"><b>Replay</b><span>SAFE / SATISFIED / CONFLICT / REVIEW</span></div>
+        <div class="meta"><b>Editor</b><span>QGIS + Scenwise plugin</span></div>
+      </div>
+      <div class="note">Simulated geometry. This page shows the proposed design and a two-week implementation target.</div>
+    </div>
+  </section>
+
+  <section class="card section">
+    <h2>Pipeline position</h2>
+    <div class="pipe">
+      <div class="p"><b>BGT / OSM</b><small>immutable source</small></div>
+      <div class="p"><b>Transformation</b><small>normalized features</small></div>
+      <div class="p active"><b>Manual corrections</b><small>replay operations</small></div>
+      <div class="p"><b>Fusion</b><small>combine evidence</small></div>
+      <div class="p"><b>Generation</b><small>corridors / centerlines</small></div>
+      <div class="p"><b>Graph</b><small>routable topology</small></div>
+      <div class="p"><b>QA</b><small>findings / conflicts</small></div>
+    </div>
+  </section>
+
+  <section class="card section">
+    <div class="tabs">
+      <button class="tab active" data-tab="replay">Replay cases</button>
+      <button class="tab" data-tab="ops">Operations</button>
+      <button class="tab" data-tab="editor">Editor</button>
+      <button class="tab" data-tab="scope">Two-week scope</button>
+    </div>
+
+    <div class="panel active" id="tab-replay">
+      <div class="demo">
+        <div class="card mapcard">
+          <div class="toolbar">
+            <div class="scenarios">
+              <button class="scenario active" data-s="baseline">1 · correction</button>
+              <button class="scenario" data-s="safe">2 · unrelated update</button>
+              <button class="scenario" data-s="satisfied">3 · BGT fixed it</button>
+              <button class="scenario" data-s="conflict">4 · overlap</button>
+              <button class="scenario" data-s="split">5 · split / missing ID</button>
+            </div>
+            <div class="layers">
+              <label><input type="checkbox" data-layer="ops" checked> operations</label>
+              <label><input type="checkbox" data-layer="delta" checked> BGT change</label>
+            </div>
+          </div>
+
+          <div class="map">
+            <svg viewBox="0 0 900 500" aria-label="Simulated curved BGT sidewalk overlapping an irregular building footprint">
+              <defs>
+                <pattern id="g" width="35" height="35" patternUnits="userSpaceOnUse">
+                  <path d="M35 0L0 0 0 35" fill="none" stroke="var(--grid)" stroke-width="1"/>
+                </pattern>
+                <pattern id="badOverlap" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <rect width="11" height="11" fill="#d14d41" fill-opacity=".28"/>
+                  <line x1="0" y1="0" x2="0" y2="11" stroke="#d14d41" stroke-width="3"/>
+                </pattern>
+              </defs>
+
+              <rect width="900" height="500" fill="var(--map-bg)"/>
+              <rect width="900" height="500" fill="url(#g)"/>
+
+              <!-- curved road -->
+              <path d="M70 340 C235 300 520 300 835 350 L835 448 C550 407 260 401 70 438 Z"
+                    fill="var(--road)" stroke="var(--road-edge)" stroke-width="2"/>
+              <path d="M88 390 C270 350 525 353 818 399"
+                    fill="none" stroke="var(--road-marking)" stroke-width="3" stroke-dasharray="18 16"/>
+
+              <!-- simulated BGT sidewalk: curved polygon following the road -->
+              <g id="baseSource">
+                <path d="M92 241
+                         C235 214 510 217 810 263
+                         L800 320
+                         C520 280 260 284 100 307
+                         Z"
+                      fill="var(--sidewalk)" fill-opacity=".25" stroke="var(--source-stroke)" stroke-width="3"/>
+              </g>
+
+              <!-- surrounding buildings -->
+              <path d="M76 72 L225 70 L236 157 L88 166 Z"
+                    fill="var(--building)" stroke="var(--road-marking)" stroke-width="2"/>
+              <path d="M615 74 L790 80 L784 168 L606 158 Z"
+                    fill="var(--building)" stroke="var(--road-marking)" stroke-width="2"/>
+
+              <!-- irregular main building; facade protrudes into the mapped sidewalk -->
+              <path id="mainBuilding"
+                    d="M326 82
+                       L472 91
+                       L486 190
+                       L470 230
+                       L462 245
+                       L452 270
+                       Q410 291 365 270
+                       L355 245
+                       L335 228
+                       L320 190
+                       Z"
+                    fill="var(--building)" stroke="var(--building-stroke)" stroke-width="3"/>
+
+              <!-- bad source overlap -->
+              <g id="problemHighlight">
+                <path d="M335 228
+                         C378 223 425 224 470 230
+                         L462 245
+                         L452 270
+                         Q410 291 365 270
+                         L355 245
+                         Z"
+                      fill="url(#badOverlap)" stroke="#d14d41" stroke-width="2"/>
+                <path d="M405 216 L405 190" stroke="#d14d41" stroke-width="2"/>
+                <text x="405" y="178" text-anchor="middle" fill="var(--conflict-text)" font-size="14" font-weight="650">
+                  mapped sidewalk crosses building
+                </text>
+              </g>
+
+              <!-- newer BGT: unrelated change at the far end -->
+              <g id="safeDelta" class="delta" style="display:none">
+                <path d="M706 248
+                         C746 252 780 258 810 263
+                         L800 320
+                         C765 313 738 308 714 305
+                         L720 282
+                         Z"
+                      fill="#da702c" fill-opacity=".30" stroke="#da702c" stroke-width="3" stroke-dasharray="8 6"/>
+              </g>
+
+              <!-- newer BGT already contains the user's curved cut-out -->
+              <g id="satisfiedDelta" class="delta" style="display:none">
+                <path d="M92 241
+                         C185 224 270 218 335 228
+                         L355 245
+                         L365 270
+                         Q410 291 452 270
+                         L462 245
+                         L470 230
+                         C575 226 690 241 810 263
+                         L800 320
+                         C520 280 260 284 100 307
+                         Z"
+                      fill="#4385be" fill-opacity=".20" stroke="#4385be" stroke-width="4"/>
+                <!-- explicit inner/facade boundary, kept above all fills -->
+                <path d="M335 228
+                         L355 245
+                         L365 270
+                         Q410 291 452 270
+                         L462 245
+                         L470 230"
+                      fill="none" stroke="#79a9cf" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+
+              <!-- newer BGT changed the same facade area -->
+              <g id="conflictDelta" class="delta" style="display:none">
+                <path d="M320 220
+                         C365 211 432 214 486 226
+                         L474 257
+                         Q420 304 352 281
+                         L337 255
+                         Z"
+                      fill="#da702c" fill-opacity=".26" stroke="#da702c" stroke-width="3" stroke-dasharray="8 6"/>
+              </g>
+
+              <!-- source identity changed -->
+              <g id="splitDelta" class="delta" style="display:none">
+                <path d="M548 228 C550 246 548 268 545 296"
+                      fill="none" stroke="#da702c" stroke-width="5"/>
+                <text x="560" y="300" fill="var(--change-label)" font-size="13">new source boundary / ID</text>
+              </g>
+
+              <!-- user semantic operation -->
+              <g id="opsLayer">
+                <path d="M335 228
+                         C378 223 425 224 470 230
+                         L462 245
+                         L452 270
+                         Q410 291 365 270
+                         L355 245
+                         Z"
+                      fill="#d14d41" fill-opacity=".46" stroke="#d14d41" stroke-width="3"/>
+                <text x="407" y="257" text-anchor="middle" fill="var(--remove-text)" font-size="14" font-weight="700">
+                  REMOVE_AREA
+                </text>
+              </g>
+
+              <!-- effective corrected sidewalk -->
+              <g id="resultLayer">
+                <path d="M92 241
+                         C185 224 270 218 335 228
+                         L355 245
+                         L365 270
+                         Q410 291 452 270
+                         L462 245
+                         L470 230
+                         C575 226 690 241 810 263
+                         L800 320
+                         C520 280 260 284 100 307
+                         Z"
+                      fill="none" stroke="#3aa99f" stroke-width="4"/>
+                <path d="M335 228
+                         L355 245
+                         L365 270
+                         Q410 291 452 270
+                         L462 245
+                         L470 230"
+                      fill="none" stroke="#66bdb5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+
+              <g fill="var(--sidewalk)" font-size="13">
+                <text x="123" y="278">simulated BGT sidewalk</text>
+                <text x="371" y="140" fill="var(--building-label)" font-weight="650">BUILDING</text>
+                <text x="425" y="398">ROAD</text>
+              </g>
+              <text x="487" y="287" fill="var(--result-label)" font-size="13" font-weight="650">corrected facade edge</text>
+            </svg>
+          </div>
+<div class="legend">
+            <span><i class="sw" style="background:var(--building)"></i> building</span>
+            <span><i class="sw" style="background:var(--sidewalk)"></i> source sidewalk</span>
+            <span><i class="sw" style="background:var(--red)"></i> user removes</span>
+            <span><i class="sw" style="background:var(--orange)"></i> newer BGT change</span>
+            <span><i class="sw" style="background:var(--cyan)"></i> corrected boundary</span>
+          </div>
+        </div>
+
+        <aside class="card side">
+          <span id="badge" class="badge safe">SAFE</span>
+          <h2 id="title">Fix sidewalk overlapping a building</h2>
+          <ul id="bullets">
+            <li>Curved source sidewalk crosses an irregular building facade.</li>
+            <li>User removes the overlap; store REMOVE_AREA with source context.</li>
+          </ul>
+          <pre class="code" id="code">state = source
+state = state.difference(remove_area)</pre>
+        </aside>
+      </div>
+    </div>
+
+    <div class="panel" id="tab-ops">
+      <h2>Semantic operation log</h2>
+      <div class="ops">
+        <div class="op"><span class="tag">near-term</span><b>ADD_AREA</b><ul><li>Add missing surface.</li><li>Spatial mask.</li></ul></div>
+        <div class="op"><span class="tag">near-term</span><b>REMOVE_AREA</b><ul><li>Trim wrong surface.</li><li>Spatial mask.</li></ul></div>
+        <div class="op"><span class="tag">near-term</span><b>SET_ATTRIBUTE</b><ul><li>Correct semantic value.</li><li>Simple replay.</li></ul></div>
+        <div class="op"><span class="tag">next</span><b>SUPPRESS_FEATURE</b><ul><li>Ignore bad source object.</li><li>Keep provenance.</li></ul></div>
+        <div class="op"><span class="tag">later</span><b>ROAD_RELATIVE</b><ul><li>Road-relative anchor.</li><li>Road ID plus side/chainage.</li></ul></div>
+      </div>
+
+      <div class="cases">
+        <div class="case"><b>Unchanged source</b><ul><li>Replay automatically.</li><li><span style="color:#879a39">SAFE</span></li></ul></div>
+        <div class="case"><b>Changed elsewhere</b><ul><li>No overlap with operation.</li><li><span style="color:#879a39">SAFE</span></li></ul></div>
+        <div class="case"><b>BGT already fixed it</b><ul><li>Operation becomes no-op.</li><li><span style="color:#4385be">SATISFIED</span></li></ul></div>
+        <div class="case"><b>Same area changed</b><ul><li>Do not guess.</li><li><span style="color:#d14d41">CONFLICT</span></li></ul></div>
+        <div class="case"><b>Split / missing ID</b><ul><li>No nearest-feature fallback.</li><li><span style="color:#d0a215">REVIEW</span></li></ul></div>
+      </div>
+
+      <pre class="code">source_delta = expected_before.symmetric_difference(current_before)
+
+if source_delta.buffer(tol).intersects(operation.geometry.buffer(tol)):
+    return CONFLICT</pre>
+    </div>
+
+    <div class="panel" id="tab-editor">
+      <h2>Editor direction</h2>
+      <div class="editors">
+        <div class="editor">
+          <span class="tag">debugging</span><b>Raw QGIS</b>
+          <ul><li>Available now.</li><li>Useful for inspection; too open-ended for nontechnical operators.</li></ul>
+        </div>
+        <div class="editor chosen">
+          <span class="tag">recommended</span><b>QGIS + Scenwise plugin</b>
+          <ul><li>Edit normal geometry.</li><li>Derive semantic operations.</li><li>Refresh corrected view directly.</li><li>No export/import loop.</li></ul>
+        </div>
+        <div class="editor">
+          <span class="tag">later</span><b>Web editor</b>
+          <ul><li>Simpler operator UI.</li><li>Vector tiles for context.</li><li>Edit only selected/local geometry.</li><li>Same backend correction model.</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="tab-scope">
+      <h2>Realistic next ~2 weeks</h2>
+      <div class="weeks">
+        <div class="week">
+          <span class="tag">week 1</span><b>Core replay</b>
+          <ul>
+            <li>Operation dataclasses.</li>
+            <li>ADD_AREA / REMOVE_AREA.</li>
+            <li>SET_ATTRIBUTE after geometry replay works.</li>
+            <li>SAFE / SATISFIED replay paths.</li>
+            <li>Conflict tests.</li>
+            <li>Cached BGT sample in QGIS.</li>
+          </ul>
+        </div>
+        <div class="week">
+          <span class="tag">week 2</span><b>Pipeline integration</b>
+          <ul>
+            <li>Stage between transformation and fusion.</li>
+            <li>Persist source/version/context metadata.</li>
+            <li>Conflicts as QA records.</li>
+            <li>Basic QGIS authoring plugin.</li>
+            <li>Direct refresh loop.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="note">
+        <ul>
+          <li>Split/merge handling stays manual in the first version.</li>
+          <li>The production PostGIS schema and web editor can wait.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="presenter" id="presenter">
+  <button class="x" id="close">×</button>
+  <h3>Demo order</h3>
+  <ol>
+    <li>Pipeline position.</li>
+    <li>Initial correction.</li>
+    <li>Unrelated BGT update → SAFE.</li>
+    <li>BGT fixed it → SATISFIED.</li>
+    <li>Overlap → CONFLICT.</li>
+    <li>QGIS plugin direction.</li>
+    <li>Two-week scope.</li>
+  </ol>
+</div>
+
+<script>
+
+const themeBtn=document.getElementById("themeBtn");
+const systemTheme=window.matchMedia("(prefers-color-scheme: light)");
+
+function currentTheme(){
+ return document.documentElement.dataset.theme || (systemTheme.matches ? "light" : "dark");
+}
+
+function updateThemeButton(){
+ const next=currentTheme()==="light" ? "dark" : "light";
+ themeBtn.setAttribute("aria-label",`Switch to ${next} mode`);
+ themeBtn.setAttribute("title",`Switch to ${next} mode`);
+}
+
+themeBtn.addEventListener("click",()=>{
+ document.documentElement.dataset.theme=currentTheme()==="light" ? "dark" : "light";
+ updateThemeButton();
+});
+
+if(systemTheme.addEventListener){
+ systemTheme.addEventListener("change",()=>{
+  if(!document.documentElement.dataset.theme) updateThemeButton();
+ });
+}
+
+updateThemeButton();
+
+const scenarios={
+ baseline:{
+  badge:"SAFE",cls:"safe",title:"Fix sidewalk overlapping a building",
+  bullets:["Curved source sidewalk crosses an irregular building facade.","User removes the overlap; store REMOVE_AREA with source context."],
+  code:`state = source
+state = state.difference(remove_area)`,
+  delta:null,result:1,base:true,problem:true,ops:true
+ },
+ safe:{
+  badge:"SAFE",cls:"safe",title:"BGT changes elsewhere",
+  bullets:["A later BGT update changes the far end of the curved sidewalk.","The source delta does not touch the facade correction, so replay automatically."],
+  code:`source_delta = expected_before.symmetric_difference(current_before)
+
+if not overlaps(source_delta, operation):
+    return SAFE`,
+  delta:"safeDelta",result:1,base:true,problem:true,ops:true
+ },
+ satisfied:{
+  badge:"SATISFIED",cls:"satisfied",title:"BGT now follows the building facade",
+  bullets:["Latest BGT already contains the same curved cut-out.","REMOVE_AREA becomes a no-op; keep the edit history."],
+  code:`candidate = apply(operation, current)
+
+if candidate.equals_exact(current, tolerance):
+    return SATISFIED`,
+  delta:"satisfiedDelta",result:0,base:false,problem:false,ops:false
+ },
+ conflict:{
+  badge:"CONFLICT",cls:"conflict",title:"BGT changes the same facade area",
+  bullets:["The newer source reshapes the same sidewalk/building boundary.","The source delta overlaps the correction, so create a conflict record."],
+  code:`if overlaps(source_delta, operation):
+    return CONFLICT`,
+  delta:"conflictDelta",result:.15,base:true,problem:false,ops:true
+ },
+ split:{
+  badge:"REVIEW",cls:"review",title:"Source split / missing ID",
+  bullets:["The original source ID no longer resolves.","Keep the correction for review; do not attach it to the nearest feature."],
+  code:`target = find_by_source_id(...)
+
+if target is None:
+    return REVIEW`,
+  delta:"splitDelta",result:.15,base:true,problem:false,ops:true
+ }
+};
+
+function setScenario(name){
+ document.querySelectorAll(".scenario").forEach(b=>b.classList.toggle("active",b.dataset.s===name));
+ document.querySelectorAll(".delta").forEach(g=>g.style.display="none");
+ const s=scenarios[name];
+
+ const deltaToggle=document.querySelector('[data-layer="delta"]');
+ if(s.delta && deltaToggle.checked) document.getElementById(s.delta).style.display="";
+
+ const badge=document.getElementById("badge");
+ badge.textContent=s.badge;
+ badge.className="badge "+s.cls;
+ document.getElementById("title").textContent=s.title;
+ document.getElementById("bullets").innerHTML=s.bullets.map(x=>`<li>${x}</li>`).join("");
+ document.getElementById("code").textContent=s.code;
+
+ document.getElementById("baseSource").style.display=s.base ? "" : "none";
+ document.getElementById("problemHighlight").style.display=s.problem ? "" : "none";
+ document.getElementById("resultLayer").style.opacity=s.result;
+
+ const opsToggle=document.querySelector('[data-layer="ops"]');
+ document.getElementById("opsLayer").style.display=(s.ops && opsToggle.checked) ? "" : "none";
+}
+document.querySelectorAll(".scenario").forEach(b=>b.onclick=()=>setScenario(b.dataset.s));
+
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+ document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+ t.classList.add("active");document.getElementById("tab-"+t.dataset.tab).classList.add("active");
+});
+
+document.querySelectorAll("[data-layer]").forEach(cb=>cb.onchange=()=>{
+ if(cb.dataset.layer==="ops"){
+  const name=document.querySelector(".scenario.active").dataset.s;
+  document.getElementById("opsLayer").style.display=(cb.checked && scenarios[name].ops)?"":"none";
+ }
+ if(cb.dataset.layer==="delta"){
+  const name=document.querySelector(".scenario.active").dataset.s;
+  document.querySelectorAll(".delta").forEach(g=>g.style.display=(cb.checked && g.id===scenarios[name].delta)?"":"none");
+ }
+});
+
+const presenter=document.getElementById("presenter");
+document.getElementById("notesBtn").onclick=()=>presenter.classList.toggle("show");
+document.getElementById("close").onclick=()=>presenter.classList.remove("show");
+
+let i=0;
+const steps=[
+ ()=>{document.querySelector('[data-tab="replay"]').click();setScenario("baseline")},
+ ()=>setScenario("safe"),
+ ()=>setScenario("satisfied"),
+ ()=>setScenario("conflict"),
+ ()=>document.querySelector('[data-tab="editor"]').click(),
+ ()=>document.querySelector('[data-tab="scope"]').click()
+];
+document.getElementById("guidedBtn").onclick=()=>{
+ steps[i%steps.length](); i++;
+ document.getElementById("guidedBtn").textContent=i%steps.length===0?"Restart demo":"Next";
+};
+</script>
+</body>
+</html>
