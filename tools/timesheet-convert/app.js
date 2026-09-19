@@ -208,7 +208,7 @@ $('download').addEventListener('click', () => {
       model,
     });
     const filename = outputFileName($('employee').value, $('period').value);
-    window.XLSX.writeFile(workbook, filename, { bookType: 'xlsx', compression: true, cellDates: true });
+    window.XLSX.writeFile(workbook, filename, { bookType: 'xlsx', compression: true });
     setStatus(`Created ${filename}.`);
   } catch (error) {
     setStatus(`Could not create the workbook. ${error.message}`, true);

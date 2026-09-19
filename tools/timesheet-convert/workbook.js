@@ -3,9 +3,14 @@ import { excelWeekNumber } from './core.js';
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-function excelDate(day) {
+export function excelSerial(day) {
   const [year, month, date] = day.split('-').map(Number);
-  return new Date(year, month - 1, date, 12);
+  return (Date.UTC(year, month - 1, date) - Date.UTC(1899, 11, 30)) / 86_400_000;
+}
+
+function weekday(day) {
+  const [year, month, date] = day.split('-').map(Number);
+  return DAYS[new Date(Date.UTC(year, month - 1, date)).getUTCDay()];
 }
 
 export function safeFileName(value) {
@@ -18,18 +23,17 @@ export function buildWorkbook(XLSX, { employee, company, period, model }) {
     [],
     ['Name Employee', null, null, employee],
     ['Company', null, null, company],
-    ['Period', null, null, new Date(year, month - 1, 1, 12)],
+    ['Period', null, null, excelSerial(`${year}-${String(month).padStart(2, '0')}-01`)],
     [], [], [],
     ['Week', 'Date', '', 'hours', 'Task description'],
     [],
   ];
 
   for (const day of model.days) {
-    const date = excelDate(day.day);
     rows.push([
       excelWeekNumber(day.day),
-      date,
-      DAYS[date.getDay()],
+      excelSerial(day.day),
+      weekday(day.day),
       day.roundedSeconds ? day.roundedSeconds / 3600 : null,
       day.combined,
     ]);
@@ -41,7 +45,7 @@ export function buildWorkbook(XLSX, { employee, company, period, model }) {
   const lastDayRow = firstDayRow + model.days.length - 1;
   rows.push(['Period total', null, null, null, 'hour']);
 
-  const sheet = XLSX.utils.aoa_to_sheet(rows, { cellDates: true });
+  const sheet = XLSX.utils.aoa_to_sheet(rows);
   sheet.D4.z = 'mmmm yyyy';
   for (let row = firstDayRow; row <= lastDayRow; row += 1) {
     sheet[`B${row}`].z = 'd mmmm';
