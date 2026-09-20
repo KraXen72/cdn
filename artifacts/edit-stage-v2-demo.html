@@ -71,17 +71,22 @@ ul{margin:0;padding-left:18px}li{margin:4px 0}
 .box b{display:block;font-size:.76rem}.box small{color:var(--tx2)}
 .box.base{border-top:2px solid var(--blue)}.box.patch{border-top:2px solid var(--purple)}.box.effective{border-top:2px solid var(--cyan)}
 .arrow{align-self:center;color:var(--tx3);font-size:1.2rem}
-.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
-.tab{padding:5px 8px;border-color:var(--ui);background:var(--surface);font-size:.7rem}
-.tab.active{background:var(--ui2);color:var(--tx)}
+.navBlock{margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--ui)}
+.navLabel{font-size:.6rem;font-weight:750;letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin-bottom:6px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{padding:7px 10px;border-color:var(--ui);background:var(--surface);font-size:.7rem}
+.tab.active{background:color-mix(in srgb,var(--cyan) 10%,var(--ui2));color:var(--cyan);border-color:color-mix(in srgb,var(--cyan) 42%,var(--ui2));box-shadow:inset 0 -2px 0 var(--cyan)}
 .panel{display:none}.panel.active{display:block}
 .demo{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.75fr);gap:10px}
 .mapcard,.side{padding:10px}
-.toolbar{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.scenarios{display:flex;gap:4px;flex-wrap:wrap}
-.scenario{padding:5px 7px;font-size:.68rem;border-color:var(--ui)}
-.scenario.active{color:var(--cyan);border-color:color-mix(in srgb,var(--cyan) 45%,var(--ui))}
-.viewToggles{display:flex;gap:4px}.toggle{padding:5px 7px;font-size:.66rem}.toggle.active{color:var(--tx);background:var(--ui2)}
+.toolbar{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.scenarioNav{min-width:0;flex:1}
+.scenarios{display:flex;gap:6px;flex-wrap:wrap}
+.scenario{display:inline-flex;align-items:center;gap:6px;padding:7px 9px;font-size:.68rem;border-color:var(--ui);background:var(--surface)}
+.scenarioNum{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:999px;background:var(--ui2);color:var(--tx2);font-size:.62rem;font-weight:750;flex:0 0 auto}
+.scenario.active{color:var(--cyan);border-color:color-mix(in srgb,var(--cyan) 45%,var(--ui));background:color-mix(in srgb,var(--cyan) 7%,var(--surface))}
+.scenario.active .scenarioNum{background:var(--cyan);color:var(--bg)}
+.viewToggles{display:flex;gap:4px;flex-wrap:wrap}.toggle{padding:6px 8px;font-size:.66rem}.toggle.active{color:var(--tx);background:var(--ui2)}
 .map{aspect-ratio:16/9;border:1px solid var(--ui);border-radius:7px;overflow:hidden;background:var(--map)}
 svg{width:100%;height:100%;display:block}
 .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:7px;color:var(--tx2);font-size:.64rem}
@@ -113,7 +118,21 @@ svg{width:100%;height:100%;display:block}
 .presenter{display:none;position:fixed;right:14px;bottom:14px;width:min(390px,calc(100vw - 28px));padding:12px;border:1px solid color-mix(in srgb,var(--cyan) 30%,var(--ui));border-radius:8px;background:var(--surface);z-index:40}
 .presenter.show{display:block}.presenter ol{margin:6px 0 0;padding-left:18px;color:var(--tx2);font-size:.7rem}.x{float:right;background:none;border:0;color:var(--tx2);cursor:pointer}
 @media(max-width:1050px){.hero,.demo{grid-template-columns:1fr}.grid4,.decisionGrid{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr}.timeline{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:720px){.wrap{width:min(100% - 18px,1320px)}.arch{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}.grid4,.decisionGrid,.timeline,.metaGrid{grid-template-columns:1fr}.brand span{display:none}}
+@media(max-width:720px){
+  .wrap{width:min(100% - 18px,1320px)}
+  .arch{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}
+  .grid4,.decisionGrid,.timeline,.metaGrid{grid-template-columns:1fr}.brand span{display:none}
+  .navBlock{margin-bottom:10px}
+  .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .tab{width:100%;text-align:center;padding:9px 8px;font-size:.72rem}
+  .toolbar{display:block}
+  .scenarioNav{margin-bottom:10px}
+  .scenarios{display:grid;grid-template-columns:1fr;gap:6px}
+  .scenario{width:100%;justify-content:flex-start;text-align:left;padding:9px 10px;font-size:.74rem}
+  .scenarioText{white-space:normal}
+  .viewToggles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .toggle{width:100%;padding:8px 6px;text-align:center}
+}
 </style>
 </head>
 <body>
@@ -165,25 +184,31 @@ svg{width:100%;height:100%;display:block}
   </section>
 
   <section class="card section">
-    <div class="tabs">
-      <button class="tab active" data-tab="cases">Synthetic cases</button>
-      <button class="tab" data-tab="ops">Patch operations</button>
-      <button class="tab" data-tab="regen">Regeneration</button>
-      <button class="tab" data-tab="v1">V1 cases in V2</button>
-      <button class="tab" data-tab="deploy">Fast deployment</button>
-      <button class="tab" data-tab="questions">Open questions</button>
+    <div class="navBlock">
+      <div class="navLabel">Explore</div>
+      <div class="tabs" role="tablist" aria-label="Edit stage sections">
+        <button class="tab active" data-tab="cases">Examples</button>
+        <button class="tab" data-tab="ops">Operations</button>
+        <button class="tab" data-tab="regen">Regeneration</button>
+        <button class="tab" data-tab="v1">V1 → V2</button>
+        <button class="tab" data-tab="deploy">Deployment</button>
+        <button class="tab" data-tab="questions">Open questions</button>
+      </div>
     </div>
 
     <div class="panel active" id="tab-cases">
       <div class="demo">
         <div class="card mapcard">
           <div class="toolbar">
-            <div class="scenarios">
-              <button class="scenario active" data-s="closure">1 · temporary closure</button>
-              <button class="scenario" data-s="crossing">2 · missing crossing</button>
-              <button class="scenario" data-s="badsegment">3 · wrong generated path</button>
-              <button class="scenario" data-s="reshape">4 · geometry correction</button>
-              <button class="scenario" data-s="attribute">5 · attribute correction</button>
+            <div class="scenarioNav">
+              <div class="navLabel">Example</div>
+              <div class="scenarios" role="tablist" aria-label="Synthetic patch examples">
+                <button class="scenario active" data-s="closure"><span class="scenarioNum">1</span><span class="scenarioText">Temporary closure</span></button>
+                <button class="scenario" data-s="crossing"><span class="scenarioNum">2</span><span class="scenarioText">Missing crossing</span></button>
+                <button class="scenario" data-s="badsegment"><span class="scenarioNum">3</span><span class="scenarioText">Wrong generated path</span></button>
+                <button class="scenario" data-s="reshape"><span class="scenarioNum">4</span><span class="scenarioText">Geometry correction</span></button>
+                <button class="scenario" data-s="attribute"><span class="scenarioNum">5</span><span class="scenarioText">Attribute correction</span></button>
+              </div>
             </div>
             <div class="viewToggles">
               <button class="toggle active" data-view="baseline">baseline</button>
