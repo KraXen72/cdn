@@ -432,7 +432,7 @@ message?  # optional</pre>
         </div>
       </div>
 
-      <div class="note"><b>What changed from V1:</b> the replay semantics survive; only the patch location moved. V1 patched normalized source data before generation. V2 patches the generated DWN baseline after generation.</div>
+      <div class="note"><b>What changed from V1:</b> V2 keeps the same cross-generation behavior, but applies corrections to the generated DWN instead of to the source data.</div>
 
       <div class="grid3">
         <div class="tile"><b>Example · building overlap</b><ul><li>Before: generated line cuts through a building footprint.</li><li>Patch: SUPPRESS the bad section + ADD a short detour around the facade.</li><li>After regeneration: if the generator now creates the detour itself, status becomes SATISFIED.</li></ul></div>
