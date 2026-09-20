@@ -109,14 +109,67 @@ svg{width:100%;height:100%;display:block}
 .step.hot{border-color:color-mix(in srgb,var(--cyan) 50%,var(--ui))}
 .rule{margin-top:10px;padding:10px;border:1px solid var(--ui);border-radius:6px;background:var(--surface)}
 .rule strong{color:var(--cyan)}
-.coverage{display:grid;gap:8px;margin-top:10px}
-.coverageRow{display:grid;grid-template-columns:1.05fr 1.25fr .8fr;gap:8px;align-items:stretch}
-.coverageCell{padding:10px;border:1px solid var(--ui);border-radius:6px;background:var(--surface)}
-.coverageCell b{display:block;font-size:.72rem;margin-bottom:4px}.coverageCell small{color:var(--tx2)}
-.status{font-size:.62rem;font-weight:750;letter-spacing:.05em}
-.status.safe{color:var(--green)}.status.satisfied{color:var(--blue)}.status.review{color:var(--yellow)}
+.coverage{display:grid;gap:10px;margin-top:12px}
+.coverageRow{
+  display:grid;
+  grid-template-columns:1.05fr 1.25fr .72fr;
+  gap:0;
+  align-items:stretch;
+  border:1px solid var(--ui);
+  border-radius:8px;
+  overflow:hidden;
+  background:var(--surface)
+}
+.coverageCell{
+  padding:12px 13px;
+  border:0;
+  border-right:1px solid var(--ui);
+  border-radius:0;
+  background:transparent
+}
+.coverageCell:last-child{
+  border-right:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:5px;
+  background:color-mix(in srgb,var(--bg2) 55%,transparent)
+}
+.coverageCell b{display:block;font-size:.72rem;margin-bottom:5px}
+.coverageCell small{display:block;color:var(--tx2);line-height:1.45}
+.status{
+  display:inline-flex;
+  width:max-content;
+  padding:3px 6px;
+  border:1px solid var(--ui2);
+  border-radius:999px;
+  font-size:.6rem;
+  font-weight:800;
+  letter-spacing:.05em;
+  line-height:1
+}
+.status.safe{color:var(--green);border-color:color-mix(in srgb,var(--green) 40%,var(--ui2))}
+.status.satisfied{color:var(--blue);border-color:color-mix(in srgb,var(--blue) 40%,var(--ui2))}
+.status.review{color:var(--yellow);border-color:color-mix(in srgb,var(--yellow) 40%,var(--ui2))}
 .patchShape{display:grid;grid-template-columns:.9fr 1.1fr;gap:8px;margin-top:10px}
-@media(max-width:900px){.coverageRow,.patchShape{grid-template-columns:1fr}}
+@media(max-width:900px){
+  .coverageRow{grid-template-columns:1fr}
+  .coverageCell{
+    border-right:0;
+    border-bottom:1px solid var(--ui);
+    padding:12px
+  }
+  .coverageCell:last-child{
+    border-bottom:0;
+    flex-direction:row;
+    justify-content:flex-start;
+    align-items:center;
+    gap:8px;
+    padding:10px 12px
+  }
+  .coverageCell:last-child small{margin:0}
+  .patchShape{grid-template-columns:1fr}
+}
 .presenter{display:none;position:fixed;right:14px;bottom:14px;width:min(390px,calc(100vw - 28px));padding:12px;border:1px solid color-mix(in srgb,var(--cyan) 30%,var(--ui));border-radius:8px;background:var(--surface);z-index:40}
 .presenter.show{display:block}.presenter ol{margin:6px 0 0;padding-left:18px;color:var(--tx2);font-size:.7rem}.x{float:right;background:none;border:0;color:var(--tx2);cursor:pointer}
 @media(max-width:1050px){.hero,.demo{grid-template-columns:1fr}.grid4,.decisionGrid{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr}.timeline{grid-template-columns:repeat(3,1fr)}}
@@ -347,7 +400,7 @@ message?  # optional</pre>
       <h2>Does V2 still cover what V1 was designed for?</h2>
       <p>Yes. V1 replayed corrections across source updates and stopped when the affected area changed too much. V2 keeps that behavior. It compares the <b>local generated DWN state</b> instead of patching normalized source data before generation.</p>
 
-      <div class="coverage">
+      <div class="coverage" aria-label="V1 to V2 case mapping">
         <div class="coverageRow">
           <div class="coverageCell"><b>V1 · sidewalk overlaps a building</b><small>Reviewer trimmed source geometry with REMOVE_AREA.</small></div>
           <div class="coverageCell"><b>V2</b><small>SUPPRESS the wrong generated section + ADD corrected geometry. Store local <code>expected_before</code> and <code>desired_after</code>.</small></div>
