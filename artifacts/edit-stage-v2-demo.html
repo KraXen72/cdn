@@ -79,6 +79,8 @@ ul{margin:0;padding-left:18px}li{margin:4px 0}
 .panel{display:none}.panel.active{display:block}
 .demo{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.75fr);gap:10px}
 .mapcard,.side{padding:10px}
+.mapcard{background:transparent;border-color:transparent}
+.side{background:var(--surface)}
 .toolbar{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:10px}
 .scenarioNav{min-width:0;flex:1}
 .scenarios{display:flex;gap:6px;flex-wrap:wrap}
@@ -87,7 +89,7 @@ ul{margin:0;padding-left:18px}li{margin:4px 0}
 .scenario.active{color:var(--cyan);border-color:color-mix(in srgb,var(--cyan) 45%,var(--ui));background:color-mix(in srgb,var(--cyan) 7%,var(--surface))}
 .scenario.active .scenarioNum{background:var(--cyan);color:var(--bg)}
 .viewToggles{display:flex;gap:4px;flex-wrap:wrap}.toggle{padding:6px 8px;font-size:.66rem}.toggle.active{color:var(--tx);background:var(--ui2)}
-.map{aspect-ratio:16/9;border:1px solid var(--ui);border-radius:7px;overflow:hidden;background:var(--map)}
+.map{aspect-ratio:16/9;border:1px solid var(--ui2);border-radius:8px;overflow:hidden;background:var(--map)}
 svg{width:100%;height:100%;display:block}
 .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:7px;color:var(--tx2);font-size:.64rem}
 .legend span{display:flex;align-items:center;gap:4px}.sw{width:9px;height:9px;border-radius:2px;display:inline-block}
@@ -122,16 +124,42 @@ svg{width:100%;height:100%;display:block}
   .wrap{width:min(100% - 18px,1320px)}
   .arch{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}
   .grid4,.decisionGrid,.timeline,.metaGrid{grid-template-columns:1fr}.brand span{display:none}
-  .navBlock{margin-bottom:10px}
+
+  /* One visual level per section: remove the "card inside card inside card" effect. */
+  .section.card{background:transparent;border:0;padding:0;margin-top:18px}
+  .section>.navBlock{padding:0 0 12px;margin-bottom:12px;border-bottom:1px solid var(--ui)}
+  .panel{padding:0}
+  .demo{gap:14px}
+  .mapcard,.side{border:0;background:transparent;padding:0}
+  .side{padding-top:14px;border-top:1px solid var(--ui)}
+  .map{border-color:var(--ui2);border-radius:8px}
+
+  /* Primary section navigation stays obvious, but without another framed container. */
   .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
   .tab{width:100%;text-align:center;padding:9px 8px;font-size:.72rem}
-  .toolbar{display:block}
+
+  /* Examples become a compact horizontal strip instead of five stacked mini-cards. */
+  .toolbar{display:block;margin-bottom:10px}
   .scenarioNav{margin-bottom:10px}
-  .scenarios{display:grid;grid-template-columns:1fr;gap:6px}
-  .scenario{width:100%;justify-content:flex-start;text-align:left;padding:9px 10px;font-size:.74rem}
-  .scenarioText{white-space:normal}
-  .viewToggles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-  .toggle{width:100%;padding:8px 6px;text-align:center}
+  .scenarios{
+    display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;
+    padding:0 0 4px;scroll-snap-type:x proximity;
+    scrollbar-width:none
+  }
+  .scenarios::-webkit-scrollbar{display:none}
+  .scenario{
+    flex:0 0 auto;width:auto;justify-content:flex-start;text-align:left;
+    padding:8px 10px;font-size:.72rem;scroll-snap-align:start;
+    border-radius:999px;background:var(--surface)
+  }
+  .scenarioNum{width:18px;height:18px}
+  .scenarioText{white-space:nowrap}
+
+  /* Layer toggles read as controls, not a third tab hierarchy. */
+  .viewToggles{display:flex;gap:6px;flex-wrap:wrap}
+  .toggle{width:auto;padding:7px 10px;text-align:center;border-radius:999px}
+
+  .legend{padding:0 2px}
 }
 </style>
 </head>
@@ -198,7 +226,7 @@ svg{width:100%;height:100%;display:block}
 
     <div class="panel active" id="tab-cases">
       <div class="demo">
-        <div class="card mapcard">
+        <div class="mapcard">
           <div class="toolbar">
             <div class="scenarioNav">
               <div class="navLabel">Example</div>
@@ -251,7 +279,7 @@ svg{width:100%;height:100%;display:block}
           </div>
         </div>
 
-        <aside class="card side">
+        <aside class="side">
           <span class="badge purple" id="caseBadge">TEMPORARY</span>
           <h2 id="caseTitle">Construction closes part of a sidewalk</h2>
           <ul id="caseBullets"></ul>
