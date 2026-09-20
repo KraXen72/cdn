@@ -183,20 +183,20 @@ svg{width:100%;height:100%;display:block}
       <h1>One patch layer between generated and published DWN</h1>
       <ul>
         <li>The generator produces an immutable baseline DWN.</li>
-        <li>Reviewers describe the change they want as a persistent patch.</li>
-        <li>The patch engine applies it to both network geometry and routing graph.</li>
-        <li>Temporary closures and permanent corrections use the same mechanism.</li>
-        <li>After regeneration, keep applying a patch only while it still means the same thing.</li>
+        <li>Reviewers save corrections as patches.</li>
+        <li>The patch engine updates network geometry and the routing graph.</li>
+        <li>Temporary and permanent corrections use the same patch system.</li>
+        <li>After regeneration, keep a patch only if the reviewer would make the same correction again.</li>
       </ul>
     </div>
     <div class="card">
       <div class="metaGrid">
-        <div class="meta"><b>Goal</b><span>best possible published DWN</span></div>
+        <div class="meta"><b>Goal</b><span>published DWN after corrections</span></div>
         <div class="meta"><b>Deployment</b><span>minutes to hours, no full regeneration required</span></div>
-        <div class="meta"><b>Persistence rule</b><span>same reviewer intent → same patch</span></div>
+        <div class="meta"><b>Persistence rule</b><span>same correction → keep the patch</span></div>
         <div class="meta"><b>Identity</b><span>BGT/source refs first; geo matching only if needed later</span></div><div class="meta"><b>Patch message</b><span>optional human note, like a commit message</span></div>
       </div>
-      <div class="note">Synthetic examples. The point is to test the correction model before real findings exist.</div>
+      <div class="note">Synthetic examples. These examples test the correction model before we have real findings.</div>
     </div>
   </section>
 
@@ -205,11 +205,11 @@ svg{width:100%;height:100%;display:block}
     <div class="arch">
       <div class="box base"><b>Generated DWN baseline</b><small>immutable output from generation run N · geometry + graph</small></div>
       <div class="arrow">+</div>
-      <div class="box patch"><b>Patch set</b><small>persistent desired changes · may expire · versioned separately</small></div>
+      <div class="box patch"><b>Patch set</b><small>stored corrections · may expire · versioned separately</small></div>
       <div class="arrow">→</div>
-      <div class="box effective"><b>Effective / published DWN</b><small>what routing and exports actually use</small></div>
+      <div class="box effective"><b>Effective / published DWN</b><small>used for routing and exports</small></div>
     </div>
-    <div class="rule"><strong>Key rule:</strong> patches describe the desired difference from the baseline; they do not mutate the stored generation result.</div>
+    <div class="rule"><strong>Key rule:</strong> patches are stored separately from the generated baseline. Applying a patch produces the published DWN.</div>
   </section>
 
   <section class="card section">
@@ -291,14 +291,14 @@ svg{width:100%;height:100%;display:block}
 
     <div class="panel" id="tab-ops">
       <h2>Small operation vocabulary</h2>
-      <p>Keep the primitive set small. Complex edits are combinations.</p>
+      <p>Use a small set of patch operations. Combine them when needed.</p>
       <div class="grid4">
         <div class="tile"><span class="tag add">ADD</span><b>Add overlay-owned network content</b><ul><li>Missing crossing or path.</li><li>Creates geometry and corresponding graph connectivity.</li><li>Can later be removed without touching baseline.</li></ul></div>
         <div class="tile"><span class="tag remove">REMOVE</span><b>Remove overlay-owned content</b><ul><li>Inverse of ADD.</li><li>Useful for retiring a manually-added element.</li><li>Different from suppressing generated data.</li></ul></div>
         <div class="tile"><span class="tag suppress">SUPPRESS</span><b>Hide baseline content</b><ul><li>Baseline remains immutable.</li><li>Used for wrong generated paths, closures, or replaced geometry.</li><li>May be temporary via expiry.</li></ul></div>
         <div class="tile"><span class="tag attr">SET_ATTRIBUTES</span><b>Override routing / accessibility data</b><ul><li>access=false, surface, width, tactile paving, etc.</li><li>Can expire.</li><li>No geometry rewrite needed.</li></ul></div>
       </div>
-      <div class="note"><b>Reshape / move</b> can initially be represented as SUPPRESS old geometry + ADD replacement geometry. No dedicated MOVE primitive is required until proven useful.</div>
+      <div class="note"><b>Reshape / move</b> can be SUPPRESS old geometry + ADD replacement geometry. Add a MOVE operation later if real cases need it.</div>
       <div class="patchShape">
         <div class="tile">
           <b>Patch envelope</b>
@@ -330,8 +330,8 @@ message?  # optional</pre>
         <div class="step"><b>1 · Generate run N+1</b><small>fresh immutable baseline</small></div>
         <div class="step"><b>2 · Resolve patch target</b><small>prefer stable BGT/source refs + local scope</small></div>
         <div class="step"><b>3 · Ask: same intent?</b><small>would reviewer still make the exact same patch?</small></div>
-        <div class="step hot"><b>4 · Reapply or review</b><small>do not guess when meaning changed</small></div>
-        <div class="step"><b>5 · Materialize effective DWN</b><small>geometry + graph stay consistent</small></div>
+        <div class="step hot"><b>4 · Reapply or review</b><small>send to review when the correction no longer applies cleanly</small></div>
+        <div class="step"><b>5 · Build effective DWN</b><small>geometry + graph stay consistent</small></div>
       </div>
       <div class="decisionGrid">
         <div class="tile"><b>Baseline still has the same problem</b><ul><li>Patch changes the same real-world section.</li><li><span style="color:var(--green)">Reapply.</span></li></ul></div>
@@ -339,19 +339,19 @@ message?  # optional</pre>
         <div class="tile"><b>Target changed materially</b><ul><li>Old edit would no longer be the same reviewer action.</li><li><span style="color:var(--yellow)">Needs review.</span></li></ul></div>
         <div class="tile"><b>Cannot resolve target confidently</b><ul><li>Do not nearest-neighbour guess.</li><li><span style="color:var(--red)">Do not auto-apply.</span></li></ul></div>
       </div>
-      <div class="note">This deliberately avoids inventing globally stable geo IDs now. For the Netherlands, start with BGT/source lineage and a local geographic scope; add more sophisticated identity only if real failures justify it.</div>
+      <div class="note">For the Netherlands, start with BGT/source lineage plus a local geographic scope. Add custom geo-based identity later if real cases show that this is not stable enough.</div>
     </div>
 
 
     <div class="panel" id="tab-v1">
       <h2>Does V2 still cover what V1 was designed for?</h2>
-      <p>Yes. V1's strongest idea was conservative replay across source updates. V2 keeps that behaviour, but compares the <b>local generated DWN state</b> instead of patching normalized source data before generation.</p>
+      <p>Yes. V1 replayed corrections across source updates and stopped when the affected area changed too much. V2 keeps that behavior. It compares the <b>local generated DWN state</b> instead of patching normalized source data before generation.</p>
 
       <div class="coverage">
         <div class="coverageRow">
           <div class="coverageCell"><b>V1 · sidewalk overlaps a building</b><small>Reviewer trimmed source geometry with REMOVE_AREA.</small></div>
           <div class="coverageCell"><b>V2</b><small>SUPPRESS the wrong generated section + ADD corrected geometry. Store local <code>expected_before</code> and <code>desired_after</code>.</small></div>
-          <div class="coverageCell"><span class="status safe">COVERED</span><small>Same reviewer outcome; no need to edit source first.</small></div>
+          <div class="coverageCell"><span class="status safe">COVERED</span><small>Same reviewer outcome. Source data stays unchanged.</small></div>
         </div>
 
         <div class="coverageRow">
@@ -369,13 +369,13 @@ message?  # optional</pre>
         <div class="coverageRow">
           <div class="coverageCell"><b>V1 · same area changes</b><small>Do not guess when upstream geometry changes under the correction.</small></div>
           <div class="coverageCell"><b>V2</b><small>Current local DWN matches neither <code>expected_before</code> nor <code>desired_after</code>.</small></div>
-          <div class="coverageCell"><span class="status review">REVIEW</span><small>Exactly matches the “reviewer would now make a different patch” rule.</small></div>
+          <div class="coverageCell"><span class="status review">REVIEW</span><small>The old patch stops here because the reviewer would now make a different correction.</small></div>
         </div>
 
         <div class="coverageRow">
           <div class="coverageCell"><b>V1 · source ID split / disappears</b><small>Old demo refused nearest-feature guessing.</small></div>
           <div class="coverageCell"><b>V2</b><small>Try stable source lineage + local scope. If the target cannot be resolved confidently, keep the patch but do not apply it automatically.</small></div>
-          <div class="coverageCell"><span class="status review">REVIEW</span><small>No need for custom geo IDs yet.</small></div>
+          <div class="coverageCell"><span class="status review">REVIEW</span><small>Custom geo IDs are not required for the first version.</small></div>
         </div>
       </div>
 
@@ -383,7 +383,7 @@ message?  # optional</pre>
 
       <div class="grid3">
         <div class="tile"><b>Example · building overlap</b><ul><li>Before: generated line cuts through a building footprint.</li><li>Patch: SUPPRESS the bad section + ADD a short detour around the facade.</li><li>After regeneration: if the generator now creates the detour itself, status becomes SATISFIED.</li></ul></div>
-        <div class="tile"><b>Example · source geometry shifts 30 cm</b><ul><li>BGT geometry changes slightly, but reviewer intent is unchanged.</li><li>If local generated geometry is still equivalent to <code>expected_before</code> within tolerance, reapply.</li><li>No global “stable geo ID” is required.</li></ul></div>
+        <div class="tile"><b>Example · source geometry shifts 30 cm</b><ul><li>BGT geometry changes slightly, but reviewer intent is unchanged.</li><li>If local generated geometry is still equivalent to <code>expected_before</code> within tolerance, reapply.</li><li>A global stable geo ID is not required for this case.</li></ul></div>
         <div class="tile"><b>Example · sidewalk is rebuilt</b><ul><li>Source feature split, crossing moved, geometry materially changed.</li><li>Old patch would no longer be the exact reviewer action.</li><li>Mark NEEDS_REVIEW instead of forcing replay.</li></ul></div>
       </div>
     </div>
@@ -413,13 +413,13 @@ Generated run 42
     </div>
 
     <div class="panel" id="tab-questions">
-      <h2>Questions still worth answering before implementation</h2>
+      <h2>Questions before implementation</h2>
       <div class="grid3">
         <div class="tile"><b>Target representation</b><ul><li>Exact generated feature?</li><li>Source refs + geometry scope?</li><li>How much semantic context is enough?</li></ul></div>
         <div class="tile"><b>Patch granularity</b><ul><li>Operate on centerline segments, crossings, graph edges, or a logical pedestrian-network feature?</li><li>Which representation is canonical?</li></ul></div>
         <div class="tile"><b>Materialization strategy</b><ul><li>Persist effective geometry/graph?</li><li>Compute overlay at read-time?</li><li>Likely hybrid: materialize changed rows for fast routing.</li></ul></div>
       </div>
-      <div class="note">These are implementation choices. The core model does not depend on resolving them immediately.</div>
+      <div class="note">These can be decided during implementation. They do not change the basic patch model.</div>
     </div>
   </section>
 </main>
@@ -507,8 +507,8 @@ const cases={
   bullets:[
    "Assume the pipeline emits a short diagonal connection that should not be routable.",
    "Do not mutate the stored generation run. SUPPRESS the generated element in the effective network.",
-   "If this is a one-off generator artefact, the patch can simply live with it.",
-   "If reviewers see the same pattern repeatedly, that becomes evidence to improve the generator."
+   "If this happens once, the patch can remain as the fix.",
+   "If reviewers see the same pattern repeatedly, the dev team can investigate the generator."
   ],
   code:"effect: SUPPRESS\ntarget.source_refs: [BGT:wegdeel:123]\ntarget.scope: POLYGON(...)\nmessage?: Remove generated shortcut",
   draw(){
@@ -523,7 +523,7 @@ const cases={
   bullets:[
    "Reviewer wants the same logical route, but with corrected geometry.",
    "Represent the correction as two simple facts: suppress the wrong baseline section, add the replacement section.",
-   "The patch engine updates geometry and graph topology together.",
+   "The patch engine updates the geometry and graph topology together.",
    "No dedicated MOVE/RESHAPE primitive is required for the first version."
   ],
   code:"1. SUPPRESS generated section\n2. ADD replacement geometry\nmessage?: Correct path around entrance\n\n=> effective network uses replacement",
