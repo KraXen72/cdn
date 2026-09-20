@@ -102,6 +102,14 @@ svg{width:100%;height:100%;display:block}
 .step.hot{border-color:color-mix(in srgb,var(--cyan) 50%,var(--ui))}
 .rule{margin-top:10px;padding:10px;border:1px solid var(--ui);border-radius:6px;background:var(--surface)}
 .rule strong{color:var(--cyan)}
+.coverage{display:grid;gap:8px;margin-top:10px}
+.coverageRow{display:grid;grid-template-columns:1.05fr 1.25fr .8fr;gap:8px;align-items:stretch}
+.coverageCell{padding:10px;border:1px solid var(--ui);border-radius:6px;background:var(--surface)}
+.coverageCell b{display:block;font-size:.72rem;margin-bottom:4px}.coverageCell small{color:var(--tx2)}
+.status{font-size:.62rem;font-weight:750;letter-spacing:.05em}
+.status.safe{color:var(--green)}.status.satisfied{color:var(--blue)}.status.review{color:var(--yellow)}
+.patchShape{display:grid;grid-template-columns:.9fr 1.1fr;gap:8px;margin-top:10px}
+@media(max-width:900px){.coverageRow,.patchShape{grid-template-columns:1fr}}
 .presenter{display:none;position:fixed;right:14px;bottom:14px;width:min(390px,calc(100vw - 28px));padding:12px;border:1px solid color-mix(in srgb,var(--cyan) 30%,var(--ui));border-radius:8px;background:var(--surface);z-index:40}
 .presenter.show{display:block}.presenter ol{margin:6px 0 0;padding-left:18px;color:var(--tx2);font-size:.7rem}.x{float:right;background:none;border:0;color:var(--tx2);cursor:pointer}
 @media(max-width:1050px){.hero,.demo{grid-template-columns:1fr}.grid4,.decisionGrid{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr}.timeline{grid-template-columns:repeat(3,1fr)}}
@@ -138,7 +146,7 @@ svg{width:100%;height:100%;display:block}
         <div class="meta"><b>Goal</b><span>best possible published DWN</span></div>
         <div class="meta"><b>Deployment</b><span>minutes to hours, no full regeneration required</span></div>
         <div class="meta"><b>Persistence rule</b><span>same reviewer intent → same patch</span></div>
-        <div class="meta"><b>Identity</b><span>BGT/source refs first; geo matching only if needed later</span></div>
+        <div class="meta"><b>Identity</b><span>BGT/source refs first; geo matching only if needed later</span></div><div class="meta"><b>Patch message</b><span>optional human note, like a commit message</span></div>
       </div>
       <div class="note">Synthetic examples. The point is to test the correction model before real findings exist.</div>
     </div>
@@ -161,6 +169,7 @@ svg{width:100%;height:100%;display:block}
       <button class="tab active" data-tab="cases">Synthetic cases</button>
       <button class="tab" data-tab="ops">Patch operations</button>
       <button class="tab" data-tab="regen">Regeneration</button>
+      <button class="tab" data-tab="v1">V1 cases in V2</button>
       <button class="tab" data-tab="deploy">Fast deployment</button>
       <button class="tab" data-tab="questions">Open questions</button>
     </div>
@@ -236,6 +245,29 @@ svg{width:100%;height:100%;display:block}
         <div class="tile"><span class="tag attr">SET_ATTRIBUTES</span><b>Override routing / accessibility data</b><ul><li>access=false, surface, width, tactile paving, etc.</li><li>Can expire.</li><li>No geometry rewrite needed.</li></ul></div>
       </div>
       <div class="note"><b>Reshape / move</b> can initially be represented as SUPPRESS old geometry + ADD replacement geometry. No dedicated MOVE primitive is required until proven useful.</div>
+      <div class="patchShape">
+        <div class="tile">
+          <b>Patch envelope</b>
+          <pre class="code">patch_id
+created_against_run
+target
+expected_before
+operations[]
+desired_after
+valid_from
+expires_at?
+message?  # optional</pre>
+        </div>
+        <div class="tile">
+          <b>Optional patch message</b>
+          <ul>
+            <li>Short human explanation, similar to a commit message.</li>
+            <li>Useful for review history: “Close footpath during bridge works” or “Correct sidewalk around building entrance”.</li>
+            <li>Never required for machine replay; empty is valid.</li>
+            <li>Do not use it as identity or matching input.</li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <div class="panel" id="tab-regen">
@@ -254,6 +286,52 @@ svg{width:100%;height:100%;display:block}
         <div class="tile"><b>Cannot resolve target confidently</b><ul><li>Do not nearest-neighbour guess.</li><li><span style="color:var(--red)">Do not auto-apply.</span></li></ul></div>
       </div>
       <div class="note">This deliberately avoids inventing globally stable geo IDs now. For the Netherlands, start with BGT/source lineage and a local geographic scope; add more sophisticated identity only if real failures justify it.</div>
+    </div>
+
+
+    <div class="panel" id="tab-v1">
+      <h2>Does V2 still cover what V1 was designed for?</h2>
+      <p>Yes. V1's strongest idea was conservative replay across source updates. V2 keeps that behaviour, but compares the <b>local generated DWN state</b> instead of patching normalized source data before generation.</p>
+
+      <div class="coverage">
+        <div class="coverageRow">
+          <div class="coverageCell"><b>V1 · sidewalk overlaps a building</b><small>Reviewer trimmed source geometry with REMOVE_AREA.</small></div>
+          <div class="coverageCell"><b>V2</b><small>SUPPRESS the wrong generated section + ADD corrected geometry. Store local <code>expected_before</code> and <code>desired_after</code>.</small></div>
+          <div class="coverageCell"><span class="status safe">COVERED</span><small>Same reviewer outcome; no need to edit source first.</small></div>
+        </div>
+
+        <div class="coverageRow">
+          <div class="coverageCell"><b>V1 · BGT changes elsewhere</b><small>Unrelated source update must not invalidate the correction.</small></div>
+          <div class="coverageCell"><b>V2</b><small>The patch's local target still resembles <code>expected_before</code>, so replay it on generation N+1.</small></div>
+          <div class="coverageCell"><span class="status safe">REAPPLY</span><small>Changes outside the patch scope are irrelevant.</small></div>
+        </div>
+
+        <div class="coverageRow">
+          <div class="coverageCell"><b>V1 · BGT fixes the problem</b><small>The old operation becomes a no-op.</small></div>
+          <div class="coverageCell"><b>V2</b><small>The local generated state now resembles <code>desired_after</code>. Do not replay the patch.</small></div>
+          <div class="coverageCell"><span class="status satisfied">SATISFIED</span><small>Patch can be retained for history or retired.</small></div>
+        </div>
+
+        <div class="coverageRow">
+          <div class="coverageCell"><b>V1 · same area changes</b><small>Do not guess when upstream geometry changes under the correction.</small></div>
+          <div class="coverageCell"><b>V2</b><small>Current local DWN matches neither <code>expected_before</code> nor <code>desired_after</code>.</small></div>
+          <div class="coverageCell"><span class="status review">REVIEW</span><small>Exactly matches the “reviewer would now make a different patch” rule.</small></div>
+        </div>
+
+        <div class="coverageRow">
+          <div class="coverageCell"><b>V1 · source ID split / disappears</b><small>Old demo refused nearest-feature guessing.</small></div>
+          <div class="coverageCell"><b>V2</b><small>Try stable source lineage + local scope. If the target cannot be resolved confidently, keep the patch but do not apply it automatically.</small></div>
+          <div class="coverageCell"><span class="status review">REVIEW</span><small>No need for custom geo IDs yet.</small></div>
+        </div>
+      </div>
+
+      <div class="note"><b>What changed from V1:</b> the replay semantics survive; only the patch location moved. V1 patched normalized source data before generation. V2 patches the generated DWN baseline after generation.</div>
+
+      <div class="grid3">
+        <div class="tile"><b>Example · building overlap</b><ul><li>Before: generated line cuts through a building footprint.</li><li>Patch: SUPPRESS the bad section + ADD a short detour around the facade.</li><li>After regeneration: if the generator now creates the detour itself, status becomes SATISFIED.</li></ul></div>
+        <div class="tile"><b>Example · source geometry shifts 30 cm</b><ul><li>BGT geometry changes slightly, but reviewer intent is unchanged.</li><li>If local generated geometry is still equivalent to <code>expected_before</code> within tolerance, reapply.</li><li>No global “stable geo ID” is required.</li></ul></div>
+        <div class="tile"><b>Example · sidewalk is rebuilt</b><ul><li>Source feature split, crossing moved, geometry materially changed.</li><li>Old patch would no longer be the exact reviewer action.</li><li>Mark NEEDS_REVIEW instead of forcing replay.</li></ul></div>
+      </div>
     </div>
 
     <div class="panel" id="tab-deploy">
@@ -302,7 +380,7 @@ Generated run 42
     <li>Wrong generated path: SUPPRESS instead of mutating the baseline.</li>
     <li>Geometry correction: SUPPRESS + ADD composition.</li>
     <li>Explain REMOVE vs SUPPRESS.</li>
-    <li>Show regeneration rule: same reviewer intent → reapply.</li>
+    <li>Show regeneration rule: same reviewer intent → reapply.</li><li>Open “V1 cases in V2” to show that the old replay guarantees still exist.</li>
   </ol>
 </div>
 
@@ -343,7 +421,7 @@ const cases={
    "Add expires_at. No source-data change and no full regeneration are required.",
    "If a regeneration happens before expiry, reapply the same closure to the corresponding section."
   ],
-  code:"effect: SET_ATTRIBUTES\naccess: false\nvalid_from: 2026-09-20 15:00\nexpires_at: 2026-09-27 18:00",
+  code:"effect: SET_ATTRIBUTES\naccess: false\nvalid_from: 2026-09-20 15:00\nexpires_at: 2026-09-27 18:00\nmessage?: Close path during bridge works",
   draw(){
    line(360,170,555,170,"var(--red)",13,patchLayer);
    txt(387,145,"temporary closure","var(--red)",patchLayer,13);
@@ -359,7 +437,7 @@ const cases={
    "If generation N+1 still lacks the crossing, the same ADD remains valid.",
    "If generation later produces the same crossing, the patch becomes satisfied / removable."
   ],
-  code:"effect: ADD\nkind: crossing\ngeometry: LINESTRING(...)\nattrs: { crossing: unmarked }",
+  code:"effect: ADD\nkind: crossing\ngeometry: LINESTRING(...)\nattrs: { crossing: unmarked }\nmessage?: Add missing crossing",
   draw(){
    line(450,175,450,375,"var(--purple)",10,patchLayer,"12 8");
    txt(465,278,"ADD crossing","var(--purple)",patchLayer,13);
@@ -378,9 +456,8 @@ const cases={
    "If this is a one-off generator artefact, the patch can simply live with it.",
    "If reviewers see the same pattern repeatedly, that becomes evidence to improve the generator."
   ],
-  code:"effect: SUPPRESS\ntarget.source_refs: [BGT:wegdeel:123]\ntarget.scope: POLYGON(...)",
+  code:"effect: SUPPRESS\ntarget.source_refs: [BGT:wegdeel:123]\ntarget.scope: POLYGON(...)\nmessage?: Remove generated shortcut",
   draw(){
-   path("M590 170 L670 235","var(--blue)",6,baselineLayer);
    path("M590 170 L670 235","var(--red)",13,patchLayer);
    txt(615,215,"SUPPRESS","var(--red)",patchLayer,12);
    path("M95 170 H805","var(--cyan)",6,effectiveLayer);
@@ -395,7 +472,7 @@ const cases={
    "The patch engine updates geometry and graph topology together.",
    "No dedicated MOVE/RESHAPE primitive is required for the first version."
   ],
-  code:"1. SUPPRESS generated section\n2. ADD replacement geometry\n\n=> effective network uses replacement",
+  code:"1. SUPPRESS generated section\n2. ADD replacement geometry\nmessage?: Correct path around entrance\n\n=> effective network uses replacement",
   draw(){
    line(300,380,520,380,"var(--red)",14,patchLayer);
    path("M300 380 Q410 330 520 380","var(--purple)",9,patchLayer,"14 8");
@@ -473,6 +550,7 @@ const guided=[
  ()=>renderCase("reshape"),
  ()=>{document.querySelector('[data-tab="ops"]').click();},
  ()=>{document.querySelector('[data-tab="regen"]').click();},
+ ()=>{document.querySelector('[data-tab="v1"]').click();},
  ()=>{document.querySelector('[data-tab="deploy"]').click();}
 ];
 let gi=0;
