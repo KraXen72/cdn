@@ -102,7 +102,7 @@ svg{width:100%;height:100%;display:block}
 .tile{padding:10px;border:1px solid var(--ui);border-radius:6px;background:var(--surface)}
 .tile b{display:block;font-size:.74rem}.tile ul{font-size:.68rem;color:var(--tx2)}
 .tag{display:inline-block;padding:2px 5px;border-radius:4px;border:1px solid var(--ui2);font-size:.6rem;color:var(--tx2);margin-bottom:5px}
-.tag.add{color:var(--green)}.tag.remove{color:var(--red)}.tag.suppress{color:var(--orange)}.tag.attr{color:var(--blue)}
+.tag.add{color:var(--green)}.tag.remove{color:var(--red)}.tag.suppress{color:var(--orange)}.tag.replace{color:var(--purple)}.tag.attr{color:var(--blue)}
 .timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:10px}
 .step{padding:10px;border:1px solid var(--ui);border-radius:6px;background:var(--surface);position:relative}
 .step b{font-size:.72rem;display:block}.step small{color:var(--tx2)}
@@ -261,7 +261,7 @@ svg{width:100%;height:100%;display:block}
     <div class="card">
       <div class="metaGrid">
         <div class="meta"><b>Output</b><span>graph topology + spatial geometry</span></div>
-        <div class="meta"><b>Deployment</b><span>local patch, no full regeneration</span></div>
+        <div class="meta"><b>Targeting</b><span>whole path or selected span + geographic anchors</span></div>
         <div class="meta"><b>Persistence</b><span>desired_after → no-op · expected_before → apply</span></div>
         <div class="meta"><b>Fallback</b><span>neither matches → QA finding</span></div>
       </div>
@@ -360,47 +360,58 @@ svg{width:100%;height:100%;display:block}
 
     <div class="panel" id="tab-ops">
       <h2>Patch operations</h2>
-      <p>Operations change DWN content. The affected graph area is rebuilt and normalized from the resulting geometry.</p>
+      <p>The primitives describe reviewer intent at path level. A target may be a whole path or only a selected span; the patch engine handles graph splits, cleanup, and reconnection locally.</p>
 
-      <div class="grid3">
+      <div class="grid4">
         <div class="tile">
-          <span class="tag add">ADD</span>
-          <b>Add new DWN geometry</b>
+          <span class="tag add">ADD_PATH</span>
+          <b>Add a missing routable path</b>
           <ul>
-            <li>One connected spatial object per operation.</li>
-            <li>May be a LineString or an arbitrary Polygon shape, including holes.</li>
-            <li>Disconnected pieces use several ADD operations in one patch.</li>
-            <li>Routable additions create or split graph edges and nodes locally.</li>
+            <li>Stores the new LineString plus how its endpoints should connect to the existing network.</li>
+            <li>Used for missing crossings, entrances, links, and other path geometry.</li>
+            <li>The engine inserts or reuses graph nodes and splits touched edges where needed.</li>
           </ul>
         </div>
         <div class="tile">
-          <span class="tag suppress">SUPPRESS</span>
-          <b>Remove generated content from the effective DWN</b>
+          <span class="tag suppress">SUPPRESS_PATH</span>
+          <b>Remove a generated path or selected span</b>
           <ul>
-            <li>Targets baseline geometry, or a connected part of it.</li>
-            <li>Removes the corresponding effective graph edges.</li>
-            <li>Unused nodes are removed; unnecessary degree-2 nodes are collapsed.</li>
+            <li>Targets an existing generated path, optionally only between two positions on it.</li>
+            <li>The selected span stops contributing routable geometry to the effective DWN.</li>
+            <li>Unused nodes are removed and unnecessary degree-2 nodes can be collapsed.</li>
+          </ul>
+        </div>
+        <div class="tile">
+          <span class="tag replace">REPLACE_PATH</span>
+          <b>Correct path geometry as one edit</b>
+          <ul>
+            <li>Targets an existing path or span and supplies its corrected replacement line.</li>
+            <li>Unchanged attributes can be carried across instead of being re-authored.</li>
+            <li>The engine checks that the replacement reconnects to the surrounding network.</li>
           </ul>
         </div>
         <div class="tile">
           <span class="tag attr">SET_ATTRIBUTES</span>
-          <b>Change properties without removing geometry</b>
+          <b>Change properties on a path or span</b>
           <ul>
-            <li>Access, surface, width, tactile paving, kerb data, and similar attributes.</li>
-            <li>Temporary closure: set access=false and add an expiry.</li>
+            <li>Overrides access, surface, width, tactile paving, kerb data, and similar routing attributes.</li>
+            <li>Temporary closure: set <code>access=false</code> on the selected span and give the patch an expiry.</li>
           </ul>
         </div>
       </div>
 
-      <div class="rule"><strong>No REMOVE primitive for now.</strong> To retire content created by an ADD patch, disable, expire, or supersede that patch. Add REMOVE later only if we need an append-only “undo as another patch” history.</div>
+      <div class="rule"><strong>Shared target: a path-span selector.</strong> For partial edits, store the original path reference, two positions along that path, and geographic anchors near those positions. The positions say which span was selected; the anchors help resolve it safely after regeneration. If the target cannot be matched confidently, emit a QA finding instead of attaching the patch to a nearby path.</div>
+
+      <div class="rule"><strong>No REMOVE primitive for now.</strong> To retire content introduced by an <code>ADD_PATH</code> patch, disable, expire, or supersede that patch. Add a separate removal primitive only if a concrete undo/history use case requires it.</div>
 
       <div class="patchShape">
         <div class="tile">
           <b>Geometry and graph stay together</b>
           <ul>
-            <li>The edit is expressed spatially.</li>
-            <li>The graph update is a consequence of that edit, not a separate manual graph patch.</li>
-            <li>Reshape / move = SUPPRESS old geometry + ADD replacement geometry.</li>
+            <li>The reviewer edits a path or selected span on the map.</li>
+            <li>The engine resolves that selector and splits the effective graph at span boundaries when needed.</li>
+            <li>Those split edges are implementation details, not extra manual patch operations.</li>
+            <li>Geometry correction is one <code>REPLACE_PATH</code>, rather than a manually coordinated suppress + add pair.</li>
           </ul>
         </div>
         <div class="tile">
@@ -408,17 +419,20 @@ svg{width:100%;height:100%;display:block}
           <pre class="code">target region
 expected_before
 operations[]
+  target path/span + anchors
 desired_after
 valid_from
 expires_at?
 message?</pre>
         </div>
       </div>
+
+      <div class="note">These initial primitives are deliberately path-focused because they cover the current graph-editing cases. Area/polygon editing can be added later when there is a concrete case that needs it.</div>
     </div>
 
     <div class="panel" id="tab-regen">
       <h2>Applying a patch after regeneration</h2>
-      <p>Resolve the same local DWN region, then check these states in order.</p>
+      <p>Resolve the same local DWN region and, for span-targeted operations, resolve the stored path/span selector against it. Then check these states in order.</p>
 
       <div class="regenFlow">
         <div class="regenStep satisfied">
@@ -440,7 +454,7 @@ message?</pre>
         </div>
       </div>
 
-      <div class="note"><b>Match</b> means equivalent for this patch under its geometry and attribute comparison rules. It does not require byte-identical serialization.</div>
+      <div class="note"><b>Match</b> means equivalent for this patch under its geometry and attribute comparison rules. It does not require byte-identical serialization. A path/span selector must also resolve confidently from its path reference, along-path positions, and geographic anchors; otherwise the result is a QA finding.</div>
     </div>
 
 
@@ -480,7 +494,7 @@ message?</pre>
       <div class="arch">
         <div class="box patch"><b>Reviewer creates patch</b><small>e.g. closure, missing crossing, wrong attribute</small></div>
         <div class="arrow">→</div>
-        <div class="box"><b>Patch validator</b><small>target resolves · geometry valid · topology sanity checks</small></div>
+        <div class="box"><b>Patch validator</b><small>path/span target resolves · anchors agree · geometry valid · topology sanity checks</small></div>
         <div class="arrow">→</div>
         <div class="box effective"><b>Publish effective DWN</b><small>update only affected network area / graph rows</small></div>
       </div>
@@ -524,7 +538,7 @@ Generated run 42
           <div class="hybridRule"><b>Nodes</b><span>Geographic routing points: junctions, entries/exits, crossings, or other meaningful split points.</span></div>
           <div class="hybridRule"><b>Edges</b><span>Connect nodes for routing and retain their real spatial geometry. A curve does not need extra routing nodes.</span></div>
           <div class="hybridRule"><b>Polygon geometry</b><span>Keep actual sidewalk/area geometry when we have it. Local graph generation derives the routable structure from it.</span></div>
-          <div class="hybridRule"><b>Graph cleanup</b><span>Suppressing a branch removes its unused node. New entrances split the affected edge and create a node.</span></div>
+          <div class="hybridRule"><b>Graph cleanup</b><span>Span edits split the effective edge at their boundaries when needed. SUPPRESS_PATH removes the selected part; REPLACE_PATH inserts the corrected geometry and reconnects it locally.</span></div>
         </div>
       </div>
 
@@ -538,10 +552,12 @@ Generated run 42
   <h3>Suggested walkthrough</h3>
   <ol>
     <li>Show baseline + patch set → effective DWN.</li>
-    <li>Temporary closure: SET_ATTRIBUTES with an expiry.</li>
-    <li>ADD and SUPPRESS edit geometry; the graph is updated locally.</li>
-    <li>Show the DWN as a spatial graph: geographic nodes, geometry-carrying edges.</li>
-    <li>Show graph cleanup after branch suppression and edge splitting for new entrances.</li>
+    <li>Temporary closure: SET_ATTRIBUTES targets only the selected span and expires normally.</li>
+    <li>Missing crossing: ADD_PATH creates the path and connects its endpoints into the graph.</li>
+    <li>Wrong path: SUPPRESS_PATH can target a whole path or only a span.</li>
+    <li>Geometry correction: REPLACE_PATH is one correction, not a suppress + add pair.</li>
+    <li>Show the shared path-span selector: along-path positions + geographic anchors.</li>
+    <li>Show the DWN as a spatial graph; local splitting and cleanup are engine details.</li>
     <li>Regeneration order: desired_after → no-op; expected_before → apply; otherwise QA finding.</li>
     <li>Open V1 → V2 to show the same three outcomes across generations.</li>
   </ol>
@@ -579,16 +595,17 @@ const cases={
  closure:{
   badge:"TEMPORARY",cls:"purple",title:"Construction closes part of a sidewalk",
   bullets:[
-   "The generated path is geometrically correct, but it is temporarily unavailable in the real world.",
-   "Set access=false on the affected section and give the patch an expiry.",
-   "Add expires_at. No source-data change and no full regeneration are required.",
-   "If a regeneration happens before expiry, reapply the same closure to the corresponding section."
+   "The generated path geometry is correct, but only one stretch is temporarily unavailable.",
+   "The reviewer selects that span; SET_ATTRIBUTES changes access only for that span.",
+   "The engine splits the effective edge at the two span boundaries if needed. Those splits are not stored as manual edits.",
+   "The patch expires normally, and its path-span anchors are used if regeneration happens before expiry."
   ],
-  code:"effect: SET_ATTRIBUTES\naccess: false\nvalid_from: 2026-09-20 15:00\nexpires_at: 2026-09-27 18:00\nmessage?: Close path during bridge works",
+  code:"operation: SET_ATTRIBUTES\ntarget: path span\n  path_ref: north-sidewalk\n  from: { position: 0.37, anchor: POINT(...) }\n  to:   { position: 0.65, anchor: POINT(...) }\nattributes: { access: false }\nvalid_from: 2026-09-20 15:00\nexpires_at: 2026-09-27 18:00",
   draw(){
    line(360,170,555,170,"var(--red)",13,patchLayer);
-   txt(387,145,"temporary closure","var(--red)",patchLayer,13);
+   txt(370,145,"SET_ATTRIBUTES · selected span","var(--red)",patchLayer,12);
    path("M95 170 H360 M555 170 H805","var(--cyan)",6,effectiveLayer);
+   line(360,170,555,170,"var(--red)",7,effectiveLayer);
    path("M95 380 H805","var(--cyan)",6,effectiveLayer);
   }
  },
@@ -596,14 +613,14 @@ const cases={
   badge:"PERSISTENT",cls:"green",title:"A needed crossing is missing",
   bullets:[
    "The baseline contains sidewalks on both sides, but no usable crossing at this location.",
-   "Reviewer adds a crossing once. The patch creates the geometry and corresponding graph connection.",
-   "If generation N+1 still lacks the crossing, the same ADD remains valid.",
-   "If generation later produces the same crossing, the patch becomes satisfied / removable."
+   "ADD_PATH stores the new crossing line and the intended connections at both endpoints.",
+   "The engine inserts/reuses the attachment nodes and splits the touched sidewalk edges locally.",
+   "If a later generation already contains the same crossing, the desired_after state makes the patch a no-op."
   ],
-  code:"effect: ADD\nkind: crossing\ngeometry: LINESTRING(...)\nattrs: { crossing: unmarked }\nmessage?: Add missing crossing",
+  code:"operation: ADD_PATH\ngeometry: LINESTRING(...)\nconnect: [north-sidewalk, south-sidewalk]\nattributes: { kind: crossing, crossing: unmarked }\nmessage?: Add missing crossing",
   draw(){
    line(450,175,450,375,"var(--purple)",10,patchLayer,"12 8");
-   txt(465,278,"ADD crossing","var(--purple)",patchLayer,13);
+   txt(465,278,"ADD_PATH crossing","var(--purple)",patchLayer,13);
    path("M95 170 H805","var(--cyan)",6,effectiveLayer);
    path("M95 380 H805","var(--cyan)",6,effectiveLayer);
    line(450,170,450,380,"var(--cyan)",6,effectiveLayer);
@@ -615,48 +632,48 @@ const cases={
   badge:"PERSISTENT",cls:"yellow",title:"Generator creates an unwanted path",
   bullets:[
    "Assume the pipeline emits a short diagonal connection that should not be routable.",
-   "SUPPRESS the generated element from the effective network. The stored generation run stays unchanged.",
-   "If this happens once, the patch can remain as the fix.",
-   "If reviewers see the same pattern repeatedly, the dev team can investigate the generator."
+   "SUPPRESS_PATH targets that generated path. The stored generation run remains unchanged.",
+   "The same primitive can suppress only a selected span when the rest of a path is valid.",
+   "Unused routing nodes are cleaned up locally; repeated generator mistakes can still be escalated to the dev team."
   ],
-  code:"effect: SUPPRESS\ntarget.source_refs: [BGT:wegdeel:123]\ntarget.scope: POLYGON(...)\nmessage?: Remove generated shortcut",
+  code:"operation: SUPPRESS_PATH\ntarget:\n  path_ref: generated-shortcut\n  anchors: [POINT(...), POINT(...)]\nmessage?: Remove generated shortcut",
   draw(){
    path("M590 170 L670 235","var(--red)",13,patchLayer);
-   txt(615,215,"SUPPRESS","var(--red)",patchLayer,12);
+   txt(600,215,"SUPPRESS_PATH","var(--red)",patchLayer,12);
    path("M95 170 H805","var(--cyan)",6,effectiveLayer);
    path("M95 380 H805","var(--cyan)",6,effectiveLayer);
   }
  },
  reshape:{
-  badge:"COMPOSED",cls:"blue",title:"A generated sidewalk segment is in the wrong place",
+  badge:"REPLACEMENT",cls:"blue",title:"A generated sidewalk segment is in the wrong place",
   bullets:[
-   "Reviewer wants the same logical route, but with corrected geometry.",
-   "Represent the correction as two simple facts: suppress the wrong baseline section, add the replacement section.",
-   "The graph is rebuilt locally from the corrected geometry.",
-   "No dedicated MOVE/RESHAPE primitive is required for the first version."
+   "Reviewer wants the same logical route, but with corrected geometry over one stretch.",
+   "REPLACE_PATH targets that span and stores the corrected replacement line as one correction.",
+   "The engine splits at the span boundaries, carries forward unaffected attributes, and reconnects the replacement.",
+   "This keeps the reviewer intent atomic instead of encoding one correction as SUPPRESS_PATH + ADD_PATH."
   ],
-  code:"1. SUPPRESS generated section\n2. ADD replacement geometry\nmessage?: Correct path around entrance\n\n=> effective network uses replacement",
+  code:"operation: REPLACE_PATH\ntarget: path span\n  path_ref: south-sidewalk\n  from: { position: 0.29, anchor: POINT(...) }\n  to:   { position: 0.60, anchor: POINT(...) }\nreplacement: LINESTRING(...)\nmessage?: Correct path around entrance",
   draw(){
    line(300,380,520,380,"var(--red)",14,patchLayer);
    path("M300 380 Q410 330 520 380","var(--purple)",9,patchLayer,"14 8");
    path("M95 380 H300 M520 380 H805","var(--cyan)",6,effectiveLayer);
    path("M300 380 Q410 330 520 380","var(--cyan)",6,effectiveLayer);
    path("M95 170 H805","var(--cyan)",6,effectiveLayer);
-   txt(355,321,"replacement geometry","var(--purple)",patchLayer,12);
+   txt(350,321,"REPLACE_PATH","var(--purple)",patchLayer,12);
   }
  },
  attribute:{
   badge:"PERSISTENT",cls:"blue",title:"Routing / accessibility attribute is wrong",
   bullets:[
    "Geometry is correct; only a network attribute needs correction.",
-   "Example: the sidewalk surface is paving stones, not asphalt.",
-   "SET_ATTRIBUTES overlays the generated value and leaves geometry untouched.",
-   "The same mechanism handles width, access, tactile paving, kerb properties, and similar routing data."
+   "The reviewer can target the whole path or select only the stretch where the value differs.",
+   "SET_ATTRIBUTES overlays those values without replacing geometry.",
+   "The same mechanism handles surface, width, access, tactile paving, kerb properties, and similar routing data."
   ],
-  code:"effect: SET_ATTRIBUTES\nattrs:\n  surface: paving_stones\n  smoothness: good",
+  code:"operation: SET_ATTRIBUTES\ntarget: path span\n  path_ref: north-sidewalk\n  from: { position: 0.23, anchor: POINT(...) }\n  to:   { position: 0.71, anchor: POINT(...) }\nattributes:\n  surface: paving_stones\n  smoothness: good",
   draw(){
    path("M260 170 H600","var(--purple)",13,patchLayer,"12 8");
-   txt(340,145,"surface = paving_stones","var(--purple)",patchLayer,12);
+   txt(300,145,"SET_ATTRIBUTES · selected span","var(--purple)",patchLayer,12);
    path("M95 170 H805","var(--cyan)",6,effectiveLayer);
    path("M95 380 H805","var(--cyan)",6,effectiveLayer);
   }
@@ -711,6 +728,7 @@ const guided=[
  ()=>renderCase("crossing"),
  ()=>renderCase("badsegment"),
  ()=>renderCase("reshape"),
+ ()=>renderCase("attribute"),
  ()=>{document.querySelector('[data-tab="ops"]').click();},
  ()=>{document.querySelector('[data-tab="questions"]').click();},
  ()=>{document.querySelector('[data-tab="regen"]').click();},
