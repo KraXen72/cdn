@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 """
-Generate index.html for top-level directory listing.
+Generate index.html and _artifacts.html directory listings.
 
 Scans recursively one level deep:
 - Top-level {name}.html files
 - Per folder: index.html, dist/index.html, individual .html files, and
   sub-subfolder index.html entries
 - Userscripts and userstyles from their corresponding top-level folders
+
+The artifacts page lists the 20 most recently modified publishable files in
+artifacts/, using Git history if a filesystem modification time is unavailable.
 """
 
-import os
+from html import escape
 from pathlib import Path
+import subprocess
+from urllib.parse import quote
 
 # Exclude paths containing any of these substrings (empty by default)
 EXCLUDED = [
@@ -28,6 +33,7 @@ FILE_SECTIONS = {
 }
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
+ARTIFACT_LIMIT = 20
 
 
 def is_excluded(path: str) -> bool:
@@ -132,13 +138,50 @@ def collect_entries() -> dict[str, list[tuple[str, str]]]:
     return sections
 
 
-def generate_html(sections: dict[str, list[tuple[str, str]]]) -> str:
-    """Generate the index.html content from categorized sections."""
+def git_modified_time(path: Path) -> int:
+    """Return the last commit time for a file when its filesystem time is unavailable."""
+    result = subprocess.run(
+        ["git", "log", "-1", "--format=%ct", "--", str(path.relative_to(SCRIPT_DIR))],
+        cwd=SCRIPT_DIR,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return int(result.stdout.strip() or 0) if result.returncode == 0 else 0
+
+
+def collect_artifacts() -> list[tuple[str, str]]:
+    """List the newest tracked artifact files, including files staged for commit."""
+    result = subprocess.run(
+        ["git", "ls-files", "--cached", "-z", "--", "artifacts"],
+        cwd=SCRIPT_DIR,
+        capture_output=True,
+        check=True,
+    )
+    files = [SCRIPT_DIR / name.decode() for name in result.stdout.split(b"\0") if name]
+    ranked = []
+    for path in files:
+        if not path.is_file():
+            continue
+        try:
+            modified = path.stat().st_mtime_ns
+        except OSError:
+            modified = git_modified_time(path) * 1_000_000_000
+        name = path.relative_to(SCRIPT_DIR / "artifacts").as_posix()
+        href = quote(path.relative_to(SCRIPT_DIR).as_posix(), safe="/")
+        ranked.append((modified, name, href))
+
+    ranked.sort(key=lambda entry: (-entry[0], entry[1].lower()))
+    return [(name, href) for _, name, href in ranked[:ARTIFACT_LIMIT]]
+
+
+def generate_html(sections: dict[str, list[tuple[str, str]]], title: str = "cdn") -> str:
+    """Render a directory listing using the shared index page styling."""
     sections_html = ""
 
     for heading, entries in sections.items():
         entries_html = "\n".join(
-            f'            <li><a href="{href}">{name}</a></li>'
+            f'            <li><a href="{escape(href, quote=True)}">{escape(name)}</a></li>'
             for name, href in entries
         )
         sections_html += f'''        <h3>{heading}</h3>
@@ -154,7 +197,7 @@ def generate_html(sections: dict[str, list[tuple[str, str]]]) -> str:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>cdn</title>
+    <title>{escape(title)}</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 
@@ -260,7 +303,7 @@ def generate_html(sections: dict[str, list[tuple[str, str]]]) -> str:
 <body>
 
     <div class="container">
-        <h2>cdn</h2>
+        <h2>{escape(title)}</h2>
 {sections_html}    </div>
 
 </body>
@@ -271,13 +314,15 @@ def generate_html(sections: dict[str, list[tuple[str, str]]]) -> str:
 
 def main():
     entries = collect_entries()
-    html_content = generate_html(entries)
-    
-    output_path = SCRIPT_DIR / "index.html"
-    output_path.write_text(html_content, encoding="utf-8")
-    
+    (SCRIPT_DIR / "index.html").write_text(generate_html(entries), encoding="utf-8")
+    artifacts = collect_artifacts()
+    (SCRIPT_DIR / "_artifacts.html").write_text(
+        generate_html({"artifacts": artifacts}, title="cdn artifacts"), encoding="utf-8"
+    )
+
     total = sum(len(v) for v in entries.values())
     print(f"[generate-index.py] Generated index.html with {total} entries")
+    print(f"[generate-index.py] Generated _artifacts.html with {len(artifacts)} entries")
 
 
 if __name__ == "__main__":
