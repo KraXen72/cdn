@@ -1,165 +1,87 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Timesheet Prefixer</title>
-<style>
-:root{color-scheme:dark;--bg:#100f0f;--panel:#1c1b1a;--border:#403e3c;--text:#cecdc3;--muted:#aaa89f;--accent:#3aa99f}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,sans-serif}main{max-width:1200px;margin:48px auto;padding:0 24px}a{color:var(--accent)}h1{font-size:2rem;margin:18px 0 4px;letter-spacing:-.04em}h2{font-size:1rem;margin:0}p{margin:4px 0 20px;color:var(--muted)}.card{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:22px;margin:20px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}label{display:block;font-weight:600;margin-bottom:6px}input,select,button{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;max-width:100%}input:not([type=checkbox]),select{width:100%}input[type=file]{margin-top:10px}button{cursor:pointer;font-weight:600}button.primary{background:var(--accent);color:#100f0f;border-color:var(--accent)}button:disabled{opacity:.4;cursor:not-allowed}:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.check{font-size:14px;font-weight:400;display:flex;align-items:center;gap:9px;margin:14px 0 0}.check input{accent-color:var(--accent)}fieldset{border:0;padding:0;margin:0;min-width:0}.toolbar{display:flex;gap:16px;justify-content:space-between;align-items:center;flex-wrap:wrap}.hint{font-size:13px;margin:7px 0 0;color:var(--muted)}#status{margin:12px 0 0}#status.error{color:#ff9387}.scroll{overflow:auto;max-height:480px;margin-top:18px;border:1px solid var(--border);border-radius:6px}table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}td,th{padding:10px 12px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);text-align:left;white-space:pre-wrap;min-width:140px;max-width:380px;overflow-wrap:anywhere}th{position:sticky;top:0;background:#282726;z-index:1}td.selected{background:#18312e}th.selected{color:#67d5c9}td:first-child,th:first-child{min-width:48px;color:var(--muted)}#empty{padding:48px 16px;text-align:center;color:var(--muted)}footer{font-size:13px;color:var(--muted);margin:24px 0} [hidden]{display:none!important}@media(max-width:640px){main{margin:24px auto;padding:0 14px}.grid{grid-template-columns:1fr;gap:14px}.card{padding:16px}h1{font-size:1.7rem}.toolbar button{width:100%}}
-</style>
-<script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Timesheet converter</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script type="module" src="./app.js"></script>
 </head>
 <body>
-<main>
-<a href="../../">← All tools</a>
-<h1>Timesheet Prefixer</h1>
-<p>Add a project name to your timesheet. Preview it, then download an Excel file.</p>
-<section class="card">
-<label for="file">1. Open your Simple Time Tracker export</label>
-<input id="file" type="file" accept=".csv,.xlsx">
-<p class="hint">CSV or XLSX · Your file stays in this browser. The first populated row is used as the header.</p>
-<p id="status" role="status" aria-live="polite">Choose a file to get started.</p>
-</section>
-<section class="card">
-<h2 style="margin-bottom:16px">2. Add your prefix</h2>
-<fieldset id="settings" disabled>
-<div class="grid">
-<div><label for="sheet">Worksheet</label><select id="sheet"></select></div>
-<div><label for="column">Column to prefix</label><select id="column"></select></div>
-<div><label for="prefix">Prefix</label><input id="prefix" value="AITCIM: " autocomplete="off" spellcheck="false"><p class="hint">Spaces are kept exactly as typed. Clear this to convert without a prefix.</p></div>
-<div><label class="check"><input type="checkbox" id="lines" checked>Prefix each line in multiline cells</label><label class="check"><input type="checkbox" id="skip" checked>Skip lines that already start with this prefix</label></div>
-</div>
-<p class="hint">Applies to every data row in the selected worksheet, including empty cells. Other worksheets are retained.</p>
-</fieldset>
-</section>
-<section class="card">
-<div class="toolbar"><div><h2>3. Preview & download</h2><span id="summary" class="hint">Your converted timesheet will appear here.</span></div><button id="download" class="primary" disabled>Download XLSX</button></div>
-<label class="check"><input type="checkbox" id="original">Show original values</label>
-<div class="scroll" tabindex="0" role="region" aria-label="Scrollable timesheet preview"><div id="empty">No timesheet loaded</div><table id="preview" hidden></table></div>
-<p class="hint">The highlighted column is the one being edited. Preview shows up to 500 rows; the download includes every row.</p>
-</section>
-<footer>Browser-only conversion with <a href="https://docs.sheetjs.com/">SheetJS</a>. Spreadsheet values and number formats are retained; advanced Excel objects and styling may not be.</footer>
-</main>
-<script>
-'use strict';
-const $ = id => document.getElementById(id);
-let workbook, fileName, range, dataRows = [], loadVersion = 0;
-const display = cell => cell ? XLSX.utils.format_cell(cell) : '';
+  <main>
+    <header class="hero">
+      <h1>Timesheet converter</h1>
+      <p>Turn a tracker export into a monthly, bookkeeper-ready timesheet.</p>
+    </header>
 
-/** Apply the current options to an original cell; never stack edits from earlier previews. */
-function prefixed(cell) {
-  const value = display(cell), prefix = $('prefix').value;
-  const add = line => $('skip').checked && line.startsWith(prefix) ? line : prefix + line;
-  return $('lines').checked ? value.split(/(\r\n|\n|\r)/).map((part, i) => i % 2 ? part : add(part)).join('') : add(value);
-}
+    <section class="card" aria-labelledby="details-title">
+      <div class="section-heading">
+        <span class="step">1</span>
+        <div><h2 id="details-title">Timesheet details</h2><p>Used in the workbook and file name.</p></div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="employee">Employee name</label>
+          <input id="employee" autocomplete="name" placeholder="First name + family name" required>
+        </div>
+        <div class="field">
+          <label for="company">Company</label>
+          <input id="company" value="Scenwise" autocomplete="organization">
+        </div>
+        <div class="field">
+          <label for="prefix">Task prefix</label>
+          <input id="prefix" value="AITCIM: " autocomplete="off" spellcheck="false">
+          <p class="hint">Added once before each day's combined description. May be empty.</p>
+        </div>
+        <div class="field">
+          <label for="period">Period</label>
+          <input id="period" type="month" disabled>
+          <p class="hint">Deduced from the export; you can override it.</p>
+        </div>
+      </div>
+    </section>
 
-/** Discover populated rows and default to the export's description/comment column. */
-function selectSheet() {
-  const sheet = workbook.Sheets[$('sheet').value];
-  $('column').replaceChildren();
-  dataRows = [];
-  if (!sheet['!ref']) { range = null; render(); return; }
-  range = XLSX.utils.decode_range(sheet['!ref']);
-  // Sparse sheets can have a large formatted range; inspect actual cells instead.
-  const populated = new Set();
-  for (const [address, cell] of Object.entries(sheet)) {
-    if (address.startsWith('!') || (cell.v == null && !cell.f)) continue;
-    populated.add(XLSX.utils.decode_cell(address).r);
-  }
-  const rows = [...populated].sort((a,b) => a-b);
-  if (!rows.length) { range = null; render(); return; }
-  range.s.r = rows[0];
-  dataRows = rows.slice(1);
-  const headers = [];
-  for (let c = range.s.c; c <= range.e.c; c++) {
-    const name = display(sheet[XLSX.utils.encode_cell({r:range.s.r,c})]);
-    headers.push({c,name:name.trim().toLowerCase()});
-    $('column').add(new Option(`${name || '(unnamed)'} · ${XLSX.utils.encode_col(c)}`, c));
-  }
-  const preferred = headers.find(h => h.name === 'description') || headers.find(h => h.name === 'comment');
-  if (preferred) $('column').value = preferred.c;
-  render();
-}
+    <section class="card" aria-labelledby="upload-title">
+      <div class="section-heading">
+        <span class="step">2</span>
+        <div><h2 id="upload-title">Import tracker export</h2><p>CSV and XLSX are processed only in this browser.</p></div>
+      </div>
+      <label class="dropzone" for="file">
+        <span class="dropzone-title">Choose a Simple Time Tracker export</span>
+        <span class="hint">CSV or XLSX</span>
+        <input id="file" type="file" accept=".csv,.xlsx">
+      </label>
+      <p id="status" class="status" role="status" aria-live="polite">Choose a file to begin.</p>
+      <div id="overflow" class="notice warning" hidden></div>
+      <div class="notice info">
+        <strong>Rounding:</strong> exact entries are summed per day, then the daily total is rounded to the nearest 15 minutes. An exact 7½-minute midpoint rounds up.
+      </div>
+    </section>
 
-/** Render text nodes so imported descriptions cannot inject HTML into the page. */
-function render() {
-  const table = $('preview');
-  table.replaceChildren();
-  $('empty').hidden = !!range;
-  table.hidden = !range;
-  $('download').disabled = !range || !dataRows.length;
-  $('summary').textContent = range ? `${dataRows.length.toLocaleString()} data rows · ${range.e.c-range.s.c+1} columns · ${$('original').checked ? 'Original' : 'Output'} preview` : 'This worksheet is empty.';
-  if (!range) return;
-  const sheet = workbook.Sheets[$('sheet').value], column = Number($('column').value);
-  const head = table.createTHead().insertRow();
-  for (let c = range.s.c-1; c <= range.e.c; c++) {
-    const th = document.createElement('th');
-    th.scope = 'col';
-    th.textContent = c < range.s.c ? '#' : display(sheet[XLSX.utils.encode_cell({r:range.s.r,c})]) || XLSX.utils.encode_col(c);
-    if (c === column) th.className = 'selected';
-    head.append(th);
-  }
-  const body = table.createTBody();
-  for (const r of dataRows.slice(0,500)) {
-    const row = body.insertRow();
-    row.insertCell().textContent = r+1;
-    for (let c = range.s.c; c <= range.e.c; c++) {
-      const td = row.insertCell(), cell = sheet[XLSX.utils.encode_cell({r,c})];
-      td.textContent = c === column && !$('original').checked ? prefixed(cell) : display(cell);
-      if (c === column) td.className = 'selected';
-    }
-  }
-}
+    <section id="findings-section" class="card" aria-labelledby="findings-title" hidden>
+      <div class="section-heading">
+        <span class="step">3</span>
+        <div><h2 id="findings-title">Review long descriptions</h2><p>Choose what to keep for each day, then mark the finding resolved.</p></div>
+      </div>
+      <div id="findings" class="findings"></div>
+    </section>
 
-$('file').addEventListener('change', async () => {
-  const version = ++loadVersion, file = $('file').files[0];
-  workbook = null; range = null; dataRows = [];
-  $('settings').disabled = true; $('download').disabled = true;
-  $('status').className = ''; render();
-  if (!file) { $('status').textContent = 'Choose a file to get started.'; return; }
-  $('status').textContent = 'Reading your file…';
-  try {
-    if (!window.XLSX) throw new Error('The spreadsheet library could not load. Check your connection and reload this page.');
-    if (!/\.(csv|xlsx)$/i.test(file.name)) throw new Error('Choose a CSV or XLSX file.');
-    const csv = /\.csv$/i.test(file.name);
-    const content = csv ? await file.text() : await file.arrayBuffer();
-    if (version !== loadVersion) return;
-    if (!file.size) throw new Error('This file is empty.');
-    if (!csv && new Uint8Array(content)[0] !== 0x50) throw new Error('This file is not an XLSX workbook.');
-    // Keep CSV text literal, including dates, leading zeros and formula-like descriptions.
-    workbook = XLSX.read(content, {type:csv ? 'string' : 'array', raw:true, cellNF:true});
-    fileName = file.name.replace(/\.(csv|xlsx)$/i,'');
-    $('sheet').replaceChildren(...workbook.SheetNames.map(name => new Option(name,name)));
-    $('settings').disabled = false;
-    selectSheet();
-    $('status').textContent = `Loaded ${file.name}. Description is selected when present; otherwise Comment is preferred.`;
-  } catch (error) {
-    workbook = null; range = null; dataRows = []; render();
-    $('settings').disabled = true;
-    $('status').className = 'error';
-    $('status').textContent = `Could not open file. ${error.message}`;
-  }
-});
-$('sheet').addEventListener('change', selectSheet);
-for (const id of ['column','prefix','lines','skip','original']) $(id).addEventListener('input',render);
-$('download').addEventListener('click', () => {
-  try {
-    const output = structuredClone(workbook), sheet = output.Sheets[$('sheet').value];
-    if ($('prefix').value) for (const r of dataRows) {
-      const address = XLSX.utils.encode_cell({r,c:Number($('column').value)});
-      const value = prefixed(sheet[address]);
-      if (value.length > 32767) throw new Error(`Row ${r+1} exceeds Excel's 32,767-character cell limit.`);
-      // Replacement text must not retain stale formulas, rich text or cached display values.
-      sheet[address] = {t:'s',v:value};
-    }
-    XLSX.writeFile(output, `${fileName}-prefixed.xlsx`, {bookType:'xlsx',compression:true});
-    $('status').className = '';
-    $('status').textContent = 'XLSX created. Your download is ready.';
-  } catch (error) {
-    $('status').className = 'error';
-    $('status').textContent = `Could not export: ${error.message}`;
-  }
-});
-</script>
+    <section class="card" aria-labelledby="preview-title">
+      <div class="section-heading preview-heading">
+        <span class="step">4</span>
+        <div><h2 id="preview-title">Preview and download</h2><p id="summary">The monthly timesheet will appear here.</p></div>
+        <button id="download" class="primary" disabled>Download XLSX</button>
+      </div>
+      <div class="table-shell" tabindex="0" role="region" aria-label="Timesheet preview">
+        <table>
+          <thead><tr><th>Week</th><th>Date</th><th>Day</th><th>Hours</th><th>Task description</th></tr></thead>
+          <tbody id="preview"><tr><td class="empty" colspan="5">No export loaded</td></tr></tbody>
+          <tfoot id="preview-total" hidden><tr><th colspan="3">Period total</th><th id="total-hours"></th><td>hour</td></tr></tfoot>
+        </table>
+      </div>
+    </section>
+  </main>
 </body>
 </html>
