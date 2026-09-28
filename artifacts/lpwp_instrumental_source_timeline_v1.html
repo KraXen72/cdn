@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lonely People With Power — instrumental source map</title>
+<style>
+  :root {
+    color-scheme: dark;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: #10131b;
+    color: #f2f3f8;
+    --original: #55c4ad;
+    --youtube: #9e86ef;
+    --fmhy: #dfb66b;
+    --discord: #ee827f;
+    --mdx: #66a9ea;
+    --second: #d889cf;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-width: 370px; }
+  main { max-width: 1220px; margin: 0 auto; padding: 42px 26px 70px; }
+  .eyebrow { color: #a7acc0; font-size: 12px; letter-spacing: .15em; text-transform: uppercase; }
+  h1 { font-size: clamp(28px, 4vw, 47px); line-height: 1.1; letter-spacing: -.04em; margin: 8px 0 10px; }
+  .intro { color: #b9becf; max-width: 740px; line-height: 1.55; margin: 0 0 25px; }
+  .legend { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 27px; }
+  .legend-item { display: inline-flex; align-items: center; gap: 8px; background: #1c2130; border: 1px solid #30364a; border-radius: 100px; padding: 7px 11px; font-size: 12px; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; background: var(--color); }
+  .legend-item small { color: #aeb4c7; font-size: 11px; }
+  .grid { display: grid; gap: 9px; }
+  .row { display: grid; grid-template-columns: minmax(190px, 270px) minmax(0, 1fr) 54px; align-items: center; gap: 16px; padding: 15px 17px; background: #1a1e2b; border: 1px solid #2a3041; border-radius: 12px; }
+  .track-name { min-width: 0; display: flex; align-items: baseline; gap: 11px; }
+  .track-number { flex: 0 0 20px; color: #8d94aa; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .track-title { min-width: 0; font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .duration { color: #abb1c2; font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+  .bar { height: 30px; position: relative; overflow: hidden; background: #292e3e; border-radius: 6px; isolation: isolate; }
+  .segment { position: absolute; top: 0; bottom: 0; background: var(--color); border-right: 1px solid #10131b55; cursor: pointer; transition: filter .12s ease; }
+  .segment:hover, .segment:focus-visible { filter: brightness(1.28); z-index: 2; outline: 2px solid #fff; outline-offset: -2px; }
+  .bar::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, transparent 24.9%, #ffffff35 25%, transparent 25.1%, transparent 49.9%, #ffffff35 50%, transparent 50.1%, transparent 74.9%, #ffffff35 75%, transparent 75.1%); z-index: 3; }
+  .detail { margin-top: 25px; padding: 19px 21px; background: #212638; border: 1px solid #343b52; border-radius: 12px; min-height: 102px; }
+  .detail-label { color: #b2b9cb; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; }
+  .detail-title { margin: 7px 0 4px; font-weight: 650; }
+  .detail-meta { color: #c3c8d6; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+  .note { color: #aab1c3; font-size: 12px; line-height: 1.5; margin: 17px 1px 0; max-width: 930px; }
+  @media (max-width: 720px) {
+    main { padding: 27px 16px 46px; }
+    .row { grid-template-columns: minmax(0, 1fr) 48px; gap: 10px; padding: 13px; }
+    .track-name { grid-column: 1; }
+    .bar { grid-column: 1 / -1; grid-row: 2; }
+    .duration { grid-column: 2; grid-row: 1; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Deafheaven · instrumental edit</div>
+  <h1>Lonely People With Power</h1>
+  <p class="intro">Where each track comes from. Every row spans that track's full running time; hover or tap a colored section for its source and exact time range.</p>
+  <div class="legend" id="legend"></div>
+  <div class="grid" id="tracks"></div>
+  <div class="detail" id="detail" aria-live="polite">
+    <div class="detail-label">Source detail</div>
+    <div class="detail-title">Hover or tap a section</div>
+    <div class="detail-meta">The bars show the dominant source between edits.</div>
+  </div>
+  <p class="note">Transitions blend sources over about 60 ms; targeted replacement passages use about 120 ms fades. Those tiny overlaps are included in the edit but too narrow to show at this scale. “Original” means the original recording was restored where it closely matched a separation. The YouTube edit was the baseline elsewhere; the other supplied splits were compared and used where they improved specific passages.</p>
+</main>
+<script id="album-data" type="application/json">{"labels": {"original": "Original recording", "youtube": "YouTube instrumental", "fmhy": "FMHY instrumental", "discord": "Discord instrumental", "mdx": "HQ3 generated stem", "second": "427 cleanup pass"}, "tracks": [{"number": 1, "title": "Incidental I", "duration": 56.5, "source_paths": {"original": "01 Deafheaven - Incidental I.mp3"}, "segments": [{"start": 0, "end": 56.5, "source": "original"}]}, {"number": 2, "title": "Doberman", "duration": 394.0, "source_paths": {"original": "02 - Doberman.flac", "youtube": "02 Deafheaven - Doberman.mp3", "fmhy": "02 Deafheaven - Doberman.flac"}, "segments": [{"start": 0.0, "end": 24.6, "source": "original"}, {"start": 24.6, "end": 34.8, "source": "youtube"}, {"start": 34.8, "end": 36.6, "source": "original"}, {"start": 36.6, "end": 73.3, "source": "youtube"}, {"start": 73.3, "end": 74.65, "source": "original"}, {"start": 74.65, "end": 99.65, "source": "youtube"}, {"start": 99.65, "end": 107.4, "source": "original"}, {"start": 107.4, "end": 144.5, "source": "youtube"}, {"start": 144.5, "end": 152.25, "source": "original"}, {"start": 152.25, "end": 166.95, "source": "youtube"}, {"start": 166.95, "end": 168.05, "source": "original"}, {"start": 168.05, "end": 178.1, "source": "youtube"}, {"start": 178.1, "end": 179.3, "source": "original"}, {"start": 179.3, "end": 217.5, "source": "youtube"}, {"start": 217.5, "end": 218.75, "source": "original"}, {"start": 218.75, "end": 243.55, "source": "youtube"}, {"start": 243.55, "end": 253.1, "source": "original"}, {"start": 253.1, "end": 267.25, "source": "youtube"}, {"start": 267.25, "end": 306.2, "source": "original"}, {"start": 306.2, "end": 339.35, "source": "youtube"}, {"start": 339.35, "end": 340.6, "source": "original"}, {"start": 340.6, "end": 359.4, "source": "youtube"}, {"start": 359.4, "end": 360.5, "source": "original"}, {"start": 360.5, "end": 383.0, "source": "youtube"}, {"start": 383.0, "end": 394.0, "source": "original"}]}, {"number": 3, "title": "Magnolia", "duration": 254.5, "source_paths": {"original": "03 - Magnolia.flac", "youtube": "03 Deafheaven - Magnolia.mp3", "fmhy": "03 Deafheaven - Magnolia.flac"}, "segments": [{"start": 0.0, "end": 11.35, "source": "original"}, {"start": 11.35, "end": 105.05, "source": "youtube"}, {"start": 105.05, "end": 108.05, "source": "original"}, {"start": 108.05, "end": 149.85, "source": "youtube"}, {"start": 149.85, "end": 154.6, "source": "original"}, {"start": 154.6, "end": 172.5, "source": "youtube"}, {"start": 172.5, "end": 176.35, "source": "original"}, {"start": 176.35, "end": 191.2, "source": "youtube"}, {"start": 191.2, "end": 192.75, "source": "original"}, {"start": 192.75, "end": 198.95, "source": "youtube"}, {"start": 198.95, "end": 203.05, "source": "original"}, {"start": 203.05, "end": 209.7, "source": "youtube"}, {"start": 209.7, "end": 211.5, "source": "original"}, {"start": 211.5, "end": 228.55, "source": "youtube"}, {"start": 228.55, "end": 229.75, "source": "original"}, {"start": 229.75, "end": 240.65, "source": "youtube"}, {"start": 240.65, "end": 254.5, "source": "original"}]}, {"number": 4, "title": "The Garden Route", "duration": 348.4, "source_paths": {"original": "04 - The Garden Route.flac", "youtube": "04 Deafheaven - The Garden Route.mp3", "fmhy": "04 Deafheaven - The Garden Route.flac", "discord": "04 - The Garden Route.wav"}, "segments": [{"start": 0.0, "end": 48.45, "source": "original"}, {"start": 48.45, "end": 62.4, "source": "youtube"}, {"start": 62.4, "end": 64.2, "source": "original"}, {"start": 64.2, "end": 92.75, "source": "youtube"}, {"start": 92.75, "end": 94.75, "source": "original"}, {"start": 94.75, "end": 141.65, "source": "youtube"}, {"start": 141.65, "end": 156.9, "source": "original"}, {"start": 156.9, "end": 165.95, "source": "youtube"}, {"start": 165.95, "end": 167.2, "source": "original"}, {"start": 167.2, "end": 219.7, "source": "youtube"}, {"start": 219.7, "end": 227.95, "source": "original"}, {"start": 227.95, "end": 233.5, "source": "discord"}, {"start": 233.5, "end": 260.25, "source": "youtube"}, {"start": 260.25, "end": 265.2, "source": "original"}, {"start": 265.2, "end": 337.6, "source": "youtube"}, {"start": 337.6, "end": 345.35, "source": "discord"}, {"start": 345.35, "end": 348.4, "source": "original"}]}, {"number": 5, "title": "Heathen", "duration": 302.6, "source_paths": {"original": "05 - Heathen.flac", "youtube": "05 Deafheaven - Heathen.mp3", "fmhy": "05 Deafheaven - Heathen.flac"}, "segments": [{"start": 0.0, "end": 12.95, "source": "original"}, {"start": 12.95, "end": 49.6, "source": "youtube"}, {"start": 49.6, "end": 51.5, "source": "original"}, {"start": 51.5, "end": 61.65, "source": "youtube"}, {"start": 61.65, "end": 65.6, "source": "original"}, {"start": 65.6, "end": 101.75, "source": "youtube"}, {"start": 101.75, "end": 104.3, "source": "original"}, {"start": 104.3, "end": 105.0, "source": "youtube"}, {"start": 105.0, "end": 110.5, "source": "original"}, {"start": 110.5, "end": 122.2, "source": "youtube"}, {"start": 122.2, "end": 123.55, "source": "original"}, {"start": 123.55, "end": 173.7, "source": "youtube"}, {"start": 173.7, "end": 175.95, "source": "original"}, {"start": 175.95, "end": 183.4, "source": "youtube"}, {"start": 183.4, "end": 188.5, "source": "original"}, {"start": 188.5, "end": 198.65, "source": "youtube"}, {"start": 198.65, "end": 200.1, "source": "original"}, {"start": 200.1, "end": 219.4, "source": "youtube"}, {"start": 219.4, "end": 221.8, "source": "original"}, {"start": 221.8, "end": 232.6, "source": "youtube"}, {"start": 232.6, "end": 234.05, "source": "original"}, {"start": 234.05, "end": 267.4, "source": "youtube"}, {"start": 267.4, "end": 269.25, "source": "original"}, {"start": 269.25, "end": 273.4, "source": "youtube"}, {"start": 273.4, "end": 275.45, "source": "original"}, {"start": 275.45, "end": 279.65, "source": "youtube"}, {"start": 279.65, "end": 281.5, "source": "original"}, {"start": 281.5, "end": 285.35, "source": "youtube"}, {"start": 285.35, "end": 287.5, "source": "original"}, {"start": 287.5, "end": 293.15, "source": "youtube"}, {"start": 293.15, "end": 302.6, "source": "original"}]}, {"number": 6, "title": "Amethyst", "duration": 494.5, "source_paths": {"original": "06 - Amethyst.flac", "youtube": "06 Deafheaven - Amethyst.mp3", "fmhy": "06 Deafheaven - Amethyst.flac"}, "segments": [{"start": 0.0, "end": 11.7, "source": "original"}, {"start": 11.7, "end": 30.1, "source": "youtube"}, {"start": 30.1, "end": 89.8, "source": "original"}, {"start": 89.8, "end": 102.6, "source": "youtube"}, {"start": 102.6, "end": 104.3, "source": "original"}, {"start": 104.3, "end": 119.25, "source": "youtube"}, {"start": 119.25, "end": 122.7, "source": "original"}, {"start": 122.7, "end": 159.35, "source": "youtube"}, {"start": 159.35, "end": 193.0, "source": "original"}, {"start": 193.0, "end": 251.15, "source": "youtube"}, {"start": 251.15, "end": 252.5, "source": "original"}, {"start": 252.5, "end": 263.4, "source": "youtube"}, {"start": 263.4, "end": 266.15, "source": "original"}, {"start": 266.15, "end": 284.45, "source": "youtube"}, {"start": 284.45, "end": 294.8, "source": "original"}, {"start": 294.8, "end": 312.25, "source": "youtube"}, {"start": 312.25, "end": 318.15, "source": "original"}, {"start": 318.15, "end": 328.75, "source": "youtube"}, {"start": 328.75, "end": 335.45, "source": "original"}, {"start": 335.45, "end": 351.1, "source": "youtube"}, {"start": 351.1, "end": 352.35, "source": "original"}, {"start": 352.35, "end": 359.15, "source": "youtube"}, {"start": 359.15, "end": 360.85, "source": "original"}, {"start": 360.85, "end": 381.85, "source": "youtube"}, {"start": 381.85, "end": 392.2, "source": "original"}, {"start": 392.2, "end": 442.9, "source": "youtube"}, {"start": 442.9, "end": 494.5, "source": "original"}]}, {"number": 7, "title": "Incidental II (feat. Jae Matthews)", "duration": 260.5, "source_paths": {"original": "07 - Incidental II (feat. Jae Matthews).flac", "mdx": "07 - Incidental II (feat. Jae Matthews)_(Instrumental)_UVR-MDX-NET-Inst_HQ_3.flac", "second": "07_draft_220_240_(Instrumental)_UVR-MDX-NET_Main_427.flac"}, "segments": [{"start": 0.0, "end": 31.6, "source": "original"}, {"start": 31.6, "end": 32.55, "source": "mdx"}, {"start": 32.55, "end": 33.8, "source": "original"}, {"start": 33.8, "end": 34.7, "source": "mdx"}, {"start": 34.7, "end": 47.15, "source": "original"}, {"start": 47.15, "end": 55.65, "source": "mdx"}, {"start": 55.65, "end": 58.4, "source": "original"}, {"start": 58.4, "end": 59.6, "source": "mdx"}, {"start": 59.6, "end": 61.9, "source": "original"}, {"start": 61.9, "end": 70.55, "source": "mdx"}, {"start": 70.55, "end": 75.6, "source": "original"}, {"start": 75.6, "end": 87.0, "source": "mdx"}, {"start": 87.0, "end": 88.9, "source": "original"}, {"start": 88.9, "end": 100.1, "source": "mdx"}, {"start": 100.1, "end": 102.7, "source": "original"}, {"start": 102.7, "end": 103.55, "source": "mdx"}, {"start": 103.55, "end": 105.05, "source": "original"}, {"start": 105.05, "end": 114.1, "source": "mdx"}, {"start": 114.1, "end": 123.25, "source": "original"}, {"start": 123.25, "end": 126.85, "source": "mdx"}, {"start": 126.85, "end": 138.5, "source": "original"}, {"start": 138.5, "end": 151.15, "source": "mdx"}, {"start": 151.15, "end": 154.3, "source": "original"}, {"start": 154.3, "end": 156.95, "source": "mdx"}, {"start": 156.95, "end": 159.9, "source": "original"}, {"start": 159.9, "end": 166.25, "source": "mdx"}, {"start": 166.25, "end": 171.8, "source": "original"}, {"start": 171.8, "end": 229.0, "source": "mdx"}, {"start": 229.0, "end": 235.8, "source": "second"}, {"start": 235.8, "end": 260.5, "source": "mdx"}]}, {"number": 8, "title": "Revelator", "duration": 384.0, "source_paths": {"original": "08 - Revelator.flac", "youtube": "08 Deafheaven - Revelator.mp3", "fmhy": "08 Deafheaven - Revelator.flac", "discord": "08 - Revelator.wav"}, "segments": [{"start": 0.0, "end": 4.7, "source": "original"}, {"start": 4.7, "end": 31.85, "source": "youtube"}, {"start": 31.85, "end": 34.25, "source": "original"}, {"start": 34.25, "end": 42.45, "source": "youtube"}, {"start": 42.45, "end": 43.8, "source": "original"}, {"start": 43.8, "end": 71.5, "source": "youtube"}, {"start": 71.5, "end": 77.25, "source": "original"}, {"start": 77.25, "end": 81.85, "source": "youtube"}, {"start": 81.85, "end": 86.7, "source": "original"}, {"start": 86.7, "end": 132.3, "source": "youtube"}, {"start": 132.3, "end": 133.8, "source": "original"}, {"start": 133.8, "end": 165.9, "source": "youtube"}, {"start": 165.9, "end": 169.7, "source": "original"}, {"start": 169.7, "end": 235.85, "source": "youtube"}, {"start": 235.85, "end": 263.2, "source": "original"}, {"start": 263.2, "end": 269.25, "source": "youtube"}, {"start": 269.25, "end": 290.2, "source": "original"}, {"start": 290.2, "end": 301.0, "source": "youtube"}, {"start": 301.0, "end": 308.2, "source": "discord"}, {"start": 308.2, "end": 315.7, "source": "youtube"}, {"start": 315.7, "end": 322.75, "source": "original"}, {"start": 322.75, "end": 382.85, "source": "youtube"}, {"start": 382.85, "end": 384.0, "source": "original"}]}, {"number": 9, "title": "Body Behavior", "duration": 323.0, "source_paths": {"original": "09 - Body Behavior.flac", "youtube": "09 Deafheaven - Body Behavior.mp3", "fmhy": "09 Deafheaven - Body Behavior.flac"}, "segments": [{"start": 0.0, "end": 20.9, "source": "original"}, {"start": 20.9, "end": 31.45, "source": "youtube"}, {"start": 31.45, "end": 32.8, "source": "original"}, {"start": 32.8, "end": 73.8, "source": "youtube"}, {"start": 73.8, "end": 87.4, "source": "original"}, {"start": 87.4, "end": 146.5, "source": "youtube"}, {"start": 146.5, "end": 197.0, "source": "original"}, {"start": 197.0, "end": 256.15, "source": "youtube"}, {"start": 256.15, "end": 257.55, "source": "original"}, {"start": 257.55, "end": 291.8, "source": "youtube"}, {"start": 291.8, "end": 292.85, "source": "original"}, {"start": 292.85, "end": 308.75, "source": "youtube"}, {"start": 308.75, "end": 323.0, "source": "original"}]}, {"number": 10, "title": "Incidental III (feat. Paul Banks)", "duration": 128.0, "source_paths": {"original": "10 - Incidental III (feat. Paul Banks).flac", "youtube": "10 Deafheaven - Incidental III.mp3", "fmhy": "10 Deafheaven - Incidental III.flac"}, "segments": [{"start": 0.0, "end": 51.55, "source": "original"}, {"start": 51.55, "end": 56.85, "source": "youtube"}, {"start": 56.85, "end": 59.95, "source": "original"}, {"start": 59.95, "end": 66.9, "source": "youtube"}, {"start": 66.9, "end": 71.1, "source": "original"}, {"start": 71.1, "end": 80.45, "source": "youtube"}, {"start": 80.45, "end": 84.0, "source": "original"}, {"start": 84.0, "end": 102.85, "source": "youtube"}, {"start": 102.85, "end": 128.0, "source": "original"}]}, {"number": 11, "title": "Winona", "duration": 448.0, "source_paths": {"original": "11 - Winona.flac", "youtube": "11 Deafheaven - Winona.mp3", "fmhy": "11 Deafheaven - Winona.flac"}, "segments": [{"start": 0.0, "end": 91.5, "source": "original"}, {"start": 91.5, "end": 140.4, "source": "youtube"}, {"start": 140.4, "end": 151.65, "source": "original"}, {"start": 151.65, "end": 188.15, "source": "youtube"}, {"start": 188.15, "end": 189.9, "source": "original"}, {"start": 189.9, "end": 229.4, "source": "youtube"}, {"start": 229.4, "end": 239.1, "source": "original"}, {"start": 239.1, "end": 269.8, "source": "youtube"}, {"start": 269.8, "end": 329.15, "source": "original"}, {"start": 329.15, "end": 348.35, "source": "youtube"}, {"start": 348.35, "end": 350.35, "source": "original"}, {"start": 350.35, "end": 417.95, "source": "youtube"}, {"start": 417.95, "end": 448.0, "source": "original"}]}, {"number": 12, "title": "The Marvelous Orange Tree", "duration": 337.0, "source_paths": {"original": "12 - The Marvelous Orange Tree.flac", "youtube": "12 Deafheaven - The Marvelous Orange Tree.mp3", "fmhy": "12 Deafheaven - The Marvelous Orange Tree.flac"}, "segments": [{"start": 0.0, "end": 44.5, "source": "original"}, {"start": 44.5, "end": 58.25, "source": "youtube"}, {"start": 58.25, "end": 60.7, "source": "original"}, {"start": 60.7, "end": 74.7, "source": "youtube"}, {"start": 74.7, "end": 76.0, "source": "original"}, {"start": 76.0, "end": 123.3, "source": "youtube"}, {"start": 123.3, "end": 125.8, "source": "original"}, {"start": 125.8, "end": 139.75, "source": "youtube"}, {"start": 139.75, "end": 142.25, "source": "original"}, {"start": 142.25, "end": 157.6, "source": "youtube"}, {"start": 157.6, "end": 159.15, "source": "original"}, {"start": 159.15, "end": 188.55, "source": "youtube"}, {"start": 188.55, "end": 191.0, "source": "original"}, {"start": 191.0, "end": 204.95, "source": "youtube"}, {"start": 204.95, "end": 207.1, "source": "original"}, {"start": 207.1, "end": 221.2, "source": "youtube"}, {"start": 221.2, "end": 223.4, "source": "original"}, {"start": 223.4, "end": 237.55, "source": "youtube"}, {"start": 237.55, "end": 239.6, "source": "original"}, {"start": 239.6, "end": 304.35, "source": "youtube"}, {"start": 304.35, "end": 310.85, "source": "original"}, {"start": 310.85, "end": 319.55, "source": "youtube"}, {"start": 319.55, "end": 337.0, "source": "original"}]}]}</script>
+<script>
+  const album = JSON.parse(document.getElementById('album-data').textContent);
+  const colors = {original:'var(--original)',youtube:'var(--youtube)',fmhy:'var(--fmhy)',discord:'var(--discord)',mdx:'var(--mdx)',second:'var(--second)'};
+  const order = ['original','youtube','fmhy','discord','mdx','second'];
+  const elapsed = Object.fromEntries(order.map(key => [key, 0]));
+  for (const track of album.tracks) for (const segment of track.segments) elapsed[segment.source] += segment.end - segment.start;
+  const format = seconds => {
+    const whole = Math.floor(seconds);
+    const tenths = Math.round((seconds - whole) * 10);
+    if (tenths === 10) return format(whole + 1);
+    return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}.${tenths}`;
+  };
+  const formatDuration = seconds => `${Math.floor(seconds / 60)}:${String(Math.round(seconds) % 60).padStart(2, '0')}`;
+  const legend = document.getElementById('legend');
+  for (const key of order) {
+    if (!elapsed[key]) continue;
+    const item = document.createElement('span');
+    item.className = 'legend-item';
+    item.style.setProperty('--color', colors[key]);
+    const swatch = document.createElement('span');
+    swatch.className = 'swatch';
+    const label = document.createElement('span');
+    label.textContent = album.labels[key];
+    const time = document.createElement('small');
+    time.textContent = `${Math.round(elapsed[key] / 60)} min`;
+    item.append(swatch, label, time);
+    legend.append(item);
+  }
+  const grid = document.getElementById('tracks');
+  const detail = document.getElementById('detail');
+  let pinned = false;
+  function show(track, segment) {
+    const title = detail.querySelector('.detail-title');
+    const meta = detail.querySelector('.detail-meta');
+    title.textContent = `${String(track.number).padStart(2, '0')} · ${track.title} — ${album.labels[segment.source]}`;
+    meta.textContent = `${format(segment.start)}–${format(segment.end)} · ${format(segment.end - segment.start)} long · ${Math.round(100 * (segment.end - segment.start) / track.duration)}% of track · ${track.source_paths[segment.source]}`;
+  }
+  for (const track of album.tracks) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const name = document.createElement('div');
+    name.className = 'track-name';
+    const number = document.createElement('span');
+    number.className = 'track-number';
+    number.textContent = String(track.number).padStart(2, '0');
+    const title = document.createElement('span');
+    title.className = 'track-title';
+    title.textContent = track.title;
+    name.append(number, title);
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.setAttribute('aria-label', `${track.title} source timeline`);
+    for (const segment of track.segments) {
+      const block = document.createElement('div');
+      block.className = 'segment';
+      block.style.setProperty('--color', colors[segment.source]);
+      block.style.left = `${100 * segment.start / track.duration}%`;
+      block.style.width = `${100 * (segment.end - segment.start) / track.duration}%`;
+      block.tabIndex = 0;
+      block.setAttribute('role', 'button');
+      block.setAttribute('aria-label', `${album.labels[segment.source]}, ${format(segment.start)} to ${format(segment.end)}`);
+      block.addEventListener('mouseenter', () => { if (!pinned) show(track, segment); });
+      block.addEventListener('focus', () => show(track, segment));
+      block.addEventListener('click', () => { pinned = true; show(track, segment); });
+      bar.append(block);
+    }
+    const duration = document.createElement('div');
+    duration.className = 'duration';
+    duration.textContent = formatDuration(track.duration);
+    row.append(name, bar, duration);
+    grid.append(row);
+  }
+</script>
+</body>
+</html>
