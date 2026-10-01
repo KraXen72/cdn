@@ -10,7 +10,7 @@ import {
 import { buildWorkbook, outputFileName, periodLabel } from './workbook.js';
 
 const $ = id => document.getElementById(id);
-const state = { records: [], selections: new Map(), resolved: new Set(), loadVersion: 0 };
+const state = { records: [], selections: new Map(), resolved: new Set(), expanded: new Set(), loadVersion: 0 };
 const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long' });
 
 function currentModel() {
@@ -31,6 +31,17 @@ function setStatus(message, error = false) {
 function resetReviews() {
   state.selections = new Map();
   state.resolved = new Set();
+  state.expanded = new Set();
+}
+
+function iconButton(label, paths) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'icon-button';
+  button.setAttribute('aria-label', label);
+  button.title = label;
+  button.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+  return button;
 }
 
 function renderOverflow(model) {
@@ -56,8 +67,11 @@ function renderFindings(model) {
   for (const day of findings) {
     if (!state.selections.has(day.day)) state.selections.set(day.day, new Set(day.descriptions));
     const selected = state.selections.get(day.day);
+    const isResolved = state.resolved.has(day.day);
+    const isExpanded = !isResolved || state.expanded.has(day.day);
     const article = document.createElement('article');
     article.className = 'finding';
+    article.classList.toggle('collapsed', !isExpanded);
 
     const head = document.createElement('div');
     head.className = 'finding-head';
@@ -66,8 +80,32 @@ function renderFindings(model) {
     const count = document.createElement('span');
     count.className = 'count';
     head.append(title, count);
+    if (isResolved) {
+      const controls = document.createElement('div');
+      controls.className = 'finding-controls';
+      const reopen = iconButton(`Reopen ${displayDate(day.day)}`, '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>');
+      reopen.addEventListener('click', () => {
+        state.resolved.delete(day.day);
+        state.expanded.delete(day.day);
+        render();
+      });
+      const toggle = iconButton(`${isExpanded ? 'Collapse' : 'Inspect'} ${displayDate(day.day)}`, isExpanded ? '<path d="m6 15 6-6 6 6"/>' : '<path d="m6 9 6 6 6-6"/>');
+      toggle.id = `finding-toggle-${day.day}`;
+      toggle.setAttribute('aria-expanded', String(isExpanded));
+      toggle.setAttribute('aria-controls', `finding-${day.day}`);
+      toggle.addEventListener('click', () => {
+        isExpanded ? state.expanded.delete(day.day) : state.expanded.add(day.day);
+        render();
+        $(toggle.id).focus();
+      });
+      controls.append(reopen, toggle);
+      head.append(controls);
+    }
     article.append(head);
 
+    const details = document.createElement('div');
+    details.id = `finding-${day.day}`;
+    details.hidden = !isExpanded;
     const options = document.createElement('div');
     for (const description of day.descriptions) {
       const label = document.createElement('label');
@@ -75,6 +113,7 @@ function renderFindings(model) {
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.checked = selected.has(description);
+      checkbox.disabled = isResolved;
       const text = document.createElement('span');
       text.textContent = description;
       checkbox.addEventListener('change', () => {
@@ -85,25 +124,31 @@ function renderFindings(model) {
       label.append(checkbox, text);
       options.append(label);
     }
-    article.append(options);
+    details.append(options);
 
     const actions = document.createElement('div');
     actions.className = 'finding-actions';
     const resolved = document.createElement('span');
     resolved.className = 'resolved';
-    resolved.textContent = state.resolved.has(day.day) ? 'Resolved' : 'Review required';
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.textContent = state.resolved.has(day.day) ? 'Reopen' : 'Mark resolved';
-    button.addEventListener('click', () => {
-      state.resolved.has(day.day) ? state.resolved.delete(day.day) : state.resolved.add(day.day);
-      render();
-    });
-    actions.append(resolved, button);
-    article.append(actions);
+    resolved.textContent = isResolved ? 'Resolved' : 'Review required';
+    actions.append(resolved);
+    if (!isResolved) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = 'Mark resolved';
+      button.addEventListener('click', () => {
+        state.resolved.add(day.day);
+        state.expanded.delete(day.day);
+        render();
+        $(`finding-toggle-${day.day}`).focus();
+      });
+      actions.append(button);
+    }
+    details.append(actions);
+    article.append(details);
 
     const length = combineDescriptions(day.descriptions.filter(description => selected.has(description)), $('prefix').value).length;
-    count.textContent = `${length} / ${DESCRIPTION_LIMIT} characters`;
+    count.textContent = `${length}/${DESCRIPTION_LIMIT} ch`;
     count.classList.add(length <= DESCRIPTION_LIMIT ? 'ok' : 'over');
     host.append(article);
   }
@@ -194,7 +239,7 @@ $('file').addEventListener('change', async () => {
 });
 
 for (const id of ['employee', 'company']) $(id).addEventListener('input', render);
-$('prefix').addEventListener('input', () => { state.resolved = new Set(); render(); });
+$('prefix').addEventListener('input', () => { state.resolved.clear(); state.expanded.clear(); render(); });
 $('period').addEventListener('input', () => { resetReviews(); render(); });
 
 $('download').addEventListener('click', () => {

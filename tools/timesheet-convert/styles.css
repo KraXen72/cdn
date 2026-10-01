@@ -50,12 +50,18 @@ button:disabled { cursor: not-allowed; opacity: .42; }
 .notice.info { border-color: var(--blue); color: var(--muted); }
 .findings { display: grid; gap: 14px; }
 .finding { padding: 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }
-.finding-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; }
-.count { font-variant-numeric: tabular-nums; font-weight: 750; }
+.finding-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.finding-head h3 { margin-right: auto; }
+.finding.collapsed .finding-head { margin-bottom: 0; }
+.finding-controls { display: flex; gap: 6px; }
+.icon-button { display: grid; place-items: center; width: 44px; padding: 9px; }
+.icon-button svg { width: 20px; height: 20px; }
+.count { font-variant-numeric: tabular-nums; font-weight: 750; white-space: nowrap; }
 .count.ok { color: var(--green); }
 .count.over { color: #ff9387; }
 .choice { display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; padding: 7px 0; cursor: pointer; }
 .choice input { width: 16px; height: 16px; margin-top: 3px; accent-color: var(--accent); }
+.choice:has(input:disabled) { cursor: default; }
 .finding-actions { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 12px; }
 .resolved { color: var(--green); font-size: .85rem; font-weight: 700; }
 .preview-heading { align-items: center; }
@@ -77,7 +83,8 @@ tfoot { background: #2a2918; color: #f1e9bf; font-weight: 800; }
   .form-grid { grid-template-columns: 1fr; gap: 14px; }
   .preview-heading { align-items: flex-start; flex-wrap: wrap; }
   .preview-heading .primary { width: 100%; margin-top: 4px; }
-  .finding-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+  .finding-head { flex-wrap: wrap; gap: 8px; }
+  .finding-head h3 { font-size: 1rem; }
   .finding-actions { align-items: stretch; flex-direction: column; }
   .finding-actions button { width: 100%; }
 }

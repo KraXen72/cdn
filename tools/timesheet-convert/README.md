@@ -28,5 +28,8 @@ from its official CDN, so a build step is not required.
   descriptions are joined with `; `.
 - Combined descriptions over 130 characters become findings. Each can be edited
   through checkboxes and explicitly resolved, even while still over the limit.
+  Resolving collapses the finding to its date and character count. The arrow
+  toggles inspection without changing its resolved status; the eye reopens it
+  and expands the checkboxes for editing.
 - The workbook contains one row for every calendar day and a `SUM` formula in the
   period-total cell.
