@@ -42,7 +42,7 @@ button:disabled { cursor: not-allowed; opacity: .42; }
 .dropzone { display: flex; min-height: 108px; align-items: center; justify-content: center; flex-direction: column; padding: 20px; border: 1px dashed var(--border); border-radius: 10px; background: var(--bg); cursor: pointer; text-align: center; }
 .dropzone:hover { border-color: var(--accent); }
 .dropzone-title { font-weight: 750; }
-.dropzone input { max-width: 100%; margin-top: 10px; border: 0; }
+.dropzone input { width: fit-content; max-width: 100%; margin-top: 10px; border: 0; }
 .status { min-height: 24px; margin-top: 12px; color: var(--muted); }
 .status.error { color: #ff9387; }
 .notice { margin-top: 12px; padding: 12px 14px; border-left: 3px solid; border-radius: 4px; background: var(--bg); font-size: .9rem; }
