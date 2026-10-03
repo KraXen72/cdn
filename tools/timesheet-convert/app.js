@@ -7,11 +7,11 @@ import {
   inferPeriod,
   normalizeRecords,
 } from './core.js';
-import { buildWorkbook, outputFileName, periodLabel } from './workbook.js';
+import { buildWorkbook, outputFileName, periodLabel, readTrackerRows } from './workbook.js';
 
 const $ = id => document.getElementById(id);
 const state = { records: [], selections: new Map(), resolved: new Set(), expanded: new Set(), loadVersion: 0 };
-const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long' });
+const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' });
 
 function currentModel() {
   if (!state.records.length || !$('period').value) return null;
@@ -53,7 +53,7 @@ function renderOverflow(model) {
   strong.textContent = 'Records outside this period will be omitted. ';
   const details = model.overflow.map(group => {
     const label = periodLabel(group.month);
-    return `${group.count} ${group.count === 1 ? 'record' : 'records'} (${formatDuration(group.seconds)}) in ${label}`;
+    return `${group.count} ${group.count === 1 ? 'daily entry' : 'daily entries'} (${formatDuration(group.seconds)}) in ${label}`;
   }).join('; ');
   notice.append(strong, document.createTextNode(`${details}. Re-export those records for their own month.`));
 }
@@ -61,7 +61,7 @@ function renderOverflow(model) {
 function renderFindings(model) {
   const host = $('findings');
   host.replaceChildren();
-  const findings = model.days.filter(day => combineDescriptions(day.descriptions, $('prefix').value).length > DESCRIPTION_LIMIT);
+  const findings = model?.days.filter(day => combineDescriptions(day.descriptions, $('prefix').value).length > DESCRIPTION_LIMIT) ?? [];
   $('findings-section').hidden = !findings.length;
 
   for (const day of findings) {
@@ -186,7 +186,7 @@ function renderPreview(model) {
 function render() {
   const model = currentModel();
   renderOverflow(model);
-  const findings = model ? renderFindings(model) : [];
+  const findings = renderFindings(model);
   renderPreview(model);
   const unresolved = findings.filter(day => !state.resolved.has(day.day)).length;
   const employeeMissing = !$('employee').value.trim();
@@ -195,7 +195,7 @@ function render() {
     $('summary').textContent = 'The monthly timesheet will appear here.';
   } else {
     const hours = (model.totalSeconds / 3600).toFixed(2);
-    $('summary').textContent = `${periodLabel($('period').value)} · ${model.included.length} records · ${hours} rounded hours${unresolved ? ` · ${unresolved} finding${unresolved === 1 ? '' : 's'} left` : ''}`;
+    $('summary').textContent = `${periodLabel($('period').value)} · ${model.included.length} daily entries · ${hours} rounded hours${unresolved ? ` · ${unresolved} finding${unresolved === 1 ? '' : 's'} left` : ''}`;
   }
 }
 
@@ -208,10 +208,11 @@ async function loadFile(file, version) {
   if (version !== state.loadVersion) return null;
   const workbook = window.XLSX.read(content, { type: isCsv ? 'string' : 'array', raw: true, cellDates: true });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const rows = window.XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
+  const rows = readTrackerRows(window.XLSX, sheet);
   const records = normalizeRecords(rows);
   if (!records.length) throw new Error('No rows with a valid start date and duration were found.');
-  return records;
+  const skippedCount = rows.length - new Set(records.map(record => record.sourceRow)).size;
+  return { records, skippedCount };
 }
 
 $('file').addEventListener('change', async () => {
@@ -224,14 +225,17 @@ $('file').addEventListener('change', async () => {
   if (!file) { setStatus('Choose a file to begin.'); return; }
   setStatus('Reading your export…');
   try {
-    const records = await loadFile(file, version);
-    if (!records) return;
+    const imported = await loadFile(file, version);
+    if (!imported) return;
+    const { records, skippedCount } = imported;
     state.records = records;
     $('period').value = inferPeriod(records);
     $('period').disabled = false;
-    setStatus(`Loaded ${file.name}. Deduced ${periodLabel($('period').value)} from ${records.length} records.`);
+    const skipped = skippedCount ? ` Skipped ${skippedCount} ${skippedCount === 1 ? 'row' : 'rows'} with invalid dates or durations.` : '';
+    setStatus(`Loaded ${file.name}. Deduced ${periodLabel($('period').value)} from ${records.length} daily entries.${skipped}`);
     render();
   } catch (error) {
+    if (version !== state.loadVersion) return;
     state.records = [];
     setStatus(`Could not import the file. ${error.message}`, true);
     render();

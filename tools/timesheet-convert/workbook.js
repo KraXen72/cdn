@@ -3,6 +3,23 @@ import { excelWeekNumber } from './core.js';
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+/** Read tracker rows without letting Excel's date display format or local timezone change timestamps. */
+export function readTrackerRows(XLSX, sheet) {
+  const formatted = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
+  const raw = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: true, UTC: true });
+  return raw.map((row, index) => {
+    for (const [key, value] of Object.entries(row)) {
+      // Duration cells need their elapsed-time format, rather than a calendar date.
+      if (key.trim().toLowerCase() === 'duration') {
+        row[key] = formatted[index][key];
+      } else if (value instanceof Date) {
+        row[key] = value.toISOString().slice(0, -1);
+      }
+    }
+    return row;
+  });
+}
+
 export function excelSerial(day) {
   const [year, month, date] = day.split('-').map(Number);
   return (Date.UTC(year, month - 1, date) - Date.UTC(1899, 11, 30)) / 86_400_000;
@@ -57,7 +74,6 @@ export function buildWorkbook(XLSX, { employee, company, period, model }) {
 
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, sheet, 'timesheet');
-  workbook.CalcPr = { fullCalcOnLoad: true, forceFullCalc: true, calcMode: 'auto' };
   return workbook;
 }
 

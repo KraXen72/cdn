@@ -2,8 +2,9 @@ export const DESCRIPTION_LIMIT = 130;
 
 const MS_PER_DAY = 86_400_000;
 
+/** Extract a valid calendar date from a date or timestamp string. */
 export function dateKey(value) {
-  const match = String(value ?? '').trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const match = String(value ?? '').trim().match(/^(\d{4})-(\d{2})-(\d{2})(?:$|[ T])/);
   if (!match) return null;
   const [, year, month, day] = match;
   const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
@@ -12,30 +13,65 @@ export function dateKey(value) {
 }
 
 function timestampMs(value) {
-  const match = String(value ?? '').trim().match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  const match = String(value ?? '').trim().match(/^(\d{4}-\d{2}-\d{2})[ T](\d{1,2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?$/);
   if (!match) return null;
-  const [, year, month, day, hour, minute, second = '0'] = match;
-  return Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second));
+  const [, day, hour, minute, second = '0', fraction = '0'] = match;
+  if (!dateKey(day) || Number(hour) > 23 || Number(minute) > 59 || Number(second) > 59) return null;
+  return utcDay(day) + Number(hour) * 3_600_000 + Number(minute) * 60_000 + Number(second) * 1000 + Number(fraction.padEnd(3, '0'));
 }
 
-function durationSeconds(row) {
-  const started = timestampMs(row['time started']);
-  const ended = timestampMs(row['time ended']);
+function durationSeconds(row, started, ended) {
   if (started !== null && ended !== null && ended >= started) return (ended - started) / 1000;
   const parts = String(row.duration ?? '').trim().match(/^(\d+):(\d{1,2}):(\d{1,2})$/);
-  if (parts) return Number(parts[1]) * 3600 + Number(parts[2]) * 60 + Number(parts[3]);
-  const minutes = Number(row['duration minutes']);
-  return Number.isFinite(minutes) && minutes >= 0 ? minutes * 60 : null;
+  if (parts && Number(parts[2]) < 60 && Number(parts[3]) < 60) {
+    const seconds = Number(parts[1]) * 3600 + Number(parts[2]) * 60 + Number(parts[3]);
+    if (Number.isSafeInteger(seconds * 1000)) return seconds;
+  }
+  const rawMinutes = row['duration minutes'];
+  if (!['string', 'number'].includes(typeof rawMinutes) || String(rawMinutes).trim() === '') return null;
+  const minutes = Number(rawMinutes);
+  if (!Number.isFinite(minutes) || minutes < 0) return null;
+  const milliseconds = Math.round(minutes * 60_000);
+  return Number.isSafeInteger(milliseconds) && milliseconds >= 0 ? milliseconds / 1000 : null;
 }
 
+function firstNonempty(...values) {
+  return values.map(value => String(value ?? '').trim()).find(Boolean) ?? '';
+}
+
+/** Split tracker records into calendar days, preserving exact time before daily rounding. */
 export function normalizeRecords(rows) {
   return rows.flatMap((source, index) => {
     const row = Object.fromEntries(Object.entries(source).map(([key, value]) => [key.trim().toLowerCase(), value]));
-    const day = dateKey(row['time started'] ?? row.date ?? row.day);
-    const seconds = durationSeconds(row);
-    if (!day || seconds === null) return [];
-    const description = String(row.comment ?? row.description ?? row['task description'] ?? '').trim().replace(/\s+/g, ' ');
-    return [{ day, seconds, description, sourceRow: index + 2 }];
+    const startValue = firstNonempty(row['time started'], row.date, row.day);
+    const day = dateKey(startValue);
+    const started = timestampMs(startValue);
+    const ended = timestampMs(row['time ended']);
+    const seconds = durationSeconds(row, started, ended);
+    if (!day || (started === null && startValue !== day) || seconds === null) return [];
+    const description = firstNonempty(row.comment, row.description, row['task description']).replace(/\s+/g, ' ');
+    // SheetJS retains the zero-based source row even when it omits blank rows.
+    const record = { day, seconds, description, sourceRow: (source.__rowNum__ ?? index + 1) + 1 };
+    if (started === null || seconds === 0) return [record];
+
+    // Export timestamps are local clock values. UTC arithmetic preserves their
+    // calendar dates independently of the browser's timezone.
+    const end = started + seconds * 1000;
+    // Reject unrepresentable dates before splitting, so malformed durations
+    // cannot drive an unbounded loop or produce unsupported year strings.
+    if (!Number.isSafeInteger(end) || end > Date.UTC(10000, 0, 1)) return [];
+    const entries = [];
+    for (let cursor = started; cursor < end;) {
+      const nextMidnight = (Math.floor(cursor / MS_PER_DAY) + 1) * MS_PER_DAY;
+      const segmentEnd = Math.min(nextMidnight, end);
+      entries.push({
+        ...record,
+        day: new Date(cursor).toISOString().slice(0, 10),
+        seconds: (segmentEnd - cursor) / 1000,
+      });
+      cursor = segmentEnd;
+    }
+    return entries;
   });
 }
 
