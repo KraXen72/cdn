@@ -39,9 +39,12 @@ function firstNonempty(...values) {
   return values.map(value => String(value ?? '').trim()).find(Boolean) ?? '';
 }
 
-/** Split tracker records into calendar days, preserving exact time before daily rounding. */
-export function normalizeRecords(rows) {
-  return rows.flatMap((source, index) => {
+/**
+ * Split tracker records into calendar days, preserving exact time before rounding.
+ * Optionally keep whole overnight records on their start day within a 16-hour daily total.
+ */
+export function normalizeRecords(rows, { keepOvernightOnStartDay = false } = {}) {
+  const records = rows.flatMap((source, index) => {
     const row = Object.fromEntries(Object.entries(source).map(([key, value]) => [key.trim().toLowerCase(), value]));
     const startValue = firstNonempty(row['time started'], row.date, row.day);
     const day = dateKey(startValue);
@@ -73,6 +76,36 @@ export function normalizeRecords(rows) {
     }
     return entries;
   });
+  return keepOvernightOnStartDay ? keepOvernightRecords(records) : records;
+}
+
+/** Move split records back to their start day when the combined exact time fits. */
+function keepOvernightRecords(records) {
+  const dailySeconds = new Map();
+  const bySource = new Map();
+  for (const record of records) {
+    dailySeconds.set(record.day, (dailySeconds.get(record.day) ?? 0) + record.seconds);
+    const entries = bySource.get(record.sourceRow) ?? [];
+    entries.push(record);
+    bySource.set(record.sourceRow, entries);
+  }
+
+  // Reserve all calendar-day time first, including rows later in the export.
+  // Process start days in order so earlier moves free time on later days.
+  const groups = [...bySource.values()].sort((a, b) => a[0].day.localeCompare(b[0].day) || a[0].sourceRow - b[0].sourceRow);
+  for (const entries of groups) {
+    if (entries.length < 2) continue;
+    const first = entries[0];
+    const extraSeconds = entries.slice(1).reduce((sum, record) => sum + record.seconds, 0);
+    if (dailySeconds.get(first.day) + extraSeconds > 16 * 3600) continue;
+    dailySeconds.set(first.day, dailySeconds.get(first.day) + extraSeconds);
+    for (const record of entries.slice(1)) {
+      dailySeconds.set(record.day, dailySeconds.get(record.day) - record.seconds);
+    }
+    entries.splice(0, entries.length, { ...first, seconds: first.seconds + extraSeconds });
+  }
+  // Preserve source order for description selection and deduplication.
+  return [...bySource.values()].flat();
 }
 
 function utcDay(key) {

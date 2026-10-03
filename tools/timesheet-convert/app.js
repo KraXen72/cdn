@@ -10,12 +10,16 @@ import {
 import { buildWorkbook, outputFileName, periodLabel, readTrackerRows } from './workbook.js';
 
 const $ = id => document.getElementById(id);
-const state = { records: [], selections: new Map(), resolved: new Set(), expanded: new Set(), loadVersion: 0 };
+const state = { rows: [], records: [], selections: new Map(), resolved: new Set(), expanded: new Set(), loadVersion: 0 };
 const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' });
 
 function currentModel() {
   if (!state.records.length || !$('period').value) return null;
   return buildMonthModel(state.records, $('period').value, $('prefix').value, state.selections);
+}
+
+function normalizedRows(rows) {
+  return normalizeRecords(rows, { keepOvernightOnStartDay: $('keep-overnight').checked });
 }
 
 function displayDate(day) {
@@ -209,15 +213,16 @@ async function loadFile(file, version) {
   const workbook = window.XLSX.read(content, { type: isCsv ? 'string' : 'array', raw: true, cellDates: true });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
   const rows = readTrackerRows(window.XLSX, sheet);
-  const records = normalizeRecords(rows);
+  const records = normalizedRows(rows);
   if (!records.length) throw new Error('No rows with a valid start date and duration were found.');
   const skippedCount = rows.length - new Set(records.map(record => record.sourceRow)).size;
-  return { records, skippedCount };
+  return { rows, records, skippedCount };
 }
 
 $('file').addEventListener('change', async () => {
   const file = $('file').files[0];
   const version = ++state.loadVersion;
+  state.rows = [];
   state.records = [];
   resetReviews();
   $('period').disabled = true;
@@ -227,15 +232,17 @@ $('file').addEventListener('change', async () => {
   try {
     const imported = await loadFile(file, version);
     if (!imported) return;
-    const { records, skippedCount } = imported;
+    const { rows, records, skippedCount } = imported;
+    state.rows = rows;
     state.records = records;
     $('period').value = inferPeriod(records);
     $('period').disabled = false;
     const skipped = skippedCount ? ` Skipped ${skippedCount} ${skippedCount === 1 ? 'row' : 'rows'} with invalid dates or durations.` : '';
-    setStatus(`Loaded ${file.name}. Deduced ${periodLabel($('period').value)} from ${records.length} daily entries.${skipped}`);
+    setStatus(`Loaded ${file.name}. Deduced ${periodLabel($('period').value)} from ${rows.length - skippedCount} records.${skipped}`);
     render();
   } catch (error) {
     if (version !== state.loadVersion) return;
+    state.rows = [];
     state.records = [];
     setStatus(`Could not import the file. ${error.message}`, true);
     render();
@@ -245,6 +252,11 @@ $('file').addEventListener('change', async () => {
 for (const id of ['employee', 'company']) $(id).addEventListener('input', render);
 $('prefix').addEventListener('input', () => { state.resolved.clear(); state.expanded.clear(); render(); });
 $('period').addEventListener('input', () => { resetReviews(); render(); });
+$('keep-overnight').addEventListener('change', () => {
+  state.records = normalizedRows(state.rows);
+  resetReviews();
+  render();
+});
 
 $('download').addEventListener('click', () => {
   try {

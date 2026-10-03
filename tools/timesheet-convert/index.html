@@ -54,6 +54,11 @@
         <input id="file" type="file" accept=".csv,.xlsx">
       </label>
       <p id="status" class="status" role="status" aria-live="polite">Choose a file to begin.</p>
+      <label class="choice">
+        <input id="keep-overnight" type="checkbox" aria-describedby="keep-overnight-hint">
+        <span>Keep overnight records on their starting day</span>
+      </label>
+      <p id="keep-overnight-hint" class="hint">Only when the day's combined exact time stays within 16 hours. Otherwise, the whole record keeps its midnight split.</p>
       <div id="overflow" class="notice warning" hidden></div>
       <div class="notice info">
         <strong>Rounding:</strong> exact entries are summed per day, then the daily total is rounded to the nearest 15 minutes. An exact 7½-minute midpoint rounds up.

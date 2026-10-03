@@ -205,3 +205,75 @@ test('matches Excel WEEKNUM return type 1 used by the template', () => {
   assert.equal(excelWeekNumber('2026-08-01'), 31);
   assert.equal(excelWeekNumber('2026-08-03'), 32);
 });
+
+const keepOvernight = { keepOvernightOnStartDay: true };
+const tracked = (start, end, comment = 'Work') => ({ 'time started': start, 'time ended': end, comment });
+
+test('option keeps exact overnight time and descriptions in the starting month or year', () => {
+  for (const [start, end, day] of [
+    ['2026-09-30 21:00:00', '2026-10-01 01:00:00', '2026-09-30'],
+    ['2026-12-31 21:00:00', '2027-01-01 01:00:00', '2026-12-31'],
+    ['2026-09-15 23:59:59.500', '2026-09-16 00:00:00.500', '2026-09-15'],
+  ]) {
+    const rows = [tracked(start, end)];
+    const split = normalizeRecords(rows);
+    const kept = normalizeRecords(rows, keepOvernight);
+    assert.deepEqual(kept, [{ day, seconds: split.reduce((sum, record) => sum + record.seconds, 0), description: 'Work', sourceRow: 2 }]);
+    assert.deepEqual(buildMonthModel(kept, day.slice(0, 7)).overflow, []);
+    assert.deepEqual(normalizeRecords(rows, { keepOvernightOnStartDay: false }), split);
+  }
+});
+
+test('cap includes other rows regardless of export order, accepts exactly 16 hours and rejects one second over', () => {
+  for (const duration of ['12:00:00', '12:00:01']) {
+    const overnight = tracked('2026-09-30 21:00:00', '2026-10-01 01:00:00');
+    const daytime = { date: '2026-09-30', duration, comment: 'Other' };
+    for (const rows of [[overnight, daytime], [daytime, overnight]]) {
+      const records = normalizeRecords(rows, keepOvernight);
+      const model = buildMonthModel(records, '2026-09');
+      if (duration === '12:00:00') {
+        assert.equal(model.days.at(-1).exactSeconds, 16 * 3600);
+        assert.deepEqual(model.overflow, []);
+      } else {
+        assert.deepEqual(records, normalizeRecords(rows));
+        assert.equal(model.days.at(-1).exactSeconds, 15 * 3600 + 1);
+        assert.equal(model.overflow[0].seconds, 3600);
+      }
+    }
+  }
+});
+
+test('multiple overnight records share the daily cap without losing time or source descriptions', () => {
+  const rows = [
+    { date: '2026-09-15', duration: '12:00:00', comment: 'Day work' },
+    tracked('2026-09-15 23:00:00', '2026-09-16 01:00:00', 'First'),
+    tracked('2026-09-15 23:00:00', '2026-09-16 02:00:00', 'Second'),
+  ];
+  const records = normalizeRecords(rows, keepOvernight);
+  assert.deepEqual(records.map(({ day, seconds }) => [day, seconds]), [
+    ['2026-09-15', 12 * 3600], ['2026-09-15', 2 * 3600],
+    ['2026-09-15', 3600], ['2026-09-16', 2 * 3600],
+  ]);
+  assert.equal(records.reduce((sum, record) => sum + record.seconds, 0), 17 * 3600);
+  assert.equal(buildMonthModel(records, '2026-09').days[14].combined, 'Day work; First; Second');
+});
+
+test('chronological moves free later daily capacity while preserving source order', () => {
+  const records = normalizeRecords([
+    tracked('2026-09-16 21:00:00', '2026-09-17 01:00:00', 'Later'),
+    tracked('2026-09-15 23:00:00', '2026-09-16 01:00:00', 'Earlier'),
+    { date: '2026-09-16', duration: '12:00:00' },
+  ], keepOvernight);
+  assert.deepEqual(records.map(({ day, seconds }) => [day, seconds]), [
+    ['2026-09-16', 4 * 3600], ['2026-09-15', 2 * 3600], ['2026-09-16', 12 * 3600],
+  ]);
+});
+
+test('fallback overnight durations follow the option; multi-day and over-cap days retain their time', () => {
+  assert.equal(normalizeRecords([{ 'time started': '2026-09-30 21:00:00', duration: '4:00:00' }], keepOvernight)[0].seconds, 4 * 3600);
+  for (const rows of [
+    [tracked('2026-09-15 23:00:00', '2026-09-17 01:00:00')],
+    [{ date: '2026-09-15', duration: '17:00:00' }, tracked('2026-09-15 23:00:00', '2026-09-16 01:00:00')],
+    [tracked('2026-09-15 21:00:00', '2026-09-16 00:00:00')],
+  ]) assert.deepEqual(normalizeRecords(rows, keepOvernight), normalizeRecords(rows));
+});

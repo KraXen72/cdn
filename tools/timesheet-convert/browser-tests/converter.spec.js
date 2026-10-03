@@ -148,3 +148,70 @@ test('reviews overnight descriptions independently for each day and resets revie
   await expect(page.locator('#findings-section')).toBeHidden();
   await expect(page.locator('#download')).toBeEnabled();
 });
+
+for (const format of ['csv', 'xlsx']) {
+  test(`${format} overnight option updates months and downloaded workbook and can be reversed`, async ({ page }) => {
+    const option = page.getByRole('checkbox', { name: 'Keep overnight records on their starting day' });
+    await expect(option).not.toBeChecked();
+    await option.check();
+    await page.locator('#file').setInputFiles(exportFile([
+      ['2026-09-30 21:00:00', '2026-10-01 01:00:00', 'Month-end work'],
+    ], format));
+    await page.locator('#period').fill('2026-09');
+    await expect(page.locator('#total-hours')).toHaveText('4.00');
+    await expect(page.locator('#overflow')).toBeHidden();
+    const pending = page.waitForEvent('download');
+    await page.locator('#download').click();
+    const download = await pending;
+    const workbook = XLSX.read(await readFile(await download.path()), { type: 'buffer' });
+    expect(workbook.Sheets.timesheet.D39.v).toBe(4);
+    expect(workbook.Sheets.timesheet.E39.v).toBe('AITCIM: Month-end work');
+    expect(workbook.Sheets.timesheet.D41.v).toBe(4);
+    await page.locator('#period').fill('2026-10');
+    await expect(page.locator('#total-hours')).toHaveText('0.00');
+    await expect(page.locator('#download')).toBeDisabled();
+    await option.uncheck();
+    await expect(page.locator('#total-hours')).toHaveText('1.00');
+    await expect(page.locator('#download')).toBeEnabled();
+    await page.locator('#period').fill('2026-09');
+    await expect(page.locator('#total-hours')).toHaveText('3.00');
+    await expect(page.locator('#overflow')).toContainText('1h 0m');
+  });
+}
+
+test('overnight option respects the combined 16-hour cap when a new file is imported', async ({ page }) => {
+  await page.locator('#keep-overnight').check();
+  for (const [end, expected, overflow] of [
+    ['2026-09-30 20:00:00', '16.00', false],
+    ['2026-09-30 20:00:01', '15.00', true],
+  ]) {
+    await page.locator('#file').setInputFiles(exportFile([
+      ['2026-09-30 21:00:00', '2026-10-01 01:00:00', 'Overnight'],
+      ['2026-09-30 08:00:00', end, 'Daytime'],
+    ]));
+    await page.locator('#period').fill('2026-09');
+    await expect(page.locator('#total-hours')).toHaveText(expected);
+    if (overflow) await expect(page.locator('#overflow')).toBeVisible();
+    else await expect(page.locator('#overflow')).toBeHidden();
+  }
+});
+
+test('changing overnight attribution resets description selections and resolved findings', async ({ page }) => {
+  const description = 'Long description '.repeat(12).trim();
+  await page.locator('#file').setInputFiles(exportFile([
+    ['2026-09-15 23:30:00', '2026-09-16 01:00:00', description],
+  ]));
+  await page.locator('.finding').first().getByRole('checkbox').uncheck();
+  await page.getByRole('button', { name: 'Mark resolved' }).first().click();
+  await page.getByRole('button', { name: 'Mark resolved' }).click();
+  await expect(page.locator('#download')).toBeEnabled();
+  await page.locator('#keep-overnight').check();
+  await expect(page.locator('.finding')).toHaveCount(1);
+  await expect(page.locator('.finding').getByRole('checkbox')).toBeChecked();
+  await expect(page.locator('#download')).toBeDisabled();
+  await expect(page.locator('#preview tr').nth(14).locator('td').nth(3)).toHaveText('1.50');
+  await expect(page.locator('#preview tr').nth(15).locator('td').nth(4)).toHaveText('');
+  await page.locator('#keep-overnight').uncheck();
+  await expect(page.locator('.finding')).toHaveCount(2);
+  await expect(page.getByRole('button', { name: 'Mark resolved' })).toHaveCount(2);
+});

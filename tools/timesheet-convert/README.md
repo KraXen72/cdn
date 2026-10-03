@@ -36,6 +36,12 @@ from its official CDN, so a build step is not required.
   timezone. Numeric minute values retain their underlying precision.
 - Rows without a valid start date/time and usable duration are skipped and
   counted in the import status. Explicit zero durations are valid.
+- The optional “Keep overnight records on their starting day” checkbox moves
+  an entire overnight record to its start date only if the combined exact daily
+  total stays at or below 16 hours. Otherwise it keeps its calendar-day split.
+  The cap includes all imported work on that day, before rounding or month
+  filtering. Records are considered by start date, then source row; toggling
+  the option updates the preview and clears description reviews.
 - Exact tracked time is summed per day, then rounded to the nearest 15 minutes.
   An exact 7½-minute midpoint rounds up. Rounding happens once per day, so it
   does not compound across individual timer entries.
