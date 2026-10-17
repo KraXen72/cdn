@@ -1,0 +1,648 @@
+<svg width="11300pt" height="1444pt"
+ viewBox="0.00 0.00 11300.00 1444.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(21.6 1422.57)">
+<title>Pipeline</title>
+<polygon fill="#111111" stroke="none" points="-21.6,21.6 -21.6,-1422.57 11277.91,-1422.57 11277.91,21.6 -21.6,21.6"/>
+<g id="group_runner" class="cluster">
+<title>cluster_runner</title>
+<path fill="#181716" stroke="#343331" d="M79.22,-1264.97C79.22,-1264.97 255.72,-1264.97 255.72,-1264.97 261.72,-1264.97 267.72,-1270.97 267.72,-1276.97 267.72,-1276.97 267.72,-1380.97 267.72,-1380.97 267.72,-1386.97 261.72,-1392.97 255.72,-1392.97 255.72,-1392.97 79.22,-1392.97 79.22,-1392.97 73.22,-1392.97 67.22,-1386.97 67.22,-1380.97 67.22,-1380.97 67.22,-1276.97 67.22,-1276.97 67.22,-1270.97 73.22,-1264.97 79.22,-1264.97"/>
+<text xml:space="preserve" text-anchor="middle" x="167.47" y="-1369.97" font-family="DejaVu Sans" font-size="20.00" fill="#cecdc3">00 • Orchestration</text>
+</g>
+<g id="group_acquisition" class="cluster">
+<title>cluster_acquisition</title>
+<path fill="#181716" stroke="#343331" d="M20,-1008.97C20,-1008.97 1204.04,-1008.97 1204.04,-1008.97 1210.04,-1008.97 1216.04,-1014.97 1216.04,-1020.97 1216.04,-1020.97 1216.04,-1217.97 1216.04,-1217.97 1216.04,-1223.97 1210.04,-1229.97 1204.04,-1229.97 1204.04,-1229.97 20,-1229.97 20,-1229.97 14,-1229.97 8,-1223.97 8,-1217.97 8,-1217.97 8,-1020.97 8,-1020.97 8,-1014.97 14,-1008.97 20,-1008.97"/>
+<text xml:space="preserve" text-anchor="middle" x="94.75" y="-1206.97" font-family="DejaVu Sans" font-size="20.00" fill="#cecdc3">01 • Acquisition</text>
+</g>
+<g id="group_transformation" class="cluster">
+<title>cluster_transformation</title>
+<path fill="#181716" stroke="#343331" d="M1349.04,-1009.97C1349.04,-1009.97 3113.44,-1009.97 3113.44,-1009.97 3119.44,-1009.97 3125.44,-1015.97 3125.44,-1021.97 3125.44,-1021.97 3125.44,-1148.97 3125.44,-1148.97 3125.44,-1154.97 3119.44,-1160.97 3113.44,-1160.97 3113.44,-1160.97 1349.04,-1160.97 1349.04,-1160.97 1343.04,-1160.97 1337.04,-1154.97 1337.04,-1148.97 1337.04,-1148.97 1337.04,-1021.97 1337.04,-1021.97 1337.04,-1015.97 1343.04,-1009.97 1349.04,-1009.97"/>
+<text xml:space="preserve" text-anchor="middle" x="1444.04" y="-1137.97" font-family="DejaVu Sans" font-size="20.00" fill="#cecdc3">02 • Transformation</text>
+</g>
+<g id="group_skeletonization" class="cluster">
+<title>cluster_skeletonization</title>
+<path fill="#181716" stroke="#343331" d="M3310.94,-985.97C3310.94,-985.97 5241.34,-985.97 5241.34,-985.97 5247.34,-985.97 5253.34,-991.97 5253.34,-997.97 5253.34,-997.97 5253.34,-1256.97 5253.34,-1256.97 5253.34,-1262.97 5247.34,-1268.97 5241.34,-1268.97 5241.34,-1268.97 3310.94,-1268.97 3310.94,-1268.97 3304.94,-1268.97 3298.94,-1262.97 3298.94,-1256.97 3298.94,-1256.97 3298.94,-997.97 3298.94,-997.97 3298.94,-991.97 3304.94,-985.97 3310.94,-985.97"/>
+<text xml:space="preserve" text-anchor="middle" x="3407.07" y="-1245.97" font-family="DejaVu Sans" font-size="20.00" fill="#cecdc3">03 • Skeletonization</text>
+</g>
+<g id="group_cleanup" class="cluster">
+<title>cluster_cleanup</title>
+<path fill="#181716" stroke="#343331" d="M4688.23,-694.97C4688.23,-694.97 6649.88,-694.97 6649.88,-694.97 6655.88,-694.97 6661.88,-700.97 6661.88,-706.97 6661.88,-706.97 6661.88,-965.97 6661.88,-965.97 6661.88,-971.97 6655.88,-977.97 6649.88,-977.97 6649.88,-977.97 4688.23,-977.97 4688.23,-977.97 4682.23,-977.97 4676.23,-971.97 4676.23,-965.97 4676.23,-965.97 4676.23,-706.97 4676.23,-706.97 4676.23,-700.97 4682.23,-694.97 4688.23,-694.97"/>
+<text xml:space="preserve" text-anchor="middle" x="4802.36" y="-954.97" font-family="DejaVu Sans" font-size="20.00" fill="#cecdc3">04 • Centerline cleanup</text>
+</g>
+<g id="group_construction" class="cluster">
+<title>cluster_construction</title>
+<path fill="#181716" stroke="#343331" d="M6851.13,-976.97C6851.13,-976.97 9409.59,-976.97 9409.59,-976.97 9415.59,-976.97 9421.59,-982.97 9421.59,-988.97 9421.59,-988.97 9421.59,-1207.97 9421.59,-1207.97 9421.59,-1213.97 9415.59,-1219.97 9409.59,-1219.97 9409.59,-1219.97 6851.13,-1219.97 6851.13,-1219.97 6845.13,-1219.97 6839.13,-1213.97 6839.13,-1207.97 6839.13,-1207.97 6839.13,-988.97 6839.13,-988.97 6839.13,-982.97 6845.13,-976.97 6851.13,-976.97"/>
+<text xml:space="preserve" text-anchor="middle" x="6967.51" y="-1196.97" font-family="DejaVu Sans" font-size="20.00" fill="#cecdc3">05 • Graph construction</text>
+</g>
+<g id="group_validation" class="cluster">
+<title>cluster_validation</title>
+<path fill="#181716" stroke="#343331" d="M8576.35,-690.97C8576.35,-690.97 9824.52,-690.97 9824.52,-690.97 9830.52,-690.97 9836.52,-696.97 9836.52,-702.97 9836.52,-702.97 9836.52,-816.97 9836.52,-816.97 9836.52,-822.97 9830.52,-828.97 9824.52,-828.97 9824.52,-828.97 8576.35,-828.97 8576.35,-828.97 8570.35,-828.97 8564.35,-822.97 8564.35,-816.97 8564.35,-816.97 8564.35,-702.97 8564.35,-702.97 8564.35,-696.97 8570.35,-690.97 8576.35,-690.97"/>
+<text xml:space="preserve" text-anchor="middle" x="8723.85" y="-805.97" font-family="DejaVu Sans" font-size="20.00" fill="#cecdc3">06 • Validation &amp; runner result</text>
+</g>
+<g id="group_export" class="cluster">
+<title>cluster_export</title>
+<path fill="#181716" stroke="#343331" d="M9615.34,-544.97C9615.34,-544.97 10289.95,-544.97 10289.95,-544.97 10295.95,-544.97 10301.95,-550.97 10301.95,-556.97 10301.95,-556.97 10301.95,-670.97 10301.95,-670.97 10301.95,-676.97 10295.95,-682.97 10289.95,-682.97 10289.95,-682.97 9615.34,-682.97 9615.34,-682.97 9609.34,-682.97 9603.34,-676.97 9603.34,-670.97 9603.34,-670.97 9603.34,-556.97 9603.34,-556.97 9603.34,-550.97 9609.34,-544.97 9615.34,-544.97"/>
+<text xml:space="preserve" text-anchor="middle" x="9716.71" y="-659.97" font-family="DejaVu Sans" font-size="20.00" fill="#cecdc3">07 • Standard export</text>
+</g>
+<g id="group_corrections" class="cluster">
+<title>cluster_corrections</title>
+<path fill="#181716" stroke="#343331" d="M9109.28,-385.97C9109.28,-385.97 11236.31,-385.97 11236.31,-385.97 11242.31,-385.97 11248.31,-391.97 11248.31,-397.97 11248.31,-397.97 11248.31,-524.97 11248.31,-524.97 11248.31,-530.97 11242.31,-536.97 11236.31,-536.97 11236.31,-536.97 9109.28,-536.97 9109.28,-536.97 9103.28,-536.97 9097.28,-530.97 9097.28,-524.97 9097.28,-524.97 9097.28,-397.97 9097.28,-397.97 9097.28,-391.97 9103.28,-385.97 9109.28,-385.97"/>
+<text xml:space="preserve" text-anchor="middle" x="9278.91" y="-513.97" font-family="DejaVu Sans" font-size="20.00" fill="#cecdc3">08 • Corrections • Den Haag demo</text>
+</g>
+<!-- runner&#45;&gt;acq -->
+<g id="edge_147" class="edge">
+<title>runner&#45;&gt;acq</title>
+<path fill="none" stroke="#b5a6d3" stroke-width="2.2" stroke-dasharray="1,5" d="M242.38,-1328.44C313.61,-1339.2 421.7,-1344.65 501.43,-1299.97 576.78,-1257.74 621.86,-1160.97 641.85,-1107.73"/>
+<polygon fill="#b5a6d3" stroke="#b5a6d3" stroke-width="2.2" points="645.25,-1109.14 645.37,-1098.02 638.34,-1106.64 645.25,-1109.14"/>
+<text xml:space="preserve" text-anchor="middle" x="412.18" y="-1340.1" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">orchestrates</text>
+</g>
+<!-- runner&#45;&gt;pipeline_result -->
+<g id="edge_153" class="edge">
+<title>runner&#45;&gt;pipeline_result</title>
+<path fill="none" stroke="#b5a6d3" stroke-width="2.2" stroke-dasharray="1,5" d="M242.37,-1306.53C329.99,-1297.31 467.87,-1277.07 501.43,-1238.97 536.68,-1198.94 485.61,-1037.57 523.43,-999.97 2515.36,980.45 4022.28,-591.13 6831.13,-605.97 7546.15,-609.74 7727.05,-566.63 8439.85,-622.97 8685.86,-642.41 8970.38,-690.48 9130.16,-719.85"/>
+<polygon fill="#b5a6d3" stroke="#b5a6d3" stroke-width="2.2" points="9129.07,-723.38 9140.06,-721.67 9130.41,-716.15 9129.07,-723.38"/>
+<text xml:space="preserve" text-anchor="middle" x="4348.39" y="-295.36" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">returns assembled result</text>
+</g>
+<!-- acq_settings&#45;&gt;acq -->
+<g id="edge_0" class="edge">
+<title>acq_settings&#45;&gt;acq</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M276.77,-1060.1C345.28,-1062.07 434.54,-1064.64 509.04,-1066.79"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="508.84,-1070.46 519.44,-1067.09 509.05,-1063.11 508.84,-1070.46"/>
+<text xml:space="preserve" text-anchor="middle" x="412.18" y="-1070.59" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">settings argument</text>
+</g>
+<!-- acq&#45;&gt;acq_out -->
+<g id="edge_2" class="edge">
+<title>acq&#45;&gt;acq_out</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M787.6,-1070.97C844.4,-1070.97 910.38,-1070.97 965.7,-1070.97"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="965.69,-1074.64 976.19,-1070.97 965.69,-1067.29 965.69,-1074.64"/>
+<text xml:space="preserve" text-anchor="middle" x="883.49" y="-1075.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">returns actual batches</text>
+</g>
+<!-- bgt_cache&#45;&gt;acq -->
+<g id="edge_1" class="edge">
+<title>bgt_cache&#45;&gt;acq</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M301.46,-1124.65C365.89,-1114.84 443.32,-1103.06 509.19,-1093.03"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="509.51,-1096.7 519.34,-1091.48 508.41,-1089.43 509.51,-1096.7"/>
+<text xml:space="preserve" text-anchor="middle" x="412.18" y="-1141.68" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">reads cached BGT highway</text>
+<text xml:space="preserve" text-anchor="middle" x="412.18" y="-1125.18" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">layer</text>
+</g>
+<!-- acq_out&#45;&gt;trans_input -->
+<g id="edge_13" class="edge">
+<title>acq_out&#45;&gt;trans_input</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M1191.72,-1070.97C1239.8,-1070.97 1297.16,-1070.97 1347.67,-1070.97"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="1347.55,-1074.64 1358.05,-1070.97 1347.55,-1067.29 1347.55,-1074.64"/>
+<text xml:space="preserve" text-anchor="middle" x="1276.54" y="-1075.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">acquisition field</text>
+</g>
+<!-- trans_input&#45;&gt;trans -->
+<g id="edge_15" class="edge">
+<title>trans_input&#45;&gt;trans</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M1590.82,-1070.97C1644.75,-1070.97 1709.68,-1070.97 1766.52,-1070.97"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="1766.19,-1074.64 1776.69,-1070.97 1766.19,-1067.29 1766.19,-1074.64"/>
+<text xml:space="preserve" text-anchor="middle" x="1685.35" y="-1075.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">stage_input argument</text>
+</g>
+<!-- trans&#45;&gt;trans_out -->
+<g id="edge_16" class="edge">
+<title>trans&#45;&gt;trans_out</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M2033.02,-1070.97C2057.73,-1070.97 2083.75,-1070.97 2108.78,-1070.97"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="2108.73,-1074.64 2119.23,-1070.97 2108.73,-1067.29 2108.73,-1074.64"/>
+<text xml:space="preserve" text-anchor="middle" x="2077.9" y="-1075.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">returns</text>
+</g>
+<!-- trans_out&#45;&gt;surfaces -->
+<g id="edge_17" class="edge">
+<title>trans_out&#45;&gt;surfaces</title>
+<path fill="none" stroke="#8bc3ad" stroke-width="2.2" stroke-dasharray="1,5" d="M2368.23,-1070.97C2406.17,-1070.97 2447.66,-1070.97 2484.33,-1070.97"/>
+<polygon fill="#8bc3ad" stroke="#8bc3ad" stroke-width="2.2" points="2484.3,-1074.64 2494.8,-1070.97 2484.3,-1067.29 2484.3,-1074.64"/>
+<text xml:space="preserve" text-anchor="middle" x="2433.33" y="-1075.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">features field</text>
+</g>
+<!-- surfaces&#45;&gt;surface_ref -->
+<g id="edge_18" class="edge">
+<title>surfaces&#45;&gt;surface_ref</title>
+<path fill="none" stroke="#d4bd74" stroke-width="2.2" stroke-dasharray="5,2" d="M2681.86,-1071.67C2731.27,-1072.05 2793.32,-1072.52 2848.03,-1072.95"/>
+<polygon fill="#d4bd74" stroke="#d4bd74" stroke-width="2.2" points="2847.91,-1076.62 2858.44,-1073.03 2847.97,-1069.27 2847.91,-1076.62"/>
+<text xml:space="preserve" text-anchor="middle" x="2771.89" y="-1093.47" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">runner describes the</text>
+<text xml:space="preserve" text-anchor="middle" x="2771.89" y="-1076.97" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">payload</text>
+</g>
+<!-- surfaces&#45;&gt;skel_ctx -->
+<g id="edge_22" class="edge">
+<title>surfaces&#45;&gt;skel_ctx</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M2675.76,-1041.82C2753.9,-1017.56 2873.62,-986.97 2980.48,-986.97 2980.48,-986.97 2980.48,-986.97 3873.59,-986.97 3976.31,-986.97 4090.59,-1001.02 4181.17,-1015.52"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="4180.4,-1019.12 4191.35,-1017.18 4181.58,-1011.87 4180.4,-1019.12"/>
+<text xml:space="preserve" text-anchor="middle" x="3439.53" y="-1007.62" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">runner seeds</text>
+<text xml:space="preserve" text-anchor="middle" x="3439.53" y="-991.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">context.surface_features</text>
+</g>
+<!-- surface_ref&#45;&gt;skel_input -->
+<g id="edge_21" class="edge">
+<title>surface_ref&#45;&gt;skel_input</title>
+<path fill="none" stroke="#d4bd74" stroke-width="2.2" stroke-dasharray="5,2" d="M3101.11,-1076.57C3165.05,-1077.97 3244.02,-1079.7 3309.49,-1081.14"/>
+<polygon fill="#d4bd74" stroke="#d4bd74" stroke-width="2.2" points="3309.34,-1084.81 3319.92,-1081.37 3309.5,-1077.46 3309.34,-1084.81"/>
+<text xml:space="preserve" text-anchor="middle" x="3212.19" y="-1084.6" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">surface_feature_artifact</text>
+</g>
+<!-- skel_input&#45;&gt;skel -->
+<g id="edge_24" class="edge">
+<title>skel_input&#45;&gt;skel</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M3555.76,-1092.25C3609.67,-1096.13 3674.36,-1100.78 3731.11,-1104.86"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="3730.54,-1108.51 3741.28,-1105.59 3731.07,-1101.18 3730.54,-1108.51"/>
+<text xml:space="preserve" text-anchor="middle" x="3650.25" y="-1108.2" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">stage_input argument</text>
+</g>
+<!-- skel&#45;&gt;skel_ctx -->
+<g id="edge_26" class="edge">
+<title>skel&#45;&gt;skel_ctx</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M3908.84,-1090.79C3937.74,-1072.52 3980.48,-1048.94 4021.8,-1038.97 4065.23,-1028.48 4112.87,-1025.23 4157.98,-1025.75"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="4157.67,-1029.42 4168.24,-1025.95 4157.82,-1022.07 4157.67,-1029.42"/>
+<text xml:space="preserve" text-anchor="middle" x="4085.93" y="-1059.62" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">retains generated</text>
+<text xml:space="preserve" text-anchor="middle" x="4085.93" y="-1043.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">centerlines + QA</text>
+</g>
+<!-- skel&#45;&gt;skel_out -->
+<g id="edge_27" class="edge">
+<title>skel&#45;&gt;skel_out</title>
+<path fill="none" stroke="#d4bd74" stroke-width="2.2" stroke-dasharray="5,2" d="M3949.39,-1139.21C3972.41,-1145.54 3997.92,-1151.54 4021.8,-1154.97 4083.2,-1163.78 4151.76,-1166.32 4210.08,-1166.35"/>
+<polygon fill="#d4bd74" stroke="#d4bd74" stroke-width="2.2" points="4210.08,-1170.03 4220.57,-1166.32 4210.06,-1162.68 4210.08,-1170.03"/>
+<text xml:space="preserve" text-anchor="middle" x="4085.93" y="-1169.41" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">returns references</text>
+</g>
+<!-- skel_ctx&#45;&gt;skel -->
+<g id="edge_25" class="edge">
+<title>skel_ctx&#45;&gt;skel</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M4181.13,-1076.2C4170.62,-1077.87 4160.2,-1079.47 4150.05,-1080.97 4105.92,-1087.48 4057.7,-1093.71 4014.07,-1099.02"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="4013.67,-1095.37 4003.69,-1100.27 4014.55,-1102.66 4013.67,-1095.37"/>
+<text xml:space="preserve" text-anchor="middle" x="4085.93" y="-1117.85" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">context argument /</text>
+<text xml:space="preserve" text-anchor="middle" x="4085.93" y="-1101.35" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">surface payload</text>
+</g>
+<!-- skel_ctx&#45;&gt;raw_lines -->
+<g id="edge_28" class="edge">
+<title>skel_ctx&#45;&gt;raw_lines</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M4525.32,-1046.06C4676.11,-1045.29 4888.75,-1044.2 5017.26,-1043.54"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="5017.16,-1047.22 5027.64,-1043.49 5017.12,-1039.87 5017.16,-1047.22"/>
+<text xml:space="preserve" text-anchor="middle" x="4607.48" y="-1066.53" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">runner reads</text>
+<text xml:space="preserve" text-anchor="middle" x="4607.48" y="-1050.03" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">.centerlines</text>
+</g>
+<!-- skel_ctx&#45;&gt;combined_qa -->
+<g id="edge_91" class="edge">
+<title>skel_ctx&#45;&gt;combined_qa</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M4366.4,-1017.81C4408.85,-947.93 4526.82,-770.42 4676.23,-685.97 4746.5,-646.25 4773.73,-650.97 4854.45,-650.97 4854.45,-650.97 4854.45,-650.97 8311.76,-650.97 8427.67,-650.97 8557.31,-683.97 8643.18,-710.66"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="8642.01,-714.14 8653.13,-713.79 8644.22,-707.13 8642.01,-714.14"/>
+<text xml:space="preserve" text-anchor="middle" x="6750.51" y="-655.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">.qa_findings</text>
+</g>
+<!-- skel_out&#45;&gt;clean_input -->
+<g id="edge_36" class="edge">
+<title>skel_out&#45;&gt;clean_input</title>
+<path fill="none" stroke="#d4bd74" stroke-width="2.2" stroke-dasharray="5,2" d="M4471.4,-1132.84C4491.67,-1123.12 4510.64,-1110.18 4524.73,-1092.97 4560.17,-1049.65 4508.87,-1010.19 4546.73,-968.97 4582.86,-929.64 4635.53,-908.31 4687.12,-897.01"/>
+<polygon fill="#d4bd74" stroke="#d4bd74" stroke-width="2.2" points="4687.73,-900.63 4697.29,-894.94 4686.27,-893.43 4687.73,-900.63"/>
+<text xml:space="preserve" text-anchor="middle" x="4607.48" y="-989.62" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">centerline_artifact</text>
+<text xml:space="preserve" text-anchor="middle" x="4607.48" y="-973.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">field</text>
+</g>
+<!-- raw_lines&#45;&gt;clean_ctx -->
+<g id="edge_37" class="edge">
+<title>raw_lines&#45;&gt;clean_ctx</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M5228.76,-1025.79C5374.35,-1000.2 5650.58,-951.65 5833.27,-919.55"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="5833.82,-923.18 5843.52,-917.75 5832.54,-915.95 5833.82,-923.18"/>
+<text xml:space="preserve" text-anchor="middle" x="5429.81" y="-1040.63" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">runner seeds</text>
+<text xml:space="preserve" text-anchor="middle" x="5429.81" y="-1024.13" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">context.centerlines</text>
+</g>
+<!-- clean_input&#45;&gt;clean -->
+<g id="edge_39" class="edge">
+<title>clean_input&#45;&gt;clean</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M5010.2,-873C5083.14,-866.37 5170.8,-858.41 5247.01,-851.48"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="5247.17,-855.16 5257.29,-850.55 5246.5,-847.84 5247.17,-855.16"/>
+<text xml:space="preserve" text-anchor="middle" x="5130" y="-874.3" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">stage_input argument</text>
+</g>
+<!-- clean&#45;&gt;clean_ctx -->
+<g id="edge_41" class="edge">
+<title>clean&#45;&gt;clean_ctx</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M5598.84,-813.49C5606.07,-812.9 5613.24,-812.39 5620.27,-811.97 5689.81,-807.76 5708.2,-801.16 5777.02,-811.97 5828.87,-820.11 5884.88,-837.74 5929.31,-853.98"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="5927.87,-857.36 5938.99,-857.57 5930.43,-850.47 5927.87,-857.36"/>
+<text xml:space="preserve" text-anchor="middle" x="5698.65" y="-832.62" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">retains cleaned</text>
+<text xml:space="preserve" text-anchor="middle" x="5698.65" y="-816.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">centerlines + QA</text>
+</g>
+<!-- clean&#45;&gt;clean_out -->
+<g id="edge_42" class="edge">
+<title>clean&#45;&gt;clean_out</title>
+<path fill="none" stroke="#d4bd74" stroke-width="2.2" stroke-dasharray="5,2" d="M5501.03,-810.81C5536.37,-799.67 5580.14,-787.41 5620.27,-780.47 5690.79,-768.27 5769.36,-761.96 5837.59,-758.75"/>
+<polygon fill="#d4bd74" stroke="#d4bd74" stroke-width="2.2" points="5837.43,-762.43 5847.76,-758.3 5837.11,-755.09 5837.43,-762.43"/>
+<text xml:space="preserve" text-anchor="middle" x="5698.65" y="-784.62" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">returns references</text>
+</g>
+<!-- clean_ctx&#45;&gt;clean -->
+<g id="edge_40" class="edge">
+<title>clean_ctx&#45;&gt;clean</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M5798.25,-868.42C5737.2,-862.86 5671.32,-856.86 5612.43,-851.5"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="5612.91,-847.85 5602.12,-850.56 5612.24,-855.17 5612.91,-847.85"/>
+<text xml:space="preserve" text-anchor="middle" x="5698.65" y="-886.86" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">context argument / raw</text>
+<text xml:space="preserve" text-anchor="middle" x="5698.65" y="-870.36" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">centerlines</text>
+</g>
+<!-- clean_ctx&#45;&gt;clean_lines -->
+<g id="edge_43" class="edge">
+<title>clean_ctx&#45;&gt;clean_lines</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M6229.5,-888.81C6286.25,-889.04 6345.69,-889.27 6396.09,-889.47"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="6395.87,-893.14 6406.38,-889.51 6395.9,-885.79 6395.87,-893.14"/>
+<text xml:space="preserve" text-anchor="middle" x="6319.58" y="-910.08" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">runner reads</text>
+<text xml:space="preserve" text-anchor="middle" x="6319.58" y="-893.58" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">.cleaned_centerlines</text>
+</g>
+<!-- clean_ctx&#45;&gt;combined_qa -->
+<g id="edge_92" class="edge">
+<title>clean_ctx&#45;&gt;combined_qa</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M6095.79,-858.77C6216.55,-816.17 6438.87,-741.97 6522.54,-741.97 6522.54,-741.97 6522.54,-741.97 8311.76,-741.97 8398.65,-741.97 8495.46,-742.38 8574.98,-742.84"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="8574.75,-746.51 8585.27,-742.9 8574.79,-739.16 8574.75,-746.51"/>
+<text xml:space="preserve" text-anchor="middle" x="7462.65" y="-746.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">.qa_findings</text>
+</g>
+<!-- clean_lines&#45;&gt;graph_input -->
+<g id="edge_51" class="edge">
+<title>clean_lines&#45;&gt;graph_input</title>
+<path fill="none" stroke="#d4bd74" stroke-width="2.2" stroke-dasharray="5,2" d="M6576.38,-919.1C6603.55,-933.38 6637.77,-949.85 6669.88,-960.97 6727.5,-980.92 6792.91,-996.34 6849.85,-1007.56"/>
+<polygon fill="#d4bd74" stroke="#d4bd74" stroke-width="2.2" points="6849.09,-1011.15 6860.1,-1009.54 6850.49,-1003.94 6849.09,-1011.15"/>
+<text xml:space="preserve" text-anchor="middle" x="6750.51" y="-1023.67" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">runner constructs a new</text>
+<text xml:space="preserve" text-anchor="middle" x="6750.51" y="-1007.17" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">input/ref</text>
+</g>
+<!-- clean_lines&#45;&gt;graph_ctx -->
+<g id="edge_52" class="edge">
+<title>clean_lines&#45;&gt;graph_ctx</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M6637.46,-899.52C6854.86,-918.32 7346.46,-962.87 7758.49,-1014.97 7761.11,-1015.3 7763.76,-1015.64 7766.43,-1015.99"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="7765.71,-1019.6 7776.6,-1017.35 7766.68,-1012.31 7765.71,-1019.6"/>
+<text xml:space="preserve" text-anchor="middle" x="7221.94" y="-982.13" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">runner seeds</text>
+<text xml:space="preserve" text-anchor="middle" x="7221.94" y="-965.63" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">context.centerlines</text>
+</g>
+<!-- clean_lines&#45;&gt;pipeline_result -->
+<g id="edge_90" class="edge">
+<title>clean_lines&#45;&gt;pipeline_result</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M6637.55,-868.5C6732.45,-852.34 6871.81,-832.97 6994.47,-832.97 6994.47,-832.97 6994.47,-832.97 7695.37,-832.97 8227.45,-832.97 8360.94,-826.34 8891.78,-789.97 8979.8,-783.93 9001.77,-781.21 9089.28,-769.97 9102.46,-768.27 9116.21,-766.36 9129.91,-764.36"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="9130.42,-768 9140.27,-762.83 9129.35,-760.73 9130.42,-768"/>
+<text xml:space="preserve" text-anchor="middle" x="7911.08" y="-837.04" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">centerlines field</text>
+</g>
+<!-- graph_input&#45;&gt;graph -->
+<g id="edge_56" class="edge">
+<title>graph_input&#45;&gt;graph</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M7127.6,-1043.37C7182.07,-1048.52 7245.79,-1054.55 7302.88,-1059.95"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="7302.36,-1063.59 7313.16,-1060.92 7303.06,-1056.27 7302.36,-1063.59"/>
+<text xml:space="preserve" text-anchor="middle" x="7221.94" y="-1062.35" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">stage_input argument</text>
+</g>
+<!-- graph&#45;&gt;graph_ctx -->
+<g id="edge_58" class="edge">
+<title>graph&#45;&gt;graph_ctx</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M7536.61,-1050.79C7565.43,-1042.42 7599.06,-1034.1 7630.24,-1029.97 7674.14,-1024.14 7722.23,-1023.48 7765.98,-1025.04"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="7765.74,-1028.7 7776.38,-1025.46 7766.04,-1021.36 7765.74,-1028.7"/>
+<text xml:space="preserve" text-anchor="middle" x="7694.37" y="-1050.62" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">retains generated</text>
+<text xml:space="preserve" text-anchor="middle" x="7694.37" y="-1034.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">GraphBuild</text>
+</g>
+<!-- graph&#45;&gt;graph_out -->
+<g id="edge_60" class="edge">
+<title>graph&#45;&gt;graph_out</title>
+<path fill="none" stroke="#d4bd74" stroke-width="2.2" stroke-dasharray="5,2" d="M7535.78,-1099.19C7564.78,-1107.8 7598.76,-1116.46 7630.24,-1120.97 8185.3,-1200.43 8331.77,-1163.25 8891.78,-1134.97 8961.46,-1131.45 9038.14,-1122.53 9103.1,-1113.47"/>
+<polygon fill="#d4bd74" stroke="#d4bd74" stroke-width="2.2" points="9103.59,-1117.11 9113.47,-1112 9102.56,-1109.83 9103.59,-1117.11"/>
+<text xml:space="preserve" text-anchor="middle" x="8310.76" y="-1189.47" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">returns references +</text>
+<text xml:space="preserve" text-anchor="middle" x="8310.76" y="-1172.97" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">summary</text>
+</g>
+<!-- graph_ctx&#45;&gt;graph -->
+<g id="edge_57" class="edge">
+<title>graph_ctx&#45;&gt;graph</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M7790.91,-1067.16C7780,-1069.08 7769.07,-1070.74 7758.49,-1071.97 7714.48,-1077.07 7666.53,-1079.06 7622.33,-1079.47"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="7622.55,-1075.79 7612.08,-1079.53 7622.6,-1083.14 7622.55,-1075.79"/>
+<text xml:space="preserve" text-anchor="middle" x="7694.37" y="-1099.92" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">context argument /</text>
+<text xml:space="preserve" text-anchor="middle" x="7694.37" y="-1083.42" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">centerline payload</text>
+</g>
+<!-- graph_ctx&#45;&gt;graph_build -->
+<g id="edge_59" class="edge">
+<title>graph_ctx&#45;&gt;graph_build</title>
+<path fill="none" stroke="#8ab0ce" stroke-width="2.2" stroke-dasharray="5,2" d="M8042.3,-1035.35C8082.29,-1034.54 8126.5,-1033.65 8167.27,-1032.83"/>
+<polygon fill="#8ab0ce" stroke="#8ab0ce" stroke-width="2.2" points="8167.2,-1036.51 8177.62,-1032.62 8167.05,-1029.16 8167.2,-1036.51"/>
+<text xml:space="preserve" text-anchor="middle" x="8111.67" y="-1055.33" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">runner reads</text>
+<text xml:space="preserve" text-anchor="middle" x="8111.67" y="-1038.83" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">.written_graph</text>
+</g>
+<!-- graph_out&#45;&gt;validate -->
+<g id="edge_88" class="edge">
+<title>graph_out&#45;&gt;validate</title>
+<path fill="none" stroke="#d4bd74" stroke-width="2.2" stroke-dasharray="5,2" d="M9397.07,-1097.48C9463.26,-1094.57 9539.85,-1080.25 9595.34,-1036.97 9675.5,-974.43 9703.32,-849.11 9712.48,-786.45"/>
+<polygon fill="#d4bd74" stroke="#d4bd74" stroke-width="2.2" points="9716.08,-787.2 9713.85,-776.3 9708.8,-786.22 9716.08,-787.2"/>
+<text xml:space="preserve" text-anchor="middle" x="9512.46" y="-1098.83" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">run identity</text>
+</g>
+<!-- graph_build&#45;&gt;summary -->
+<g id="edge_61" class="edge">
+<title>graph_build&#45;&gt;summary</title>
+<path fill="none" stroke="#8bc3ad" stroke-width="2.2" stroke-dasharray="1,5" d="M8440.41,-1047.71C8492.7,-1054.92 8553.11,-1063.25 8605.91,-1070.53"/>
+<polygon fill="#8bc3ad" stroke="#8bc3ad" stroke-width="2.2" points="8605.31,-1074.16 8616.21,-1071.95 8606.31,-1066.88 8605.31,-1074.16"/>
+<text xml:space="preserve" text-anchor="middle" x="8509.1" y="-1067.15" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">summary field</text>
+</g>
+<!-- graph_build&#45;&gt;validate -->
+<g id="edge_87" class="edge">
+<title>graph_build&#45;&gt;validate</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M8440.6,-1032.52C8746.78,-1037.57 9499.61,-1043.59 9595.34,-982.97 9665.07,-938.8 9696.78,-840.7 9709.42,-786.6"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="9712.98,-787.51 9711.65,-776.47 9705.81,-785.93 9712.98,-787.51"/>
+<text xml:space="preserve" text-anchor="middle" x="9001.53" y="-1055.7" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">graph argument; no graph</text>
+<text xml:space="preserve" text-anchor="middle" x="9001.53" y="-1039.2" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">changes</text>
+</g>
+<!-- graph_build&#45;&gt;pipeline_result -->
+<g id="edge_89" class="edge">
+<title>graph_build&#45;&gt;pipeline_result</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M8395.01,-1000.76C8416.73,-993.24 8440.14,-985.22 8461.85,-977.97 8507.24,-962.8 8517.87,-956.37 8564.35,-944.97 8794.24,-888.55 8869.34,-942.46 9089.28,-854.97 9133.93,-837.2 9178.96,-806.27 9210.95,-781.56"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="9213.09,-784.55 9219.08,-775.17 9208.55,-778.77 9213.09,-784.55"/>
+<text xml:space="preserve" text-anchor="middle" x="8740.57" y="-965.62" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">graph field; same</text>
+<text xml:space="preserve" text-anchor="middle" x="8740.57" y="-949.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">generated graph</text>
+</g>
+<!-- graph_build&#45;&gt;combined_qa -->
+<g id="edge_93" class="edge">
+<title>graph_build&#45;&gt;combined_qa</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M8336.63,-1000.81C8364.72,-969.12 8412.93,-918.35 8461.85,-883.47 8521.99,-840.59 8597.23,-803.67 8654.21,-778.61"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="8655.6,-782.02 8663.76,-774.46 8652.67,-775.28 8655.6,-782.02"/>
+<text xml:space="preserve" text-anchor="middle" x="8509.1" y="-887.62" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">.qa_findings</text>
+</g>
+<!-- summary&#45;&gt;graph_out -->
+<g id="edge_62" class="edge">
+<title>summary&#45;&gt;graph_out</title>
+<path fill="none" stroke="#8bc3ad" stroke-width="2.2" stroke-dasharray="1,5" d="M8861.53,-1088.97C8933.51,-1088.97 9025.77,-1088.97 9102.96,-1088.97"/>
+<polygon fill="#8bc3ad" stroke="#8bc3ad" stroke-width="2.2" points="9102.87,-1092.64 9113.37,-1088.97 9102.87,-1085.29 9102.87,-1092.64"/>
+<text xml:space="preserve" text-anchor="middle" x="9001.53" y="-1093.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">same summary object</text>
+</g>
+<!-- pipeline_result&#45;&gt;export -->
+<g id="edge_96" class="edge">
+<title>pipeline_result&#45;&gt;export</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M9353.03,-714.75C9432.82,-690.22 9546.1,-655.4 9624.94,-631.16"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="9625.64,-634.8 9634.6,-628.2 9623.48,-627.77 9625.64,-634.8"/>
+<text xml:space="preserve" text-anchor="middle" x="9512.46" y="-694.39" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">result argument</text>
+</g>
+<!-- pipeline_result&#45;&gt;replay -->
+<g id="edge_104" class="edge">
+<title>pipeline_result&#45;&gt;replay</title>
+<path fill="none" stroke="#dfad83" stroke-width="2.2" stroke-dasharray="5,2" d="M9288.32,-714.84C9321.41,-683.91 9376.75,-634.67 9429.59,-598.97 9501.57,-550.32 9590.87,-505.19 9650.59,-476.95"/>
+<polygon fill="#dfad83" stroke="#dfad83" stroke-width="2.2" points="9651.91,-480.39 9659.85,-472.6 9648.78,-473.73 9651.91,-480.39"/>
+<text xml:space="preserve" text-anchor="middle" x="9512.46" y="-619.62" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">Den Haag demo supplies</text>
+<text xml:space="preserve" text-anchor="middle" x="9512.46" y="-603.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">result.graph</text>
+</g>
+<!-- combined_qa&#45;&gt;pipeline_result -->
+<g id="edge_94" class="edge">
+<title>combined_qa&#45;&gt;pipeline_result</title>
+<path fill="none" stroke="#8bc3ad" stroke-width="2.2" stroke-dasharray="1,5" d="M8892.44,-743.97C8967.91,-743.97 9058.22,-743.97 9129.95,-743.97"/>
+<polygon fill="#8bc3ad" stroke="#8bc3ad" stroke-width="2.2" points="9129.75,-747.64 9140.25,-743.97 9129.75,-740.29 9129.75,-747.64"/>
+<text xml:space="preserve" text-anchor="middle" x="9001.53" y="-748.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">qa_findings field</text>
+</g>
+<!-- export&#45;&gt;files -->
+<g id="edge_97" class="edge">
+<title>export&#45;&gt;files</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M9807.63,-601.92C9863.13,-601.27 9935.88,-600.41 9999.53,-599.67"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="9999.18,-603.35 10009.64,-599.55 9999.1,-596 9999.18,-603.35"/>
+<text xml:space="preserve" text-anchor="middle" x="9903.02" y="-605.5" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">writes actual files</text>
+</g>
+<!-- patches&#45;&gt;replay -->
+<g id="edge_105" class="edge">
+<title>patches&#45;&gt;replay</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M9392.21,-446.97C9462.55,-446.97 9547.41,-446.97 9612.7,-446.97"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="9612.49,-450.64 9622.99,-446.97 9612.49,-443.29 9612.49,-450.64"/>
+<text xml:space="preserve" text-anchor="middle" x="9512.46" y="-467.62" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">patches + run + at</text>
+<text xml:space="preserve" text-anchor="middle" x="9512.46" y="-451.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">arguments</text>
+</g>
+<!-- replay&#45;&gt;patch_result -->
+<g id="edge_106" class="edge">
+<title>replay&#45;&gt;patch_result</title>
+<path fill="none" stroke="#cecdc3" stroke-width="2.2" d="M9809.18,-446.97C9855.85,-446.97 9914.4,-446.97 9969.44,-446.97"/>
+<polygon fill="#cecdc3" stroke="#cecdc3" stroke-width="2.2" points="9969.15,-450.64 9979.65,-446.97 9969.15,-443.29 9969.15,-450.64"/>
+<text xml:space="preserve" text-anchor="middle" x="9903.02" y="-451.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">returns</text>
+</g>
+<!-- patch_result&#45;&gt;effective -->
+<g id="edge_107" class="edge">
+<title>patch_result&#45;&gt;effective</title>
+<path fill="none" stroke="#8bc3ad" stroke-width="2.2" stroke-dasharray="1,5" d="M10307.62,-446.97C10357.83,-446.97 10412.65,-446.97 10460.93,-446.97"/>
+<polygon fill="#8bc3ad" stroke="#8bc3ad" stroke-width="2.2" points="10460.87,-450.64 10471.37,-446.97 10460.87,-443.29 10460.87,-450.64"/>
+<text xml:space="preserve" text-anchor="middle" x="10391.2" y="-451.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">effective_dwn field</text>
+</g>
+<!-- effective&#45;&gt;demo_files -->
+<g id="edge_110" class="edge">
+<title>effective&#45;&gt;demo_files</title>
+<path fill="none" stroke="#dfad83" stroke-width="2.2" stroke-dasharray="5,2" d="M10720.8,-446.97C10778.4,-446.97 10847.96,-446.97 10909.97,-446.97"/>
+<polygon fill="#dfad83" stroke="#dfad83" stroke-width="2.2" points="10909.66,-450.64 10920.16,-446.97 10909.66,-443.29 10909.66,-450.64"/>
+<text xml:space="preserve" text-anchor="middle" x="10822" y="-467.62" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">demo writes effective +</text>
+<text xml:space="preserve" text-anchor="middle" x="10822" y="-451.12" font-family="DejaVu Sans" font-size="13.00" fill="#cecdc3">generated DWN</text>
+</g>
+<!-- runner -->
+<g id="node_runner" class="node">
+<title>runner</title>
+<path fill="#24212e" stroke="#8b7ec8" stroke-width="1.6" d="M229.68,-1336.43C229.68,-1336.43 104.25,-1336.43 104.25,-1336.43 98.25,-1336.43 92.25,-1330.43 92.25,-1324.43 92.25,-1324.43 92.25,-1301.51 92.25,-1301.51 92.25,-1295.51 98.25,-1289.51 104.25,-1289.51 104.25,-1289.51 229.68,-1289.51 229.68,-1289.51 235.68,-1289.51 241.68,-1295.51 241.68,-1301.51 241.68,-1301.51 241.68,-1324.43 241.68,-1324.43 241.68,-1330.43 235.68,-1336.43 229.68,-1336.43"/>
+<text xml:space="preserve" text-anchor="start" x="108.09" y="-1308.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#d5c9f2">run_stages()</text>
+</g>
+<!-- acq_settings -->
+<g id="node_acq_settings" class="node">
+<title>acq_settings</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M264.18,-1080.43C264.18,-1080.43 69.75,-1080.43 69.75,-1080.43 63.75,-1080.43 57.75,-1074.43 57.75,-1068.43 57.75,-1068.43 57.75,-1045.51 57.75,-1045.51 57.75,-1039.51 63.75,-1033.51 69.75,-1033.51 69.75,-1033.51 264.18,-1033.51 264.18,-1033.51 270.18,-1033.51 276.18,-1039.51 276.18,-1045.51 276.18,-1045.51 276.18,-1068.43 276.18,-1068.43 276.18,-1074.43 270.18,-1080.43 264.18,-1080.43"/>
+<text xml:space="preserve" text-anchor="start" x="73.59" y="-1052.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">AcquisitionSettings</text>
+</g>
+<!-- acq -->
+<g id="node_acq" class="node">
+<title>acq</title>
+<path fill="#24212e" stroke="#8b7ec8" stroke-width="1.6" d="M774.86,-1094.43C774.86,-1094.43 535.43,-1094.43 535.43,-1094.43 529.43,-1094.43 523.43,-1088.43 523.43,-1082.43 523.43,-1082.43 523.43,-1059.51 523.43,-1059.51 523.43,-1053.51 529.43,-1047.51 535.43,-1047.51 535.43,-1047.51 774.86,-1047.51 774.86,-1047.51 780.86,-1047.51 786.86,-1053.51 786.86,-1059.51 786.86,-1059.51 786.86,-1082.43 786.86,-1082.43 786.86,-1088.43 780.86,-1094.43 774.86,-1094.43"/>
+<text xml:space="preserve" text-anchor="start" x="539.27" y="-1066.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#d5c9f2">data_acquisition_stage()</text>
+</g>
+<!-- bgt_cache -->
+<g id="node_bgt_cache" class="node">
+<title>bgt_cache</title>
+<path fill="#302119" stroke="#da702c" stroke-width="1.6" d="M288.93,-1173.43C288.93,-1173.43 45,-1173.43 45,-1173.43 39,-1173.43 33,-1167.43 33,-1161.43 33,-1161.43 33,-1128.51 33,-1128.51 33,-1122.51 39,-1116.51 45,-1116.51 45,-1116.51 288.93,-1116.51 288.93,-1116.51 294.93,-1116.51 300.93,-1122.51 300.93,-1128.51 300.93,-1128.51 300.93,-1161.43 300.93,-1161.43 300.93,-1167.43 294.93,-1173.43 288.93,-1173.43"/>
+<text xml:space="preserve" text-anchor="start" x="48.84" y="-1145.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#e9b79b">BGT cache • GeoPackage</text>
+<text xml:space="preserve" text-anchor="start" x="100.97" y="-1131.17" font-family="DejaVu Sans" font-size="14.00" fill="#e9b79b">disk • EPSG:28992</text>
+</g>
+<!-- acq_out -->
+<g id="node_acq_out" class="node">
+<title>acq_out</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M1179.04,-1099.43C1179.04,-1099.43 992.11,-1099.43 992.11,-1099.43 986.11,-1099.43 980.11,-1093.43 980.11,-1087.43 980.11,-1087.43 980.11,-1054.51 980.11,-1054.51 980.11,-1048.51 986.11,-1042.51 992.11,-1042.51 992.11,-1042.51 1179.04,-1042.51 1179.04,-1042.51 1185.04,-1042.51 1191.04,-1048.51 1191.04,-1054.51 1191.04,-1054.51 1191.04,-1087.43 1191.04,-1087.43 1191.04,-1093.43 1185.04,-1099.43 1179.04,-1099.43"/>
+<text xml:space="preserve" text-anchor="start" x="998.58" y="-1071.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">AcquisitionOutput</text>
+<text xml:space="preserve" text-anchor="start" x="995.95" y="-1057.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">batches → source records</text>
+</g>
+<!-- trans_input -->
+<g id="node_trans_input" class="node">
+<title>trans_input</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M1578.22,-1094.43C1578.22,-1094.43 1374.04,-1094.43 1374.04,-1094.43 1368.04,-1094.43 1362.04,-1088.43 1362.04,-1082.43 1362.04,-1082.43 1362.04,-1059.51 1362.04,-1059.51 1362.04,-1053.51 1368.04,-1047.51 1374.04,-1047.51 1374.04,-1047.51 1578.22,-1047.51 1578.22,-1047.51 1584.22,-1047.51 1590.22,-1053.51 1590.22,-1059.51 1590.22,-1059.51 1590.22,-1082.43 1590.22,-1082.43 1590.22,-1088.43 1584.22,-1094.43 1578.22,-1094.43"/>
+<text xml:space="preserve" text-anchor="start" x="1377.88" y="-1066.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">TransformationInput</text>
+</g>
+<!-- trans -->
+<g id="node_trans" class="node">
+<title>trans</title>
+<path fill="#24212e" stroke="#8b7ec8" stroke-width="1.6" d="M2020.65,-1094.43C2020.65,-1094.43 1792.47,-1094.43 1792.47,-1094.43 1786.47,-1094.43 1780.47,-1088.43 1780.47,-1082.43 1780.47,-1082.43 1780.47,-1059.51 1780.47,-1059.51 1780.47,-1053.51 1786.47,-1047.51 1792.47,-1047.51 1792.47,-1047.51 2020.65,-1047.51 2020.65,-1047.51 2026.65,-1047.51 2032.65,-1053.51 2032.65,-1059.51 2032.65,-1059.51 2032.65,-1082.43 2032.65,-1082.43 2032.65,-1088.43 2026.65,-1094.43 2020.65,-1094.43"/>
+<text xml:space="preserve" text-anchor="start" x="1796.31" y="-1066.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#d5c9f2">transformation_stage()</text>
+</g>
+<!-- trans_out -->
+<g id="node_trans_out" class="node">
+<title>trans_out</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M2355.83,-1099.43C2355.83,-1099.43 2135.15,-1099.43 2135.15,-1099.43 2129.15,-1099.43 2123.15,-1093.43 2123.15,-1087.43 2123.15,-1087.43 2123.15,-1054.51 2123.15,-1054.51 2123.15,-1048.51 2129.15,-1042.51 2135.15,-1042.51 2135.15,-1042.51 2355.83,-1042.51 2355.83,-1042.51 2361.83,-1042.51 2367.83,-1048.51 2367.83,-1054.51 2367.83,-1054.51 2367.83,-1087.43 2367.83,-1087.43 2367.83,-1093.43 2361.83,-1099.43 2355.83,-1099.43"/>
+<text xml:space="preserve" text-anchor="start" x="2138.99" y="-1071.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">TransformationOutput</text>
+<text xml:space="preserve" text-anchor="start" x="2195.99" y="-1057.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">crs + features</text>
+</g>
+<!-- surfaces -->
+<g id="node_surfaces" class="node">
+<title>surfaces</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M2669.26,-1099.43C2669.26,-1099.43 2510.83,-1099.43 2510.83,-1099.43 2504.83,-1099.43 2498.83,-1093.43 2498.83,-1087.43 2498.83,-1087.43 2498.83,-1054.51 2498.83,-1054.51 2498.83,-1048.51 2504.83,-1042.51 2510.83,-1042.51 2510.83,-1042.51 2669.26,-1042.51 2669.26,-1042.51 2675.26,-1042.51 2681.26,-1048.51 2681.26,-1054.51 2681.26,-1054.51 2681.26,-1087.43 2681.26,-1087.43 2681.26,-1093.43 2675.26,-1099.43 2669.26,-1099.43"/>
+<text xml:space="preserve" text-anchor="start" x="2517.3" y="-1071.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">SurfaceFeature</text>
+<text xml:space="preserve" text-anchor="start" x="2514.67" y="-1057.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">list • actual geometry</text>
+</g>
+<!-- surface_ref -->
+<g id="node_surface_ref" class="node">
+<title>surface_ref</title>
+<path fill="#2c2718" stroke="#d0a215" stroke-width="1.6" d="M3088.44,-1102.43C3088.44,-1102.43 2874.51,-1102.43 2874.51,-1102.43 2868.51,-1102.43 2862.51,-1096.43 2862.51,-1090.43 2862.51,-1090.43 2862.51,-1057.51 2862.51,-1057.51 2862.51,-1051.51 2868.51,-1045.51 2874.51,-1045.51 2874.51,-1045.51 3088.44,-1045.51 3088.44,-1045.51 3094.44,-1045.51 3100.44,-1051.51 3100.44,-1057.51 3100.44,-1057.51 3100.44,-1090.43 3100.44,-1090.43 3100.44,-1096.43 3094.44,-1102.43 3088.44,-1102.43"/>
+<text xml:space="preserve" text-anchor="start" x="2878.35" y="-1074.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#e6ce7d">ArtifactRef • surfaces</text>
+<text xml:space="preserve" text-anchor="start" x="2883.23" y="-1060.17" font-family="DejaVu Sans" font-size="14.00" fill="#e6ce7d">metadata • not the surfaces</text>
+</g>
+<!-- skel_input -->
+<g id="node_skel_input" class="node">
+<title>skel_input</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M3543.12,-1107.43C3543.12,-1107.43 3335.94,-1107.43 3335.94,-1107.43 3329.94,-1107.43 3323.94,-1101.43 3323.94,-1095.43 3323.94,-1095.43 3323.94,-1072.51 3323.94,-1072.51 3323.94,-1066.51 3329.94,-1060.51 3335.94,-1060.51 3335.94,-1060.51 3543.12,-1060.51 3543.12,-1060.51 3549.12,-1060.51 3555.12,-1066.51 3555.12,-1072.51 3555.12,-1072.51 3555.12,-1095.43 3555.12,-1095.43 3555.12,-1101.43 3549.12,-1107.43 3543.12,-1107.43"/>
+<text xml:space="preserve" text-anchor="start" x="3339.78" y="-1079.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">SkeletonizationInput</text>
+</g>
+<!-- skel -->
+<g id="node_skel" class="node">
+<title>skel</title>
+<path fill="#24212e" stroke="#8b7ec8" stroke-width="1.6" d="M3987.8,-1138.43C3987.8,-1138.43 3757.37,-1138.43 3757.37,-1138.43 3751.37,-1138.43 3745.37,-1132.43 3745.37,-1126.43 3745.37,-1126.43 3745.37,-1103.51 3745.37,-1103.51 3745.37,-1097.51 3751.37,-1091.51 3757.37,-1091.51 3757.37,-1091.51 3987.8,-1091.51 3987.8,-1091.51 3993.8,-1091.51 3999.8,-1097.51 3999.8,-1103.51 3999.8,-1103.51 3999.8,-1126.43 3999.8,-1126.43 3999.8,-1132.43 3993.8,-1138.43 3987.8,-1138.43"/>
+<text xml:space="preserve" text-anchor="start" x="3761.21" y="-1110.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#d5c9f2">skeletonization_stage()</text>
+</g>
+<!-- skel_ctx -->
+<g id="node_skel_ctx" class="node">
+<title>skel_ctx</title>
+<path fill="#1a242d" stroke="#4385be" stroke-width="1.6" d="M4512.73,-1075.43C4512.73,-1075.43 4184.05,-1075.43 4184.05,-1075.43 4178.05,-1075.43 4172.05,-1069.43 4172.05,-1063.43 4172.05,-1063.43 4172.05,-1030.51 4172.05,-1030.51 4172.05,-1024.51 4178.05,-1018.51 4184.05,-1018.51 4184.05,-1018.51 4512.73,-1018.51 4512.73,-1018.51 4518.73,-1018.51 4524.73,-1024.51 4524.73,-1030.51 4524.73,-1030.51 4524.73,-1063.43 4524.73,-1063.43 4524.73,-1069.43 4518.73,-1075.43 4512.73,-1075.43"/>
+<text xml:space="preserve" text-anchor="start" x="4187.89" y="-1047.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#a9cce9">InMemorySkeletonizationContext</text>
+<text xml:space="preserve" text-anchor="start" x="4282.39" y="-1033.17" font-family="DejaVu Sans" font-size="14.00" fill="#a9cce9">real data lives here</text>
+</g>
+<!-- skel_out -->
+<g id="node_skel_out" class="node">
+<title>skel_out</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M4460.23,-1190.43C4460.23,-1190.43 4236.55,-1190.43 4236.55,-1190.43 4230.55,-1190.43 4224.55,-1184.43 4224.55,-1178.43 4224.55,-1178.43 4224.55,-1145.51 4224.55,-1145.51 4224.55,-1139.51 4230.55,-1133.51 4236.55,-1133.51 4236.55,-1133.51 4460.23,-1133.51 4460.23,-1133.51 4466.23,-1133.51 4472.23,-1139.51 4472.23,-1145.51 4472.23,-1145.51 4472.23,-1178.43 4472.23,-1178.43 4472.23,-1184.43 4466.23,-1190.43 4460.23,-1190.43"/>
+<text xml:space="preserve" text-anchor="start" x="4240.39" y="-1162.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">SkeletonizationOutput</text>
+<text xml:space="preserve" text-anchor="start" x="4268.52" y="-1148.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">references + metadata</text>
+</g>
+<!-- raw_lines -->
+<g id="node_raw_lines" class="node">
+<title>raw_lines</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M5216.34,-1071.43C5216.34,-1071.43 5043.66,-1071.43 5043.66,-1071.43 5037.66,-1071.43 5031.66,-1065.43 5031.66,-1059.43 5031.66,-1059.43 5031.66,-1026.51 5031.66,-1026.51 5031.66,-1020.51 5037.66,-1014.51 5043.66,-1014.51 5043.66,-1014.51 5216.34,-1014.51 5216.34,-1014.51 5222.34,-1014.51 5228.34,-1020.51 5228.34,-1026.51 5228.34,-1026.51 5228.34,-1059.43 5228.34,-1059.43 5228.34,-1065.43 5222.34,-1071.43 5216.34,-1071.43"/>
+<text xml:space="preserve" text-anchor="start" x="5051.63" y="-1043.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">Centerline • raw</text>
+<text xml:space="preserve" text-anchor="start" x="5047.5" y="-1029.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">list • actual coordinates</text>
+</g>
+<!-- clean_input -->
+<g id="node_clean_input" class="node">
+<title>clean_input</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M4997.66,-910.43C4997.66,-910.43 4713.23,-910.43 4713.23,-910.43 4707.23,-910.43 4701.23,-904.43 4701.23,-898.43 4701.23,-898.43 4701.23,-875.51 4701.23,-875.51 4701.23,-869.51 4707.23,-863.51 4713.23,-863.51 4713.23,-863.51 4997.66,-863.51 4997.66,-863.51 5003.66,-863.51 5009.66,-869.51 5009.66,-875.51 5009.66,-875.51 5009.66,-898.43 5009.66,-898.43 5009.66,-904.43 5003.66,-910.43 4997.66,-910.43"/>
+<text xml:space="preserve" text-anchor="start" x="4717.07" y="-882.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">SkeletonizationCleanupInput</text>
+</g>
+<!-- clean -->
+<g id="node_clean" class="node">
+<title>clean</title>
+<path fill="#24212e" stroke="#8b7ec8" stroke-width="1.6" d="M5586.27,-858.43C5586.27,-858.43 5273.34,-858.43 5273.34,-858.43 5267.34,-858.43 5261.34,-852.43 5261.34,-846.43 5261.34,-846.43 5261.34,-823.51 5261.34,-823.51 5261.34,-817.51 5267.34,-811.51 5273.34,-811.51 5273.34,-811.51 5586.27,-811.51 5586.27,-811.51 5592.27,-811.51 5598.27,-817.51 5598.27,-823.51 5598.27,-823.51 5598.27,-846.43 5598.27,-846.43 5598.27,-852.43 5592.27,-858.43 5586.27,-858.43"/>
+<text xml:space="preserve" text-anchor="start" x="5277.18" y="-830.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#d5c9f2">skeletonization_cleanup_stage()</text>
+</g>
+<!-- clean_ctx -->
+<g id="node_clean_ctx" class="node">
+<title>clean_ctx</title>
+<path fill="#1a242d" stroke="#4385be" stroke-width="1.6" d="M6216.95,-916.43C6216.95,-916.43 5811.02,-916.43 5811.02,-916.43 5805.02,-916.43 5799.02,-910.43 5799.02,-904.43 5799.02,-904.43 5799.02,-871.51 5799.02,-871.51 5799.02,-865.51 5805.02,-859.51 5811.02,-859.51 5811.02,-859.51 6216.95,-859.51 6216.95,-859.51 6222.95,-859.51 6228.95,-865.51 6228.95,-871.51 6228.95,-871.51 6228.95,-904.43 6228.95,-904.43 6228.95,-910.43 6222.95,-916.43 6216.95,-916.43"/>
+<text xml:space="preserve" text-anchor="start" x="5814.86" y="-888.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#a9cce9">InMemorySkeletonizationCleanupContext</text>
+<text xml:space="preserve" text-anchor="start" x="5947.99" y="-874.17" font-family="DejaVu Sans" font-size="14.00" fill="#a9cce9">real data lives here</text>
+</g>
+<!-- clean_out -->
+<g id="node_clean_out" class="node">
+<title>clean_out</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M6164.45,-784.43C6164.45,-784.43 5863.52,-784.43 5863.52,-784.43 5857.52,-784.43 5851.52,-778.43 5851.52,-772.43 5851.52,-772.43 5851.52,-739.51 5851.52,-739.51 5851.52,-733.51 5857.52,-727.51 5863.52,-727.51 5863.52,-727.51 6164.45,-727.51 6164.45,-727.51 6170.45,-727.51 6176.45,-733.51 6176.45,-739.51 6176.45,-739.51 6176.45,-772.43 6176.45,-772.43 6176.45,-778.43 6170.45,-784.43 6164.45,-784.43"/>
+<text xml:space="preserve" text-anchor="start" x="5867.36" y="-756.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">SkeletonizationCleanupOutput</text>
+<text xml:space="preserve" text-anchor="start" x="5912.36" y="-742.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">returned • ignored by runner</text>
+</g>
+<!-- clean_lines -->
+<g id="node_clean_lines" class="node">
+<title>clean_lines</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M6624.88,-918.43C6624.88,-918.43 6422.2,-918.43 6422.2,-918.43 6416.2,-918.43 6410.2,-912.43 6410.2,-906.43 6410.2,-906.43 6410.2,-873.51 6410.2,-873.51 6410.2,-867.51 6416.2,-861.51 6422.2,-861.51 6422.2,-861.51 6624.88,-861.51 6624.88,-861.51 6630.88,-861.51 6636.88,-867.51 6636.88,-873.51 6636.88,-873.51 6636.88,-906.43 6636.88,-906.43 6636.88,-912.43 6630.88,-918.43 6624.88,-918.43"/>
+<text xml:space="preserve" text-anchor="start" x="6426.04" y="-890.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">Centerline • cleaned</text>
+<text xml:space="preserve" text-anchor="start" x="6441.04" y="-876.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">list • actual coordinates</text>
+</g>
+<!-- graph_input -->
+<g id="node_graph_input" class="node">
+<title>graph_input</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M7114.81,-1054.43C7114.81,-1054.43 6876.13,-1054.43 6876.13,-1054.43 6870.13,-1054.43 6864.13,-1048.43 6864.13,-1042.43 6864.13,-1042.43 6864.13,-1019.51 6864.13,-1019.51 6864.13,-1013.51 6870.13,-1007.51 6876.13,-1007.51 6876.13,-1007.51 7114.81,-1007.51 7114.81,-1007.51 7120.81,-1007.51 7126.81,-1013.51 7126.81,-1019.51 7126.81,-1019.51 7126.81,-1042.43 7126.81,-1042.43 7126.81,-1048.43 7120.81,-1054.43 7114.81,-1054.43"/>
+<text xml:space="preserve" text-anchor="start" x="6879.97" y="-1026.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">GraphConstructionInput</text>
+</g>
+<!-- graph -->
+<g id="node_graph" class="node">
+<title>graph</title>
+<path fill="#24212e" stroke="#8b7ec8" stroke-width="1.6" d="M7596.24,-1098.43C7596.24,-1098.43 7329.06,-1098.43 7329.06,-1098.43 7323.06,-1098.43 7317.06,-1092.43 7317.06,-1086.43 7317.06,-1086.43 7317.06,-1063.51 7317.06,-1063.51 7317.06,-1057.51 7323.06,-1051.51 7329.06,-1051.51 7329.06,-1051.51 7596.24,-1051.51 7596.24,-1051.51 7602.24,-1051.51 7608.24,-1057.51 7608.24,-1063.51 7608.24,-1063.51 7608.24,-1086.43 7608.24,-1086.43 7608.24,-1092.43 7602.24,-1098.43 7596.24,-1098.43"/>
+<text xml:space="preserve" text-anchor="start" x="7332.9" y="-1070.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#d5c9f2">graph_construction_stage()</text>
+</g>
+<!-- graph_ctx -->
+<g id="node_graph_ctx" class="node">
+<title>graph_ctx</title>
+<path fill="#1a242d" stroke="#4385be" stroke-width="1.6" d="M8029.67,-1066.43C8029.67,-1066.43 7792.49,-1066.43 7792.49,-1066.43 7786.49,-1066.43 7780.49,-1060.43 7780.49,-1054.43 7780.49,-1054.43 7780.49,-1021.51 7780.49,-1021.51 7780.49,-1015.51 7786.49,-1009.51 7792.49,-1009.51 7792.49,-1009.51 8029.67,-1009.51 8029.67,-1009.51 8035.67,-1009.51 8041.67,-1015.51 8041.67,-1021.51 8041.67,-1021.51 8041.67,-1054.43 8041.67,-1054.43 8041.67,-1060.43 8035.67,-1066.43 8029.67,-1066.43"/>
+<text xml:space="preserve" text-anchor="start" x="7796.33" y="-1038.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#a9cce9">InMemoryGraphContext</text>
+<text xml:space="preserve" text-anchor="start" x="7845.08" y="-1024.17" font-family="DejaVu Sans" font-size="14.00" fill="#a9cce9">real data lives here</text>
+</g>
+<!-- graph_out -->
+<g id="node_graph_out" class="node">
+<title>graph_out</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M9384.59,-1117.43C9384.59,-1117.43 9129.41,-1117.43 9129.41,-1117.43 9123.41,-1117.43 9117.41,-1111.43 9117.41,-1105.43 9117.41,-1105.43 9117.41,-1072.51 9117.41,-1072.51 9117.41,-1066.51 9123.41,-1060.51 9129.41,-1060.51 9129.41,-1060.51 9384.59,-1060.51 9384.59,-1060.51 9390.59,-1060.51 9396.59,-1066.51 9396.59,-1072.51 9396.59,-1072.51 9396.59,-1105.43 9396.59,-1105.43 9396.59,-1111.43 9390.59,-1117.43 9384.59,-1117.43"/>
+<text xml:space="preserve" text-anchor="start" x="9133.25" y="-1089.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">GraphConstructionOutput</text>
+<text xml:space="preserve" text-anchor="start" x="9133.62" y="-1075.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">references + summary + metadata</text>
+</g>
+<!-- graph_build -->
+<g id="node_graph_build" class="node">
+<title>graph_build</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M8427.85,-1058.43C8427.85,-1058.43 8193.67,-1058.43 8193.67,-1058.43 8187.67,-1058.43 8181.67,-1052.43 8181.67,-1046.43 8181.67,-1046.43 8181.67,-1013.51 8181.67,-1013.51 8181.67,-1007.51 8187.67,-1001.51 8193.67,-1001.51 8193.67,-1001.51 8427.85,-1001.51 8427.85,-1001.51 8433.85,-1001.51 8439.85,-1007.51 8439.85,-1013.51 8439.85,-1013.51 8439.85,-1046.43 8439.85,-1046.43 8439.85,-1052.43 8433.85,-1058.43 8427.85,-1058.43"/>
+<text xml:space="preserve" text-anchor="start" x="8197.51" y="-1030.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">GraphBuild • generated</text>
+<text xml:space="preserve" text-anchor="start" x="8242.14" y="-1016.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">actual DWN records</text>
+</g>
+<!-- summary -->
+<g id="node_summary" class="node">
+<title>summary</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M8849.03,-1117.43C8849.03,-1117.43 8632.1,-1117.43 8632.1,-1117.43 8626.1,-1117.43 8620.1,-1111.43 8620.1,-1105.43 8620.1,-1105.43 8620.1,-1072.51 8620.1,-1072.51 8620.1,-1066.51 8626.1,-1060.51 8632.1,-1060.51 8632.1,-1060.51 8849.03,-1060.51 8849.03,-1060.51 8855.03,-1060.51 8861.03,-1066.51 8861.03,-1072.51 8861.03,-1072.51 8861.03,-1105.43 8861.03,-1105.43 8861.03,-1111.43 8855.03,-1117.43 8849.03,-1117.43"/>
+<text xml:space="preserve" text-anchor="start" x="8666.32" y="-1089.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">GraphSummary</text>
+<text xml:space="preserve" text-anchor="start" x="8635.94" y="-1075.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">derived counts • no geometry</text>
+</g>
+<!-- validate -->
+<g id="node_validate" class="node">
+<title>validate</title>
+<path fill="#24212e" stroke="#8b7ec8" stroke-width="1.6" d="M9799.52,-772.43C9799.52,-772.43 9635.84,-772.43 9635.84,-772.43 9629.84,-772.43 9623.84,-766.43 9623.84,-760.43 9623.84,-760.43 9623.84,-737.51 9623.84,-737.51 9623.84,-731.51 9629.84,-725.51 9635.84,-725.51 9635.84,-725.51 9799.52,-725.51 9799.52,-725.51 9805.52,-725.51 9811.52,-731.51 9811.52,-737.51 9811.52,-737.51 9811.52,-760.43 9811.52,-760.43 9811.52,-766.43 9805.52,-772.43 9799.52,-772.43"/>
+<text xml:space="preserve" text-anchor="start" x="9639.68" y="-744.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#d5c9f2">validate_graph()</text>
+</g>
+<!-- pipeline_result -->
+<g id="node_pipeline_result" class="node">
+<title>pipeline_result</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M9357.96,-772.43C9357.96,-772.43 9156.03,-772.43 9156.03,-772.43 9150.03,-772.43 9144.03,-766.43 9144.03,-760.43 9144.03,-760.43 9144.03,-727.51 9144.03,-727.51 9144.03,-721.51 9150.03,-715.51 9156.03,-715.51 9156.03,-715.51 9357.96,-715.51 9357.96,-715.51 9363.96,-715.51 9369.96,-721.51 9369.96,-727.51 9369.96,-727.51 9369.96,-760.43 9369.96,-760.43 9369.96,-766.43 9363.96,-772.43 9357.96,-772.43"/>
+<text xml:space="preserve" text-anchor="start" x="9188.37" y="-744.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">PipelineResult</text>
+<text xml:space="preserve" text-anchor="start" x="9159.87" y="-730.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">runner bundle • actual data</text>
+</g>
+<!-- combined_qa -->
+<g id="node_combined_qa" class="node">
+<title>combined_qa</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M8879.78,-772.43C8879.78,-772.43 8601.35,-772.43 8601.35,-772.43 8595.35,-772.43 8589.35,-766.43 8589.35,-760.43 8589.35,-760.43 8589.35,-727.51 8589.35,-727.51 8589.35,-721.51 8595.35,-715.51 8601.35,-715.51 8601.35,-715.51 8879.78,-715.51 8879.78,-715.51 8885.78,-715.51 8891.78,-721.51 8891.78,-727.51 8891.78,-727.51 8891.78,-760.43 8891.78,-760.43 8891.78,-766.43 8885.78,-772.43 8879.78,-772.43"/>
+<text xml:space="preserve" text-anchor="start" x="8605.19" y="-744.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">list[QAFinding] • generation</text>
+<text xml:space="preserve" text-anchor="start" x="8640.07" y="-730.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">three generation QA streams</text>
+</g>
+<!-- export -->
+<g id="node_export" class="node">
+<title>export</title>
+<path fill="#24212e" stroke="#8b7ec8" stroke-width="1.6" d="M9795.02,-626.43C9795.02,-626.43 9640.34,-626.43 9640.34,-626.43 9634.34,-626.43 9628.34,-620.43 9628.34,-614.43 9628.34,-614.43 9628.34,-591.51 9628.34,-591.51 9628.34,-585.51 9634.34,-579.51 9640.34,-579.51 9640.34,-579.51 9795.02,-579.51 9795.02,-579.51 9801.02,-579.51 9807.02,-585.51 9807.02,-591.51 9807.02,-591.51 9807.02,-614.43 9807.02,-614.43 9807.02,-620.43 9801.02,-626.43 9795.02,-626.43"/>
+<text xml:space="preserve" text-anchor="start" x="9644.18" y="-598.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#d5c9f2">write_outputs()</text>
+</g>
+<!-- files -->
+<g id="node_files" class="node">
+<title>files</title>
+<path fill="#302119" stroke="#da702c" stroke-width="1.6" d="M10264.95,-626.43C10264.95,-626.43 10025.52,-626.43 10025.52,-626.43 10019.52,-626.43 10013.52,-620.43 10013.52,-614.43 10013.52,-614.43 10013.52,-581.51 10013.52,-581.51 10013.52,-575.51 10019.52,-569.51 10025.52,-569.51 10025.52,-569.51 10264.95,-569.51 10264.95,-569.51 10270.95,-569.51 10276.95,-575.51 10276.95,-581.51 10276.95,-581.51 10276.95,-614.43 10276.95,-614.43 10276.95,-620.43 10270.95,-626.43 10264.95,-626.43"/>
+<text xml:space="preserve" text-anchor="start" x="10029.36" y="-598.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#e9b79b">Generated DWN exports</text>
+<text xml:space="preserve" text-anchor="start" x="10062.73" y="-584.17" font-family="DejaVu Sans" font-size="14.00" fill="#e9b79b">disk • .gpkg + .geojson</text>
+</g>
+<!-- patches -->
+<g id="node_patches" class="node">
+<title>patches</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M9379.71,-475.43C9379.71,-475.43 9134.28,-475.43 9134.28,-475.43 9128.28,-475.43 9122.28,-469.43 9122.28,-463.43 9122.28,-463.43 9122.28,-430.51 9122.28,-430.51 9122.28,-424.51 9128.28,-418.51 9134.28,-418.51 9134.28,-418.51 9379.71,-418.51 9379.71,-418.51 9385.71,-418.51 9391.71,-424.51 9391.71,-430.51 9391.71,-430.51 9391.71,-463.43 9391.71,-463.43 9391.71,-469.43 9385.71,-475.43 9379.71,-475.43"/>
+<text xml:space="preserve" text-anchor="start" x="9230.37" y="-447.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">Patch</text>
+<text xml:space="preserve" text-anchor="start" x="9138.12" y="-433.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">ordered list • saved JSON in demo</text>
+</g>
+<!-- replay -->
+<g id="node_replay" class="node">
+<title>replay</title>
+<path fill="#24212e" stroke="#8b7ec8" stroke-width="1.6" d="M9796.52,-470.43C9796.52,-470.43 9638.84,-470.43 9638.84,-470.43 9632.84,-470.43 9626.84,-464.43 9626.84,-458.43 9626.84,-458.43 9626.84,-435.51 9626.84,-435.51 9626.84,-429.51 9632.84,-423.51 9638.84,-423.51 9638.84,-423.51 9796.52,-423.51 9796.52,-423.51 9802.52,-423.51 9808.52,-429.51 9808.52,-435.51 9808.52,-435.51 9808.52,-458.43 9808.52,-458.43 9808.52,-464.43 9802.52,-470.43 9796.52,-470.43"/>
+<text xml:space="preserve" text-anchor="start" x="9642.68" y="-442.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#d5c9f2">apply_patches()</text>
+</g>
+<!-- patch_result -->
+<g id="node_patch_result" class="node">
+<title>patch_result</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M10294.95,-475.43C10294.95,-475.43 9995.52,-475.43 9995.52,-475.43 9989.52,-475.43 9983.52,-469.43 9983.52,-463.43 9983.52,-463.43 9983.52,-430.51 9983.52,-430.51 9983.52,-424.51 9989.52,-418.51 9995.52,-418.51 9995.52,-418.51 10294.95,-418.51 10294.95,-418.51 10300.95,-418.51 10306.95,-424.51 10306.95,-430.51 10306.95,-430.51 10306.95,-463.43 10306.95,-463.43 10306.95,-469.43 10300.95,-475.43 10294.95,-475.43"/>
+<text xml:space="preserve" text-anchor="start" x="10072.86" y="-447.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">PatchSetResult</text>
+<text xml:space="preserve" text-anchor="start" x="9999.36" y="-433.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">actual graph + outcomes + correction QA</text>
+</g>
+<!-- effective -->
+<g id="node_effective" class="node">
+<title>effective</title>
+<path fill="#172a27" stroke="#3aa99f" stroke-width="1.6" d="M10708.13,-475.43C10708.13,-475.43 10487.45,-475.43 10487.45,-475.43 10481.45,-475.43 10475.45,-469.43 10475.45,-463.43 10475.45,-463.43 10475.45,-430.51 10475.45,-430.51 10475.45,-424.51 10481.45,-418.51 10487.45,-418.51 10487.45,-418.51 10708.13,-418.51 10708.13,-418.51 10714.13,-418.51 10720.13,-424.51 10720.13,-430.51 10720.13,-430.51 10720.13,-463.43 10720.13,-463.43 10720.13,-469.43 10714.13,-475.43 10708.13,-475.43"/>
+<text xml:space="preserve" text-anchor="start" x="10491.29" y="-447.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#b2ded5">GraphBuild • effective</text>
+<text xml:space="preserve" text-anchor="start" x="10524.66" y="-433.17" font-family="DejaVu Sans" font-size="14.00" fill="#b2ded5">actual modified DWN</text>
+</g>
+<!-- demo_files -->
+<g id="node_demo_files" class="node">
+<title>demo_files</title>
+<path fill="#302119" stroke="#da702c" stroke-width="1.6" d="M11211.31,-475.43C11211.31,-475.43 10935.88,-475.43 10935.88,-475.43 10929.88,-475.43 10923.88,-469.43 10923.88,-463.43 10923.88,-463.43 10923.88,-430.51 10923.88,-430.51 10923.88,-424.51 10929.88,-418.51 10935.88,-418.51 10935.88,-418.51 11211.31,-418.51 11211.31,-418.51 11217.31,-418.51 11223.31,-424.51 11223.31,-430.51 11223.31,-430.51 11223.31,-463.43 11223.31,-463.43 11223.31,-469.43 11217.31,-475.43 11211.31,-475.43"/>
+<text xml:space="preserve" text-anchor="start" x="10953.22" y="-447.32" font-family="DejaVu Sans" font-weight="bold" font-size="17.00" fill="#e9b79b">Den Haag review exports</text>
+<text xml:space="preserve" text-anchor="start" x="10939.72" y="-433.17" font-family="DejaVu Sans" font-size="14.00" fill="#e9b79b">both graphs + patches + separate QA</text>
+</g>
+</g>
+</svg>

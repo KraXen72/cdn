@@ -1,0 +1,107 @@
+digraph Pipeline {
+graph [rankdir=LR, bgcolor="#111111", pad="0.3", nodesep="0.5", ranksep="0.6", compound=true, newrank=true, fontname="DejaVu Sans", fontsize=20, splines=spline, outputorder=edgesfirst];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=17, margin="0.22,0.18", penwidth=1.6];
+edge [fontname="DejaVu Sans", fontsize=13, arrowsize=1.05, penwidth=2.2];
+subgraph cluster_runner { graph [id="group_runner", label="00 • Orchestration", style="rounded,filled", color="#343331", fillcolor="#181716", fontcolor="#cecdc3", labeljust=l, margin=25];
+"runner" [id="node_runner", label=<<B>run_stages()</B>>, fillcolor="#24212e", color="#8b7ec8", fontcolor="#d5c9f2"];
+}
+subgraph cluster_acquisition { graph [id="group_acquisition", label="01 • Acquisition", style="rounded,filled", color="#343331", fillcolor="#181716", fontcolor="#cecdc3", labeljust=l, margin=25];
+"acq_settings" [id="node_acq_settings", label=<<B>AcquisitionSettings</B>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"acq" [id="node_acq", label=<<B>data_acquisition_stage()</B>>, fillcolor="#24212e", color="#8b7ec8", fontcolor="#d5c9f2"];
+"bgt_cache" [id="node_bgt_cache", label=<<B>BGT cache &#8226; GeoPackage</B><BR/><FONT POINT-SIZE="14">disk &#8226; EPSG:28992</FONT>>, fillcolor="#302119", color="#da702c", fontcolor="#e9b79b"];
+"acq_out" [id="node_acq_out", label=<<B>AcquisitionOutput</B><BR/><FONT POINT-SIZE="14">batches → source records</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+}
+subgraph cluster_transformation { graph [id="group_transformation", label="02 • Transformation", style="rounded,filled", color="#343331", fillcolor="#181716", fontcolor="#cecdc3", labeljust=l, margin=25];
+"trans_input" [id="node_trans_input", label=<<B>TransformationInput</B>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"trans" [id="node_trans", label=<<B>transformation_stage()</B>>, fillcolor="#24212e", color="#8b7ec8", fontcolor="#d5c9f2"];
+"trans_out" [id="node_trans_out", label=<<B>TransformationOutput</B><BR/><FONT POINT-SIZE="14">crs + features</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"surfaces" [id="node_surfaces", label=<<B>SurfaceFeature</B><BR/><FONT POINT-SIZE="14">list &#8226; actual geometry</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"surface_ref" [id="node_surface_ref", label=<<B>ArtifactRef &#8226; surfaces</B><BR/><FONT POINT-SIZE="14">metadata &#8226; not the surfaces</FONT>>, fillcolor="#2c2718", color="#d0a215", fontcolor="#e6ce7d"];
+}
+subgraph cluster_skeletonization { graph [id="group_skeletonization", label="03 • Skeletonization", style="rounded,filled", color="#343331", fillcolor="#181716", fontcolor="#cecdc3", labeljust=l, margin=25];
+"skel_input" [id="node_skel_input", label=<<B>SkeletonizationInput</B>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"skel" [id="node_skel", label=<<B>skeletonization_stage()</B>>, fillcolor="#24212e", color="#8b7ec8", fontcolor="#d5c9f2"];
+"skel_ctx" [id="node_skel_ctx", label=<<B>InMemorySkeletonizationContext</B><BR/><FONT POINT-SIZE="14">real data lives here</FONT>>, fillcolor="#1a242d", color="#4385be", fontcolor="#a9cce9"];
+"skel_out" [id="node_skel_out", label=<<B>SkeletonizationOutput</B><BR/><FONT POINT-SIZE="14">references + metadata</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"raw_lines" [id="node_raw_lines", label=<<B>Centerline &#8226; raw</B><BR/><FONT POINT-SIZE="14">list &#8226; actual coordinates</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+}
+subgraph cluster_cleanup { graph [id="group_cleanup", label="04 • Centerline cleanup", style="rounded,filled", color="#343331", fillcolor="#181716", fontcolor="#cecdc3", labeljust=l, margin=25];
+"clean_input" [id="node_clean_input", label=<<B>SkeletonizationCleanupInput</B>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"clean" [id="node_clean", label=<<B>skeletonization_cleanup_stage()</B>>, fillcolor="#24212e", color="#8b7ec8", fontcolor="#d5c9f2"];
+"clean_ctx" [id="node_clean_ctx", label=<<B>InMemorySkeletonizationCleanupContext</B><BR/><FONT POINT-SIZE="14">real data lives here</FONT>>, fillcolor="#1a242d", color="#4385be", fontcolor="#a9cce9"];
+"clean_out" [id="node_clean_out", label=<<B>SkeletonizationCleanupOutput</B><BR/><FONT POINT-SIZE="14">returned &#8226; ignored by runner</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"clean_lines" [id="node_clean_lines", label=<<B>Centerline &#8226; cleaned</B><BR/><FONT POINT-SIZE="14">list &#8226; actual coordinates</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+}
+subgraph cluster_construction { graph [id="group_construction", label="05 • Graph construction", style="rounded,filled", color="#343331", fillcolor="#181716", fontcolor="#cecdc3", labeljust=l, margin=25];
+"graph_input" [id="node_graph_input", label=<<B>GraphConstructionInput</B>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"graph" [id="node_graph", label=<<B>graph_construction_stage()</B>>, fillcolor="#24212e", color="#8b7ec8", fontcolor="#d5c9f2"];
+"graph_ctx" [id="node_graph_ctx", label=<<B>InMemoryGraphContext</B><BR/><FONT POINT-SIZE="14">real data lives here</FONT>>, fillcolor="#1a242d", color="#4385be", fontcolor="#a9cce9"];
+"graph_out" [id="node_graph_out", label=<<B>GraphConstructionOutput</B><BR/><FONT POINT-SIZE="14">references + summary + metadata</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"graph_build" [id="node_graph_build", label=<<B>GraphBuild &#8226; generated</B><BR/><FONT POINT-SIZE="14">actual DWN records</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"summary" [id="node_summary", label=<<B>GraphSummary</B><BR/><FONT POINT-SIZE="14">derived counts &#8226; no geometry</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+}
+subgraph cluster_validation { graph [id="group_validation", label="06 • Validation & runner result", style="rounded,filled", color="#343331", fillcolor="#181716", fontcolor="#cecdc3", labeljust=l, margin=25];
+"validate" [id="node_validate", label=<<B>validate_graph()</B>>, fillcolor="#24212e", color="#8b7ec8", fontcolor="#d5c9f2"];
+"pipeline_result" [id="node_pipeline_result", label=<<B>PipelineResult</B><BR/><FONT POINT-SIZE="14">runner bundle &#8226; actual data</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"combined_qa" [id="node_combined_qa", label=<<B>list[QAFinding] &#8226; generation</B><BR/><FONT POINT-SIZE="14">three generation QA streams</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+}
+subgraph cluster_export { graph [id="group_export", label="07 • Standard export", style="rounded,filled", color="#343331", fillcolor="#181716", fontcolor="#cecdc3", labeljust=l, margin=25];
+"export" [id="node_export", label=<<B>write_outputs()</B>>, fillcolor="#24212e", color="#8b7ec8", fontcolor="#d5c9f2"];
+"files" [id="node_files", label=<<B>Generated DWN exports</B><BR/><FONT POINT-SIZE="14">disk &#8226; .gpkg + .geojson</FONT>>, fillcolor="#302119", color="#da702c", fontcolor="#e9b79b"];
+}
+subgraph cluster_corrections { graph [id="group_corrections", label="08 • Corrections • Den Haag demo", style="rounded,filled", color="#343331", fillcolor="#181716", fontcolor="#cecdc3", labeljust=l, margin=25];
+"patches" [id="node_patches", label=<<B>Patch</B><BR/><FONT POINT-SIZE="14">ordered list &#8226; saved JSON in demo</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"replay" [id="node_replay", label=<<B>apply_patches()</B>>, fillcolor="#24212e", color="#8b7ec8", fontcolor="#d5c9f2"];
+"patch_result" [id="node_patch_result", label=<<B>PatchSetResult</B><BR/><FONT POINT-SIZE="14">actual graph + outcomes + correction QA</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"effective" [id="node_effective", label=<<B>GraphBuild &#8226; effective</B><BR/><FONT POINT-SIZE="14">actual modified DWN</FONT>>, fillcolor="#172a27", color="#3aa99f", fontcolor="#b2ded5"];
+"demo_files" [id="node_demo_files", label=<<B>Den Haag review exports</B><BR/><FONT POINT-SIZE="14">both graphs + patches + separate QA</FONT>>, fillcolor="#302119", color="#da702c", fontcolor="#e9b79b"];
+}
+"acq_settings" -> "acq" [id="edge_0", label="settings argument", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"bgt_cache" -> "acq" [id="edge_1", label="reads cached BGT highway\nlayer", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"acq" -> "acq_out" [id="edge_2", label="returns actual batches", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"acq_out" -> "trans_input" [id="edge_13", label="acquisition field", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"trans_input" -> "trans" [id="edge_15", label="stage_input argument", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"trans" -> "trans_out" [id="edge_16", label="returns", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"trans_out" -> "surfaces" [id="edge_17", label="features field", color="#8bc3ad", fontcolor="#cecdc3", style="dotted", constraint=true];
+"surfaces" -> "surface_ref" [id="edge_18", label="runner describes the\npayload", color="#d4bd74", fontcolor="#cecdc3", style="dashed", constraint=true];
+"surface_ref" -> "skel_input" [id="edge_21", label="surface_feature_artifact", color="#d4bd74", fontcolor="#cecdc3", style="dashed", constraint=true];
+"surfaces" -> "skel_ctx" [id="edge_22", label="runner seeds\ncontext.surface_features", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"skel_input" -> "skel" [id="edge_24", label="stage_input argument", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"skel_ctx" -> "skel" [id="edge_25", label="context argument /\nsurface payload", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"skel" -> "skel_ctx" [id="edge_26", label="retains generated\ncenterlines + QA", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"skel" -> "skel_out" [id="edge_27", label="returns references", color="#d4bd74", fontcolor="#cecdc3", style="dashed", constraint=true];
+"skel_ctx" -> "raw_lines" [id="edge_28", label="runner reads\n.centerlines", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"skel_out" -> "clean_input" [id="edge_36", label="centerline_artifact\nfield", color="#d4bd74", fontcolor="#cecdc3", style="dashed", constraint=true];
+"raw_lines" -> "clean_ctx" [id="edge_37", label="runner seeds\ncontext.centerlines", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"clean_input" -> "clean" [id="edge_39", label="stage_input argument", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"clean_ctx" -> "clean" [id="edge_40", label="context argument / raw\ncenterlines", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"clean" -> "clean_ctx" [id="edge_41", label="retains cleaned\ncenterlines + QA", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"clean" -> "clean_out" [id="edge_42", label="returns references", color="#d4bd74", fontcolor="#cecdc3", style="dashed", constraint=true];
+"clean_ctx" -> "clean_lines" [id="edge_43", label="runner reads\n.cleaned_centerlines", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"clean_lines" -> "graph_input" [id="edge_51", label="runner constructs a new\ninput/ref", color="#d4bd74", fontcolor="#cecdc3", style="dashed", constraint=true];
+"clean_lines" -> "graph_ctx" [id="edge_52", label="runner seeds\ncontext.centerlines", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"graph_input" -> "graph" [id="edge_56", label="stage_input argument", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"graph_ctx" -> "graph" [id="edge_57", label="context argument /\ncenterline payload", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"graph" -> "graph_ctx" [id="edge_58", label="retains generated\nGraphBuild", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"graph_ctx" -> "graph_build" [id="edge_59", label="runner reads\n.written_graph", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"graph" -> "graph_out" [id="edge_60", label="returns references +\nsummary", color="#d4bd74", fontcolor="#cecdc3", style="dashed", constraint=true];
+"graph_build" -> "summary" [id="edge_61", label="summary field", color="#8bc3ad", fontcolor="#cecdc3", style="dotted", constraint=true];
+"summary" -> "graph_out" [id="edge_62", label="same summary object", color="#8bc3ad", fontcolor="#cecdc3", style="dotted", constraint=true];
+"graph_build" -> "validate" [id="edge_87", label="graph argument; no graph\nchanges", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"graph_out" -> "validate" [id="edge_88", label="run identity", color="#d4bd74", fontcolor="#cecdc3", style="dashed", constraint=true];
+"graph_build" -> "pipeline_result" [id="edge_89", label="graph field; same\ngenerated graph", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"clean_lines" -> "pipeline_result" [id="edge_90", label="centerlines field", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"skel_ctx" -> "combined_qa" [id="edge_91", label=".qa_findings", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"clean_ctx" -> "combined_qa" [id="edge_92", label=".qa_findings", color="#8ab0ce", fontcolor="#cecdc3", style="dashed", constraint=true];
+"graph_build" -> "combined_qa" [id="edge_93", label=".qa_findings", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"combined_qa" -> "pipeline_result" [id="edge_94", label="qa_findings field", color="#8bc3ad", fontcolor="#cecdc3", style="dotted", constraint=true];
+"pipeline_result" -> "export" [id="edge_96", label="result argument", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"export" -> "files" [id="edge_97", label="writes actual files", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"pipeline_result" -> "replay" [id="edge_104", label="Den Haag demo supplies\nresult.graph", color="#dfad83", fontcolor="#cecdc3", style="dashed", constraint=true];
+"patches" -> "replay" [id="edge_105", label="patches + run + at\narguments", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"replay" -> "patch_result" [id="edge_106", label="returns", color="#cecdc3", fontcolor="#cecdc3", style="solid", constraint=true];
+"patch_result" -> "effective" [id="edge_107", label="effective_dwn field", color="#8bc3ad", fontcolor="#cecdc3", style="dotted", constraint=true];
+"effective" -> "demo_files" [id="edge_110", label="demo writes effective +\ngenerated DWN", color="#dfad83", fontcolor="#cecdc3", style="dashed", constraint=true];
+"runner" -> "acq" [id="edge_147", label="orchestrates", color="#b5a6d3", fontcolor="#cecdc3", style="dotted", constraint=false];
+"runner" -> "pipeline_result" [id="edge_153", label="returns assembled result", color="#b5a6d3", fontcolor="#cecdc3", style="dotted", constraint=false];
+}
