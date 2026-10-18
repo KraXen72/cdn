@@ -181,13 +181,15 @@ def generate_html(sections: dict[str, list[tuple[str, str]]], title: str = "cdn"
 
     for heading, entries in sections.items():
         entries_html = "\n".join(
-            f'            <li><a href="{escape(href, quote=True)}">{escape(name)}</a></li>'
+            f'                <li><a href="{escape(href, quote=True)}">{escape(name)}</a></li>'
             for name, href in entries
         )
-        sections_html += f'''        <h3>{heading}</h3>
-        <ul>
+        sections_html += f'''        <section class="category">
+            <h3>{heading}</h3>
+            <ul>
 {entries_html}
-        </ul>
+            </ul>
+        </section>
 
 '''
 
@@ -283,6 +285,35 @@ def generate_html(sections: dict[str, list[tuple[str, str]]], title: str = "cdn"
             text-decoration: underline;
         }}
 
+        .filter label {{
+            display: block;
+            margin-bottom: 6px;
+        }}
+
+        .filter input {{
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid var(--flexoki-ui-3);
+            border-radius: 6px;
+            background: var(--flexoki-bg-2);
+            color: var(--text-color);
+            font: inherit;
+            color-scheme: dark;
+        }}
+
+        .filter input:focus-visible {{
+            outline: 2px solid var(--flexoki-cyan);
+            outline-offset: 2px;
+        }}
+
+        mark {{
+            background: var(--flexoki-purple);
+            color: var(--flexoki-bg);
+            border-radius: 2px;
+        }}
+
         code {{
             font-family: monospace;
             padding: 2px;
@@ -298,12 +329,18 @@ def generate_html(sections: dict[str, list[tuple[str, str]]], title: str = "cdn"
             font-style: italic;
         }}
     </style>
+    <script src="index-filter.js" defer></script>
 </head>
 
 <body>
 
     <div class="container">
         <h2>{escape(title)}</h2>
+        <div class="filter" hidden>
+            <label for="filter">Filter links</label>
+            <input id="filter" type="search" placeholder="Search…" autocomplete="off" spellcheck="false">
+        </div>
+        <p id="filter-status" role="status"></p>
 {sections_html}    </div>
 
 </body>

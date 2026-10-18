@@ -90,6 +90,35 @@
             text-decoration: underline;
         }
 
+        .filter label {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .filter input {
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid var(--flexoki-ui-3);
+            border-radius: 6px;
+            background: var(--flexoki-bg-2);
+            color: var(--text-color);
+            font: inherit;
+            color-scheme: dark;
+        }
+
+        .filter input:focus-visible {
+            outline: 2px solid var(--flexoki-cyan);
+            outline-offset: 2px;
+        }
+
+        mark {
+            background: var(--flexoki-purple);
+            color: var(--flexoki-bg);
+            border-radius: 2px;
+        }
+
         code {
             font-family: monospace;
             padding: 2px;
@@ -105,38 +134,50 @@
             font-style: italic;
         }
     </style>
+    <script src="index-filter.js" defer></script>
 </head>
 
 <body>
 
     <div class="container">
         <h2>cdn</h2>
-        <h3>tools</h3>
-        <ul>
-            <li><a href="tools/canvas-to-graphviz.html">canvas-to-graphviz</a></li>
-            <li><a href="tools/daisyui-theme-url.html">daisyui-theme-url</a></li>
-            <li><a href="tools/gdocs-markdown-image-processor/index.html">gdocs-markdown-image-processor</a></li>
-            <li><a href="tools/gnfa_convert.html">gnfa_convert</a></li>
-            <li><a href="tools/grayscale-gradient-mapper.html">grayscale-gradient-mapper</a></li>
-            <li><a href="tools/pipeline-explorer/index.html">pipeline-explorer</a></li>
-            <li><a href="tools/temp-playlist/index.html">temp-playlist</a></li>
-            <li><a href="tools/timesheet-convert/index.html">timesheet-convert</a></li>
-        </ul>
+        <div class="filter" hidden>
+            <label for="filter">Filter links</label>
+            <input id="filter" type="search" placeholder="Search…" autocomplete="off" spellcheck="false">
+        </div>
+        <p id="filter-status" role="status"></p>
+        <section class="category">
+            <h3>tools</h3>
+            <ul>
+                <li><a href="tools/canvas-to-graphviz.html">canvas-to-graphviz</a></li>
+                <li><a href="tools/daisyui-theme-url.html">daisyui-theme-url</a></li>
+                <li><a href="tools/gdocs-markdown-image-processor/index.html">gdocs-markdown-image-processor</a></li>
+                <li><a href="tools/gnfa_convert.html">gnfa_convert</a></li>
+                <li><a href="tools/grayscale-gradient-mapper.html">grayscale-gradient-mapper</a></li>
+                <li><a href="tools/pipeline-explorer/index.html">pipeline-explorer</a></li>
+                <li><a href="tools/temp-playlist/index.html">temp-playlist</a></li>
+                <li><a href="tools/timesheet-convert/index.html">timesheet-convert</a></li>
+            </ul>
+        </section>
 
-        <h3>userscripts</h3>
-        <ul>
-            <li><a href="userscripts/auto-send-chatgpt-120.user.js">auto-send-chatgpt-120.user.js</a></li>
-            <li><a href="userscripts/auto-send-chatgpt.user.js">auto-send-chatgpt.user.js</a></li>
-            <li><a href="userscripts/auto-send-perplexity.user.js">auto-send-perplexity.user.js</a></li>
-            <li><a href="userscripts/deepseek-dnd-intercept.user.js">deepseek-dnd-intercept.user.js</a></li>
-            <li><a href="userscripts/ratings.user.js">ratings.user.js</a></li>
-            <li><a href="userscripts/searx-pref-syncer.user.js">searx-pref-syncer.user.js</a></li>
-        </ul>
+        <section class="category">
+            <h3>userscripts</h3>
+            <ul>
+                <li><a href="userscripts/auto-send-chatgpt-120.user.js">auto-send-chatgpt-120.user.js</a></li>
+                <li><a href="userscripts/auto-send-chatgpt.user.js">auto-send-chatgpt.user.js</a></li>
+                <li><a href="userscripts/auto-send-perplexity.user.js">auto-send-perplexity.user.js</a></li>
+                <li><a href="userscripts/deepseek-dnd-intercept.user.js">deepseek-dnd-intercept.user.js</a></li>
+                <li><a href="userscripts/ratings.user.js">ratings.user.js</a></li>
+                <li><a href="userscripts/searx-pref-syncer.user.js">searx-pref-syncer.user.js</a></li>
+            </ul>
+        </section>
 
-        <h3>userstyles</h3>
-        <ul>
-            <li><a href="userstyles/flexoki-chatgpt.user.css">flexoki-chatgpt.user.css</a></li>
-        </ul>
+        <section class="category">
+            <h3>userstyles</h3>
+            <ul>
+                <li><a href="userstyles/flexoki-chatgpt.user.css">flexoki-chatgpt.user.css</a></li>
+            </ul>
+        </section>
 
     </div>
 
