@@ -1,0 +1,1451 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Habit grid · 12 directions</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #100f0f;
+        --paper: #fffcf0;
+        --fg: #cecdc3;
+        --muted: #b7b5ac;
+        --cyan: #3aa99f;
+        --purple: #8b7ec8;
+        --w: 320px;
+        --h: 152px;
+        font:
+          15px/1.45 system-ui,
+          sans-serif;
+        background: var(--ink);
+        color: var(--fg);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button,
+      select {
+        cursor: pointer;
+      }
+      button {
+        color: inherit;
+      }
+      svg {
+        display: block;
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #100f0ff5;
+        border-bottom: 1px solid #403e3c;
+        padding: 14px 24px;
+        backdrop-filter: blur(16px);
+      }
+      .heading {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      h1 {
+        font-size: 20px;
+        letter-spacing: -0.5px;
+        margin: 0;
+        font-weight: 600;
+      }
+      header small {
+        font-size: 15px;
+        color: var(--muted);
+      }
+      .tools {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .tools label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+      }
+      select,
+      .tool {
+        background: #282726;
+        color: var(--fg);
+        border: 1px solid #575653;
+        border-radius: 6px;
+        padding: 5px 8px;
+      }
+      input[type="range"] {
+        accent-color: var(--cyan);
+        width: 95px;
+      }
+      .tool:hover,
+      .tool[aria-pressed="true"] {
+        border-color: var(--cyan);
+        color: #83d5cd;
+      }
+      .tools output {
+        font-variant-numeric: tabular-nums;
+        min-width: 47px;
+      }
+      .tools .push {
+        margin-left: auto;
+      }
+      .summary {
+        padding: 14px 24px 0;
+        display: flex;
+        gap: 16px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .summary b {
+        font-weight: 500;
+        color: #b8abe4;
+      }
+      .gallery {
+        padding: 20px 24px 40px;
+        display: grid;
+        grid-template-columns: repeat(
+          auto-fit,
+          minmax(min(100%, calc(var(--w) + 34px)), 1fr)
+        );
+        gap: 24px;
+        max-width: 1700px;
+        margin: auto;
+      }
+      .concept {
+        min-width: 0;
+        scroll-margin-top: 140px;
+      }
+      .concept-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .num {
+        font:
+          12px ui-monospace,
+          monospace;
+        color: #9f9d96;
+        border: 1px solid #575653;
+        padding: 2px 5px;
+        border-radius: 4px;
+      }
+      h2 {
+        font-size: 17px;
+        font-weight: 550;
+        margin: 0;
+        letter-spacing: -0.25px;
+      }
+      .save {
+        margin-left: auto;
+        border: 0;
+        background: none;
+        color: #9f9d96;
+        padding: 5px;
+      }
+      .save svg {
+        width: 19px;
+        height: 19px;
+      }
+      .save[aria-pressed="true"] {
+        color: #c4b9ef;
+      }
+      .save[aria-pressed="true"] svg {
+        fill: #8b7ec844;
+      }
+      .concept p {
+        font-size: 15px;
+        color: var(--muted);
+        margin: 8px 0 0;
+        min-height: 44px;
+        max-width: 430px;
+      }
+      .stage {
+        border: 1px solid #343331;
+        border-radius: 8px;
+        min-height: calc(var(--h) + 38px);
+        padding: 18px 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background:
+          radial-gradient(ellipse at 10% 90%, #282638 0, transparent 65%),
+          linear-gradient(125deg, #22272b, #18191a 50%, #292222);
+        overflow: hidden;
+      }
+      .widget {
+        width: var(--w);
+        height: var(--h);
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        gap: 7px;
+        border-radius: 18px;
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        --accent: #a0d9d0;
+        --tile: #ffffff08;
+        --color: #f4f2ea;
+        color: var(--color);
+        background: #202020;
+        box-shadow: 0 6px 22px #0003;
+      }
+      .widget-head {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        height: 21px;
+        flex-shrink: 0;
+        font-size: 13px;
+        line-height: 1;
+        min-width: 0;
+      }
+      .total {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      .total b {
+        font-weight: 600;
+      }
+      .total .unit {
+        opacity: 0.7;
+      }
+      .last {
+        margin-left: auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 10px;
+        opacity: 0.8;
+        max-width: 100px;
+      }
+      .menu {
+        display: flex;
+        gap: 2px;
+        flex-shrink: 0;
+        margin-left: auto;
+      }
+      .menu i {
+        display: block;
+        width: 3px;
+        height: 3px;
+        border-radius: 100%;
+        background: currentColor;
+        opacity: 0.6;
+      }
+      .last + .menu {
+        margin-left: 5px;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+        grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+        gap: 5px;
+        flex: 1;
+        min-height: 0;
+      }
+      .habit {
+        position: relative;
+        border: 0;
+        border-radius: 9px;
+        min-height: 0;
+        min-width: 0;
+        padding: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 2px;
+        background: var(--tile);
+        color: inherit;
+        overflow: hidden;
+        transition:
+          background 0.18s,
+          transform 0.18s,
+          box-shadow 0.18s;
+      }
+      .habit:hover {
+        filter: brightness(1.15);
+      }
+      .habit:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: -3px;
+      }
+      .habit .glyph {
+        height: var(--icon);
+        width: var(--icon);
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+      .glyph svg {
+        width: 100%;
+        height: 100%;
+        stroke-width: 1.65;
+      }
+      .name {
+        font-size: 10px;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.1;
+      }
+      .tick {
+        position: absolute;
+        right: 3px;
+        top: 3px;
+        opacity: 0.3;
+        width: 8px;
+        height: 8px;
+        border: 1px solid currentColor;
+        border-radius: 2px;
+      }
+      .habit.done .tick {
+        opacity: 1;
+        background: currentColor;
+      }
+      .habit.done .tick:after {
+        content: "";
+        display: block;
+        width: 5px;
+        height: 3px;
+        border-left: 1px solid var(--ink);
+        border-bottom: 1px solid var(--ink);
+        transform: translate(1px, 1px) rotate(-45deg);
+      }
+      .habit.done {
+        background: #ffffff1b;
+      }
+      .index,
+      .reward {
+        display: none;
+      }
+      .micro-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #ffffff12;
+      }
+      .micro-progress i {
+        display: block;
+        height: 100%;
+        width: var(--progress);
+        background: var(--accent);
+        transition: width 0.2s;
+      }
+      /* 01: hard edges, generous type, physical state changes. */
+      .monolith {
+        background: #e8e5da;
+        color: #161615;
+        border-radius: 0;
+        padding: 0;
+        gap: 0;
+        box-shadow: 5px 5px 0 #0009;
+      }
+      .monolith .widget-head {
+        height: 29px;
+        padding: 0 9px;
+        background: #161615;
+        color: #e8e5da;
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .monolith .tiles {
+        gap: 0;
+      }
+      .monolith .habit {
+        border-radius: 0;
+        border-right: 1px solid #161615;
+        border-bottom: 1px solid #161615;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 5px 7px;
+        background: none;
+      }
+      .monolith .habit.done {
+        background: #c8e975;
+      }
+      .monolith .habit .glyph {
+        align-self: flex-end;
+        width: 19px;
+        height: 19px;
+      }
+      .monolith .name {
+        font-size: 10px;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: -0.3px;
+      }
+      .monolith .index {
+        display: block;
+        position: absolute;
+        top: 5px;
+        left: 7px;
+        font:
+          8px ui-monospace,
+          monospace;
+        opacity: 0.6;
+      }
+      .monolith .tick {
+        display: none;
+      }
+      .monolith .micro-progress {
+        display: none;
+      }
+      /* 02: circles, orbital status rings, quiet typography. */
+      .halo {
+        background: #151b21;
+        border: 1px solid #ffffff18;
+        --accent: #a5e1db;
+        padding: 9px 12px;
+        border-radius: 24px;
+      }
+      .halo .tiles {
+        gap: 4px;
+      }
+      .halo .habit {
+        background: none;
+        overflow: visible;
+        gap: 3px;
+      }
+      .halo .glyph {
+        border: 1px solid #78838a;
+        border-radius: 100%;
+        width: calc(var(--icon) + 10px);
+        height: calc(var(--icon) + 10px);
+        padding: 5px;
+        color: #bbc6ce;
+      }
+      .halo .habit.done .glyph {
+        color: #b6eee0;
+        background: #58a68c20;
+        border: 2px solid #9cd6bd;
+        box-shadow: 0 0 12px #8ed9bd12;
+      }
+      .halo .habit.done {
+        background: none;
+      }
+      .halo .tick {
+        display: none;
+      }
+      .halo .name {
+        font-size: 9px;
+        color: #b3bec6;
+      }
+      .halo .total {
+        font-weight: 350;
+        letter-spacing: 0.1px;
+      }
+      .halo .micro-progress {
+        height: 1px;
+        bottom: 4px;
+        left: 24px;
+        right: 24px;
+      }
+      /* 03: Swiss grid; one red signal against editorial black and white. */
+      .swiss {
+        background: #f4f1e8;
+        color: #171715;
+        border-radius: 3px;
+        padding: 9px 10px 8px 17px;
+        --accent: #d14d41;
+      }
+      .swiss:before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 7px;
+        background: #d14d41;
+      }
+      .swiss .widget-head {
+        font-family: Arial, sans-serif;
+        letter-spacing: -0.5px;
+        font-size: 16px;
+        font-weight: 750;
+        border-bottom: 1px solid #171715;
+        padding-bottom: 5px;
+        height: 26px;
+      }
+      .swiss .unit {
+        font-size: 10px;
+        font-weight: 400;
+        letter-spacing: 0;
+      }
+      .swiss .habit {
+        background: none;
+        border-radius: 0;
+        align-items: flex-start;
+        gap: 4px;
+        border-right: 1px solid #17171522;
+        padding-left: 5px;
+      }
+      .swiss .habit.done {
+        color: #d14d41;
+      }
+      .swiss .habit .glyph {
+        width: 19px;
+        height: 19px;
+      }
+      .swiss .tick {
+        display: none;
+      }
+      .swiss .name {
+        font-weight: 600;
+        font-size: 9px;
+      }
+      .swiss .index {
+        display: block;
+        font:
+          7px ui-monospace,
+          monospace;
+        opacity: 0.5;
+        position: absolute;
+        right: 4px;
+        top: 3px;
+      }
+      /* 04: tilework; saturated geometry and contrasting ink. */
+      .mosaic {
+        background: #211f1c;
+        border-radius: 13px;
+        padding: 7px;
+        gap: 5px;
+        --accent: #f6dd9b;
+      }
+      .mosaic .widget-head {
+        padding: 0 4px;
+        font-family: Georgia, serif;
+        font-size: 15px;
+      }
+      .mosaic .tiles {
+        gap: 3px;
+      }
+      .mosaic .habit {
+        border-radius: 2px 12px 2px 2px;
+        background: var(--paint);
+        color: #211f1c;
+        padding: 3px;
+      }
+      .mosaic .habit:nth-child(3n) {
+        border-radius: 12px 2px 2px 2px;
+      }
+      .mosaic .habit:nth-child(4n) {
+        border-radius: 2px 2px 12px 2px;
+      }
+      .mosaic .habit.done {
+        box-shadow: inset 0 0 0 3px #fffcf0;
+      }
+      .mosaic .name {
+        font-size: 9px;
+        font-weight: 650;
+      }
+      .mosaic .tick {
+        color: #211f1c;
+        opacity: 0.65;
+      }
+      .mosaic .micro-progress {
+        display: none;
+      }
+      /* 05: instrument panel, vivid phosphor, no decoration without a function. */
+      .terminal {
+        background: #071109;
+        border: 1px solid #486a3c;
+        border-radius: 6px;
+        --color: #b9ed8b;
+        --accent: #b9ed8b;
+        padding: 7px;
+        font-family: ui-monospace, monospace;
+      }
+      .terminal .widget-head {
+        text-transform: uppercase;
+        font-size: 11px;
+        border-bottom: 1px dashed #68904d;
+        padding-bottom: 5px;
+        height: 24px;
+      }
+      .terminal .tiles {
+        gap: 4px;
+      }
+      .terminal .habit {
+        border: 1px solid #6c9b4d55;
+        border-radius: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          #83cc6304 0px,
+          #83cc6304 1px,
+          transparent 1px,
+          transparent 3px
+        );
+      }
+      .terminal .habit.done {
+        background: #b9ed8b;
+        color: #0c170b;
+      }
+      .terminal .name {
+        font-size: 8px;
+        text-transform: uppercase;
+      }
+      .terminal .glyph svg {
+        stroke-width: 1.5;
+      }
+      .terminal .tick {
+        display: none;
+      }
+      .terminal .reward {
+        display: block;
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        font-size: 6px;
+        opacity: 0.6;
+      }
+      .terminal .micro-progress {
+        height: 2px;
+        background: #294020;
+      }
+      /* 06: a ledger, warm paper, restrained marks. */
+      .ledger {
+        background: #f7f1df;
+        color: #363329;
+        border-radius: 7px;
+        padding: 7px 12px;
+        --accent: #b45a3e;
+        box-shadow: 0 8px 18px #0003;
+      }
+      .ledger .widget-head {
+        font-family: Georgia, serif;
+        font-size: 16px;
+        font-style: italic;
+        height: 25px;
+        border-bottom: 1px solid #c4b79b;
+      }
+      .ledger .tiles {
+        gap: 0 5px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-rows: repeat(var(--ledger-rows), minmax(0, 1fr));
+      }
+      .ledger .habit {
+        border-radius: 0;
+        background: none;
+        border-bottom: 1px solid #a89a7b50;
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 4px;
+      }
+      .ledger .glyph {
+        width: 15px;
+        height: 15px;
+      }
+      .ledger .name {
+        font:
+          10px Georgia,
+          serif;
+      }
+      .ledger .habit.done {
+        color: #b45a3e;
+        background: none;
+      }
+      .ledger .habit.done .name {
+        text-decoration: line-through;
+        text-decoration-thickness: 1px;
+        text-decoration-color: #b45a3e88;
+      }
+      .ledger .tick {
+        display: none;
+      }
+      .ledger .micro-progress {
+        height: 2px;
+        background: #c4b79b66;
+      }
+      /* 07: a translucent slab, restrained refraction and luminous outlines. */
+      .glacier {
+        color: #e2f9ff;
+        background: linear-gradient(125deg, #badbf526, #51749125);
+        border: 1px solid #c6edff60;
+        border-radius: 22px;
+        backdrop-filter: blur(22px);
+        box-shadow:
+          inset 0 1px 0 #fff6,
+          0 10px 22px #06121b66;
+        --accent: #bbecff;
+      }
+      .glacier .widget-head {
+        font-size: 13px;
+        text-shadow: 0 1px 5px #091721;
+      }
+      .glacier .habit {
+        background: linear-gradient(140deg, #c7eaff15, #c7eaff06);
+        border: 1px solid #d3eeff25;
+        border-radius: 12px;
+      }
+      .glacier .habit.done {
+        background: linear-gradient(140deg, #d3f8ff55, #6bb5cd30);
+        box-shadow: inset 0 1px 0 #ffffff55;
+      }
+      .glacier .glyph svg {
+        stroke-width: 1.5;
+      }
+      .glacier .name {
+        color: #e2f9ff;
+        font-size: 9px;
+      }
+      .glacier .tick {
+        border-radius: 100%;
+        border-color: #d3f8ff;
+      }
+      .glacier .habit.done .tick {
+        background: #d3f8ff;
+        color: #d3f8ff;
+      }
+      .glacier .micro-progress {
+        bottom: 4px;
+        left: 20px;
+        right: 20px;
+        height: 1px;
+      }
+      /* 08: an ink stamp on linen. */
+      .linen {
+        background: #e6e1d1;
+        color: #38382f;
+        border-radius: 13px;
+        padding: 10px 13px;
+        --accent: #ac6349;
+      }
+      .linen .widget-head {
+        font:
+          15px Georgia,
+          serif;
+        letter-spacing: 0.2px;
+        border-bottom: 1px solid #bdb6a2;
+        height: 25px;
+        padding-bottom: 5px;
+      }
+      .linen .unit {
+        font-size: 10px;
+        font-style: italic;
+      }
+      .linen .tiles {
+        gap: 3px;
+      }
+      .linen .habit {
+        background: none;
+        border-radius: 100% 100% 3px 3px;
+      }
+      .linen .glyph {
+        color: #787a64;
+      }
+      .linen .habit.done .glyph {
+        color: #ac6349;
+      }
+      .linen .habit.done:after {
+        content: "";
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        border-radius: 100%;
+        bottom: 1px;
+        background: #ac6349;
+      }
+      .linen .habit.done {
+        background: none;
+      }
+      .linen .tick {
+        display: none;
+      }
+      .linen .name {
+        font:
+          9px Georgia,
+          serif;
+      }
+      .linen .micro-progress {
+        height: 1px;
+        bottom: 5px;
+        left: 13px;
+        right: 13px;
+        background: #bdb6a2;
+      }
+      /* 09: cut-paper primary geometry. */
+      .bauhaus {
+        background: #e9dfc4;
+        color: #1f2826;
+        border-radius: 0;
+        padding: 8px 8px 8px 15px;
+        --accent: #bd4c3b;
+      }
+      .bauhaus:before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px;
+        background: #d1a142;
+      }
+      .bauhaus .widget-head {
+        font-weight: 800;
+        font-family: Arial, sans-serif;
+        letter-spacing: -0.6px;
+        font-size: 16px;
+      }
+      .bauhaus .tiles {
+        gap: 4px;
+      }
+      .bauhaus .habit {
+        border-radius: 0;
+        background: #1f282610;
+      }
+      .bauhaus .habit:nth-child(3n + 1) {
+        border-radius: 100% 0 0 0;
+      }
+      .bauhaus .habit:nth-child(3n + 2) {
+        border-radius: 0 0 100% 0;
+      }
+      .bauhaus .habit.done {
+        background: #bd4c3b;
+        color: #fff4d6;
+      }
+      .bauhaus .habit:nth-child(4n).done {
+        background: #315c70;
+      }
+      .bauhaus .name {
+        display: none;
+      }
+      .bauhaus .tick {
+        display: none;
+      }
+      .bauhaus .micro-progress {
+        height: 3px;
+        background: #d1a142;
+      }
+      /* 10: a constellation around a shared daily total. */
+      .orbit {
+        padding: 0;
+        background: radial-gradient(ellipse at center, #232a3c, #11141d 80%);
+        border: 1px solid #707d9d44;
+        border-radius: 25px;
+        --color: #d9e1f1;
+        --accent: #b6a9ec;
+      }
+      .orbit .widget-head {
+        position: absolute;
+        width: 94px;
+        left: 50%;
+        top: 50%;
+        height: auto;
+        transform: translate(-50%, -50%);
+        justify-content: center;
+        flex-direction: column;
+        gap: 5px;
+        pointer-events: none;
+      }
+      .orbit .total {
+        text-align: center;
+        font-size: 18px;
+      }
+      .orbit .unit {
+        display: block;
+        font-size: 8px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-top: 4px;
+      }
+      .orbit .last {
+        display: none;
+      }
+      .orbit .menu {
+        display: none;
+      }
+      .orbit .tiles {
+        display: block;
+        position: absolute;
+        inset: 0;
+      }
+      .orbit .habit {
+        position: absolute;
+        left: calc(50% + var(--x));
+        top: calc(50% + var(--y));
+        transform: translate(-50%, -50%);
+        width: 29px;
+        height: 29px;
+        border: 1px solid #7d8baa66;
+        border-radius: 100%;
+        background: #1a2031;
+        overflow: visible;
+      }
+      .orbit .habit .glyph {
+        width: 16px;
+        height: 16px;
+      }
+      .orbit .habit .name {
+        display: none;
+      }
+      .orbit .habit.done {
+        background: #b6a9ec;
+        color: #171b2d;
+        border-color: #b6a9ec;
+        box-shadow: 0 0 11px #b6a9ec22;
+      }
+      .orbit .tick {
+        display: none;
+      }
+      .orbit .micro-progress {
+        display: none;
+      }
+      .orbit:before {
+        content: "";
+        position: absolute;
+        inset: 17px 30px;
+        border: 1px solid #899bc333;
+        border-radius: 50%;
+        pointer-events: none;
+      }
+      .orbit:after {
+        content: "";
+        position: absolute;
+        inset: 30px 60px;
+        border: 1px dashed #899bc326;
+        border-radius: 50%;
+        pointer-events: none;
+      }
+      /* 11: no filled tiles; state is a single precise stroke. */
+      .wire {
+        background: #161516;
+        color: #dedbdc;
+        border: 1px solid #4c474b;
+        border-radius: 10px;
+        --accent: #e4a1bc;
+        padding: 8px 10px;
+      }
+      .wire .widget-head {
+        font:
+          11px ui-monospace,
+          monospace;
+        letter-spacing: 0.2px;
+        border-bottom: 1px solid #51444b;
+        height: 24px;
+        padding-bottom: 5px;
+      }
+      .wire .tiles {
+        gap: 1px;
+      }
+      .wire .habit {
+        background: none;
+        border-radius: 0;
+        border-right: 1px solid #60505733;
+      }
+      .wire .habit.done {
+        background: none;
+        color: #e4a1bc;
+      }
+      .wire .habit.done:before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 30%;
+        right: 30%;
+        height: 1px;
+        background: #e4a1bc;
+      }
+      .wire .glyph svg {
+        stroke-width: 1.25;
+      }
+      .wire .name {
+        font-size: 9px;
+        opacity: 0.8;
+      }
+      .wire .tick {
+        display: none;
+      }
+      .wire .micro-progress {
+        height: 1px;
+      }
+      /* 12: oversized daily typography beside a tight, asymmetric habit wall. */
+      .editorial {
+        background: #282327;
+        color: #e7d6e1;
+        border-radius: 15px;
+        padding: 10px;
+        gap: 0;
+        flex-direction: row;
+        --accent: #c7b4ef;
+      }
+      .editorial .widget-head {
+        width: 73px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        padding-right: 9px;
+        border-right: 1px solid #ceb9d433;
+        gap: 7px;
+        flex-shrink: 0;
+      }
+      .editorial .total {
+        font-size: 24px;
+        font-family: Georgia, serif;
+        line-height: 0.95;
+      }
+      .editorial .total .today {
+        display: block;
+        font: 9px system-ui;
+        margin-bottom: 7px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+      .editorial .unit {
+        display: block;
+        font: 9px system-ui;
+        margin-top: 5px;
+      }
+      .editorial .menu {
+        display: none;
+      }
+      .editorial .last {
+        max-width: 66px;
+        margin: 0;
+        font-size: 8px;
+        white-space: normal;
+        line-height: 1.2;
+      }
+      .editorial .tiles {
+        height: 100%;
+        padding-left: 8px;
+        grid-template-columns: repeat(var(--side-cols), minmax(0, 1fr));
+        grid-template-rows: repeat(var(--side-rows), minmax(0, 1fr));
+        gap: 4px;
+      }
+      .editorial .habit {
+        background: #b6a0ca0d;
+        border-radius: 6px;
+      }
+      .editorial .habit.done {
+        color: #242029;
+        background: #c5b4da;
+      }
+      .editorial .name {
+        font-size: 8px;
+      }
+      .editorial .glyph {
+        width: 17px;
+        height: 17px;
+      }
+      .editorial .tick {
+        display: none;
+      }
+      .editorial .micro-progress {
+        height: 2px;
+      }
+      @media (max-width: 600px) {
+        header {
+          position: relative;
+          padding: 12px;
+        }
+        .tools {
+          gap: 10px;
+        }
+        .tools .push {
+          margin-left: 0;
+        }
+        .gallery {
+          padding: 16px 12px;
+          gap: 22px;
+        }
+        .summary {
+          padding: 12px 12px 0;
+          flex-wrap: wrap;
+          gap: 4px;
+        }
+        .stage {
+          padding: 14px 5px;
+        }
+        .concept p {
+          min-height: 0;
+        }
+        .heading small {
+          font-size: 14px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="heading">
+        <h1>Habit grid / 12 directions</h1>
+        <small>HTML studies · Android keeps the current grid</small>
+      </div>
+      <div class="tools">
+        <label
+          >Width
+          <input
+            id="width"
+            type="range"
+            min="280"
+            max="420"
+            value="320"
+            step="10"
+          /><output id="widthValue">320 px</output></label
+        ><label
+          >Height
+          <input
+            id="height"
+            type="range"
+            min="120"
+            max="240"
+            value="152"
+            step="8"
+          /><output id="heightValue">152 px</output></label
+        ><label
+          >Habits
+          <select id="count">
+            <option>6</option>
+            <option selected>11</option>
+            <option>18</option>
+          </select></label
+        ><button class="tool" id="reset">Reset completions</button
+        ><button class="tool push" id="favorites" aria-pressed="false">
+          Favorites only
+        </button>
+      </div>
+    </header>
+    <div class="summary">
+      <span>Tap a habit to compare completed states across all designs.</span
+      ><b id="picked"></b>
+    </div>
+    <main id="gallery" class="gallery"></main>
+    <script>
+      const icons = {
+        circle:
+          '<svg\n  class="lucide lucide-circle"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <circle cx="12" cy="12" r="10" />\n</svg>',
+        star: '<svg\n  class="lucide lucide-star"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />\n</svg>',
+        "book-open":
+          '<svg\n  class="lucide lucide-book-open"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M12 5v16" />\n  <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" />\n</svg>',
+        pill: '<svg\n  class="lucide lucide-pill"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />\n  <path d="m8.5 8.5 7 7" />\n</svg>',
+        sun: '<svg\n  class="lucide lucide-sun"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <circle cx="12" cy="12" r="4" />\n  <path d="M12 2v2" />\n  <path d="M12 20v2" />\n  <path d="m4.93 4.93 1.41 1.41" />\n  <path d="m17.66 17.66 1.41 1.41" />\n  <path d="M2 12h2" />\n  <path d="M20 12h2" />\n  <path d="m6.34 17.66-1.41 1.41" />\n  <path d="m19.07 4.93-1.41 1.41" />\n</svg>',
+        sparkles:
+          '<svg\n  class="lucide lucide-sparkles"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" />\n  <path d="M20 2v4" />\n  <path d="M22 4h-4" />\n  <circle cx="4" cy="20" r="2" />\n</svg>',
+        dumbbell:
+          '<svg\n  class="lucide lucide-dumbbell"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z" />\n  <path d="m2.5 21.5 1.4-1.4" />\n  <path d="m20.1 3.9 1.4-1.4" />\n  <path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z" />\n  <path d="m9.6 14.4 4.8-4.8" />\n</svg>',
+        speech:
+          '<svg\n  class="lucide lucide-speech"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M8.8 20v-4.1l1.9.2a2.3 2.3 0 0 0 2.164-2.1V8.3A5.37 5.37 0 0 0 2 8.25c0 2.8.656 3.054 1 4.55a5.77 5.77 0 0 1 .029 2.758L2 20" />\n  <path d="M19.8 17.8a7.5 7.5 0 0 0 .003-10.603" />\n  <path d="M17 15a3.5 3.5 0 0 0-.025-4.975" />\n</svg>',
+        "list-checks":
+          '<svg\n  class="lucide lucide-list-checks"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M13 5h8" />\n  <path d="M13 12h8" />\n  <path d="M13 19h8" />\n  <path d="m3 17 2 2 4-4" />\n  <path d="m3 7 2 2 4-4" />\n</svg>',
+        smile:
+          '<svg\n  class="lucide lucide-smile"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M15 10V9" />\n  <path d="M16.472 15a6 6 0 01-8.943 0" />\n  <path d="M9 10V9" />\n  <circle cx="12" cy="12" r="10" />\n</svg>',
+        "notebook-pen":
+          '<svg\n  class="lucide lucide-notebook-pen"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" />\n  <path d="M2 6h4" />\n  <path d="M2 10h4" />\n  <path d="M2 14h4" />\n  <path d="M2 18h4" />\n  <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />\n</svg>',
+        bed: '<svg\n  class="lucide lucide-bed"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M2 4v16" />\n  <path d="M2 8h18a2 2 0 0 1 2 2v10" />\n  <path d="M2 17h20" />\n  <path d="M6 8v9" />\n</svg>',
+        droplet:
+          '<svg\n  class="lucide lucide-droplet"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />\n</svg>',
+        footprints:
+          '<svg\n  class="lucide lucide-footprints"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z" />\n  <path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z" />\n  <path d="M16 17h4" />\n  <path d="M4 13h4" />\n</svg>',
+        "person-standing":
+          '<svg\n  class="lucide lucide-person-standing"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <circle cx="12" cy="5" r="1" />\n  <path d="m9 20 3-6 3 6" />\n  <path d="m6 8 6 2 6-2" />\n  <path d="M12 10v4" />\n</svg>',
+        "cooking-pot":
+          '<svg\n  class="lucide lucide-cooking-pot"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M2 12h20" />\n  <path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8" />\n  <path d="m4 8 16-4" />\n  <path d="m8.86 6.78-.45-1.81a2 2 0 0 1 1.45-2.43l1.94-.48a2 2 0 0 1 2.43 1.46l.45 1.8" />\n</svg>',
+        music:
+          '<svg\n  class="lucide lucide-music"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M21 16V3a1 1 0 0 0-1.28-.96l-10 2.917a1 1 0 0 0-.72.96V19" />\n  <circle cx="18" cy="16" r="3" />\n  <circle cx="6" cy="19" r="3" />\n</svg>',
+        "pen-line":
+          '<svg\n  class="lucide lucide-pen-line"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M13 21h8" />\n  <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />\n</svg>',
+        wind: '<svg\n  class="lucide lucide-wind"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M12.8 19.6A2 2 0 1 0 14 16H2" />\n  <path d="M17.5 8a2.5 2.5 0 1 1 2 4H2" />\n  <path d="M9.8 4.4A2 2 0 1 1 11 8H2" />\n</svg>',
+        sprout:
+          '<svg\n  class="lucide lucide-sprout"\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3" />\n  <path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4" />\n  <path d="M5 21h14" />\n</svg>',
+      };
+      const svg = (name) => icons[name] || icons["circle"];
+      const habits = [
+        ["Read", "book-open", 200],
+        ["Meds", "pill", 200],
+        ["Sun", "sun", 200],
+        ["Clean", "sparkles", 200],
+        ["Gym", "dumbbell", 225],
+        ["Call a friend", "speech", 200],
+        ["Checklist", "list-checks", 250],
+        ["Teeth", "smile", 200],
+        ["Study", "notebook-pen", 200],
+        ["Sleep", "bed", 225],
+        ["Water", "droplet", 200],
+        ["Walk", "footprints", 200],
+        ["Stretch", "person-standing", 200],
+        ["Cook", "cooking-pot", 200],
+        ["Music", "music", 200],
+        ["Write", "pen-line", 200],
+        ["Breathe", "wind", 200],
+        ["Plants", "sprout", 200],
+      ];
+      const concepts = [
+        [
+          "monolith",
+          "Monolith",
+          "Hard black rules, raw paper, acid-green completion. A small object with a loud opinion.",
+        ],
+        [
+          "halo",
+          "Halo",
+          "A quiet constellation of rings. Completion brightens the circle rather than filling the whole tile.",
+        ],
+        [
+          "swiss",
+          "Swiss / signal",
+          "Typographic discipline and a single red signal. Strong alignment, almost no container chrome.",
+        ],
+        [
+          "mosaic",
+          "Cut mosaic",
+          "Interlocking color and shaped corners. A little tile mural that changes as the day fills in.",
+        ],
+        [
+          "terminal",
+          "Phosphor",
+          "An instrument panel for the day. Monospace labels, sharp cells, luminous inverted states.",
+        ],
+        [
+          "ledger",
+          "Daily ledger",
+          "Warm paper and ruled rows. Small icons live beside names, like entries in a pocket notebook.",
+        ],
+        [
+          "glacier",
+          "Glacier",
+          "A thin translucent slab with luminous edges. Completed habits look like illuminated glass.",
+        ],
+        [
+          "linen",
+          "Ink & linen",
+          "Soft mineral paper, fine ink, a restrained terracotta stamp. Gentle without losing contrast.",
+        ],
+        [
+          "bauhaus",
+          "Bauhaus blocks",
+          "A composition of primary geometry. Icons and color do the work; names stay in tap feedback.",
+        ],
+        [
+          "orbit",
+          "Orbit",
+          "Habits surround the daily total. An intentionally unconventional direction for icon-first use.",
+        ],
+        [
+          "wire",
+          "Wireframe",
+          "No filled tiles. Fine strokes, generous negative space, and a pink line to mark completion.",
+        ],
+        [
+          "editorial",
+          "Margin notes",
+          "A large daily figure anchors a tightly packed wall of habits. Asymmetric, quiet, and editorial.",
+        ],
+      ];
+      const paints = [
+        "#d78b7e",
+        "#cfa864",
+        "#e4ca80",
+        "#9daa79",
+        "#8cb8a4",
+        "#95b1cb",
+        "#b7a0cc",
+        "#d3a9bf",
+        "#b2b7cf",
+        "#a4b6a6",
+        "#c9a588",
+      ];
+      let done = new Set([0, 1, 4]);
+      let last = "Gym";
+      let count = 11;
+      let favorites = new Set();
+      let onlyFavorites = false;
+      try {
+        favorites = new Set(
+          JSON.parse(
+            localStorage.getItem("uhabits2-grid-lab-favorites") || "[]",
+          ),
+        );
+      } catch {}
+      function render() {
+        const width = +document.querySelector("#width").value,
+          height = +document.querySelector("#height").value;
+        count = +document.querySelector("#count").value;
+        document.documentElement.style.setProperty("--w", width + "px");
+        document.documentElement.style.setProperty("--h", height + "px");
+        document.querySelector("#widthValue").textContent = width + " px";
+        document.querySelector("#heightValue").textContent = height + " px";
+        const cols = count <= 6 ? 6 : 6,
+          rows = Math.ceil(count / cols);
+        const sideCols = count <= 6 ? 3 : 4,
+          sideRows = Math.ceil(count / sideCols);
+        const icon = Math.max(14, Math.min(24, (height - 41) / rows - 15));
+        const active = habits.slice(0, count);
+        const total = active.reduce(
+          (sum, h, i) => sum + (done.has(i) ? h[2] : 0),
+          0,
+        );
+        const progress =
+          (100 * active.filter((_, i) => done.has(i)).length) / count;
+        const gallery = document.querySelector("#gallery");
+        gallery.replaceChildren();
+        concepts.forEach(([id, title, description], design) => {
+          if (onlyFavorites && !favorites.has(id)) return;
+          const article = document.createElement("article");
+          article.className = "concept";
+          article.id = id;
+          const head = document.createElement("div");
+          head.className = "concept-head";
+          head.innerHTML = `<span class="num">${String(design + 1).padStart(2, "0")}</span><h2>${title}</h2>`;
+          const save = document.createElement("button");
+          save.className = "save";
+          save.setAttribute("aria-label", "Favorite " + title);
+          save.setAttribute("aria-pressed", favorites.has(id));
+          save.innerHTML = svg("star");
+          save.onclick = () => {
+            favorites.has(id) ? favorites.delete(id) : favorites.add(id);
+            try {
+              localStorage.setItem(
+                "uhabits2-grid-lab-favorites",
+                JSON.stringify([...favorites]),
+              );
+            } catch {}
+            render();
+          };
+          head.append(save);
+          const stage = document.createElement("div");
+          stage.className = "stage";
+          const widget = document.createElement("section");
+          widget.className = "widget " + id;
+          widget.setAttribute("aria-label", title + " habit widget");
+          widget.style.cssText = `--cols:${cols};--rows:${rows};--side-cols:${sideCols};--side-rows:${sideRows};--ledger-rows:${Math.ceil(count / 3)};--icon:${icon}px;--progress:${progress}%`;
+          widget.innerHTML = `<div class="widget-head"><div class="total"><span class="today">Today </span><b>${total}</b><span class="unit"> points</span></div><div class="last" title="Last changed habit">${last}</div><div class="menu" aria-hidden="true"><i></i><i></i><i></i></div></div>`;
+          const tiles = document.createElement("div");
+          tiles.className = "tiles";
+          active.forEach(([name, iconName, points], i) => {
+            const button = document.createElement("button");
+            button.className = "habit" + (done.has(i) ? " done" : "");
+            button.setAttribute("aria-label", name + ", " + points + " points");
+            button.setAttribute("aria-pressed", done.has(i));
+            button.title = name + " · " + points + " points";
+            const angle = (2 * Math.PI * i) / count - Math.PI / 2;
+            button.style.cssText = `--paint:${paints[i % paints.length]};--x:${Math.cos(angle) * (width / 2 - 31)}px;--y:${Math.sin(angle) * (height / 2 - 24)}px`;
+            button.innerHTML = `<span class="index">${String(i + 1).padStart(2, "0")}</span><span class="glyph">${svg(iconName)}</span><span class="name">${name}</span><span class="tick" aria-hidden="true"></span><span class="reward">${points}</span>`;
+            button.onclick = () => {
+              done.has(i) ? done.delete(i) : done.add(i);
+              last = name;
+              const focusDesign = id;
+              render();
+              document
+                .querySelector(
+                  "#" + focusDesign + " .habit:nth-child(" + (i + 1) + ")",
+                )
+                ?.focus({ preventScroll: true });
+            };
+            tiles.append(button);
+          });
+          widget.append(tiles);
+          const bar = document.createElement("div");
+          bar.className = "micro-progress";
+          bar.setAttribute("aria-hidden", "true");
+          bar.innerHTML = "<i></i>";
+          widget.append(bar);
+          stage.append(widget);
+          const p = document.createElement("p");
+          p.textContent = description;
+          article.append(head, stage, p);
+          gallery.append(article);
+        });
+        document.querySelector("#picked").textContent = favorites.size
+          ? "Favorites: " +
+            concepts
+              .filter((c) => favorites.has(c[0]))
+              .map((c) => c[1])
+              .join(" · ")
+          : "";
+        document
+          .querySelector("#favorites")
+          .setAttribute("aria-pressed", onlyFavorites);
+      }
+      for (const id of ["width", "height", "count"])
+        document.querySelector("#" + id).addEventListener("input", render);
+      document.querySelector("#reset").onclick = () => {
+        done = new Set();
+        last = "";
+        render();
+      };
+      document.querySelector("#favorites").onclick = () => {
+        onlyFavorites = !onlyFavorites;
+        render();
+      };
+      render();
+    </script>
+    <!-- Lucide icons 1.61.0, ISC / Feather MIT. Full license: ISC License
+
+Copyright (c) 2026 Lucide Icons and Contributors
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+—-
+
+The following Lucide icons are derived from the Feather project:
+
+airplay, alert-circle, alert-octagon, alert-triangle, aperture, arrow-down-circle, arrow-down-left, arrow-down-right, arrow-down, arrow-left-circle, arrow-left, arrow-right-circle, arrow-right, arrow-up-circle, arrow-up-left, arrow-up-right, arrow-up, at-sign, calendar, cast, check, chevron-down, chevron-left, chevron-right, chevron-up, chevrons-down, chevrons-left, chevrons-right, chevrons-up, circle, clipboard, clock, code, columns, command, compass, corner-down-left, corner-down-right, corner-left-down, corner-left-up, corner-right-down, corner-right-up, corner-up-left, corner-up-right, crosshair, database, divide-circle, divide-square, dollar-sign, download, external-link, feather, frown, hash, headphones, help-circle, info, italic, key, layout, life-buoy, link-2, link, loader, lock, log-in, log-out, maximize, meh, minimize, minimize-2, minus-circle, minus-square, minus, monitor, moon, more-horizontal, more-vertical, move, music, navigation-2, navigation, octagon, pause-circle, percent, plus-circle, plus-square, plus, power, radio, rss, search, server, share, shopping-bag, sidebar, smartphone, smile, square, table-2, tablet, target, terminal, trash-2, trash, triangle, tv, type, upload, x-circle, x-octagon, x-square, x, zoom-in, zoom-out
+
+The MIT License (MIT) (for the icons listed above)
+
+Copyright (c) 2013-present Cole Bemis
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ -->
+  </body>
+</html>
