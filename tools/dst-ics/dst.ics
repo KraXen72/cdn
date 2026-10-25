@@ -1,0 +1,40 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//KraXen72//Central European DST reminders//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Central European clock changes
+X-WR-TIMEZONE:Europe/Amsterdam
+BEGIN:VEVENT
+UID:dst-spring-last-saturday@kraxen72.github.io
+DTSTAMP:20261025T000000Z
+DTSTART;TZID=Europe/Amsterdam:20260328T200000
+DTEND;TZID=Europe/Amsterdam:20260328T201500
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SA
+SUMMARY:Clocks go forward tonight (02:00 to 03:00)
+DESCRIPTION:Central Europe changes to summer time on the last Sunday of M
+ arch at 02:00. The clock jumps to 03:00. This reminder is scheduled for 
+ the preceding Saturday evening.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Clocks go forward tonight
+TRIGGER:PT0S
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:dst-autumn-last-saturday@kraxen72.github.io
+DTSTAMP:20261025T000000Z
+DTSTART;TZID=Europe/Amsterdam:20261024T200000
+DTEND;TZID=Europe/Amsterdam:20261024T201500
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SA
+SUMMARY:Clocks go back tonight (03:00 to 02:00)
+DESCRIPTION:Central Europe returns to standard time on the last Sunday of
+  October at 03:00. The clock goes back to 02:00. This reminder is schedu
+ led for the preceding Saturday evening.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Clocks go back tonight
+TRIGGER:PT0S
+END:VALARM
+END:VEVENT
+END:VCALENDAR
