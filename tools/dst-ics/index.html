@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Recurring calendar reminders for Central European daylight saving time changes, with Google Calendar setup instructions.">
+    <title>Clock change reminders</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            font-family: system-ui, sans-serif;
+            background: #100f0f;
+            color: #cecdc3;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        body {
+            max-width: 640px;
+            margin: 48px auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            line-height: 1.3;
+            border-bottom: 2px solid #3aa99f;
+            padding-bottom: 16px;
+        }
+
+        h2 {
+            font-size: 1rem;
+            margin-top: 28px;
+        }
+
+        a { color: #3aa99f; }
+        li { margin: 8px 0; }
+        ol { padding-left: 24px; }
+
+        .calendar-url {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #1c1b1a;
+            border: 1px solid #403e3c;
+            border-radius: 8px;
+        }
+
+        code {
+            flex: 1;
+            min-width: 0;
+            font: 0.9375rem/1.5 ui-monospace, monospace;
+            overflow-wrap: anywhere;
+            user-select: all;
+        }
+
+        button {
+            padding: 8px 14px;
+            min-height: 44px;
+            border: 1px solid #8b7ec8;
+            border-radius: 6px;
+            background: #282726;
+            color: #cecdc3;
+            font: inherit;
+            cursor: pointer;
+        }
+
+        button:hover { background: #343331; }
+        :focus-visible { outline: 2px solid #3aa99f; outline-offset: 4px; }
+        #copy-status { min-height: 1.6em; margin: 8px 0 0; }
+
+        @media (max-width: 420px) {
+            body { margin-top: 24px; }
+            .calendar-url { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Clock change reminders</h1>
+        <p>This calendar adds yearly reminders at 20:00 (Europe/Amsterdam) on the evening before Central Europe’s daylight saving time changes. Each event tells you whether the clocks go forward or back that night.</p>
+
+        <h2>Calendar URL</h2>
+        <div class="calendar-url">
+            <code id="calendar-url">https://kraxen72.github.io/cdn/tools/dst-ics/dst.ics</code>
+            <button id="copy-url" type="button" hidden>Copy URL</button>
+        </div>
+        <p id="copy-status" role="status"></p>
+
+        <h2>Add to Google Calendar</h2>
+        <ol>
+            <li>Open <a href="https://calendar.google.com/">Google Calendar</a> in a computer browser.</li>
+            <li>Next to <strong>Other calendars</strong>, click <strong>+</strong>, then <strong>From URL</strong>.</li>
+            <li>Paste the URL above and click <strong>Add calendar</strong>.</li>
+        </ol>
+        <p><a href="dst.ics" download>Download the .ics file</a> · <a href="https://support.google.com/calendar/answer/37100?hl=en">Google’s setup guide</a></p>
+    </main>
+    <script>
+        const calendarUrl = document.getElementById('calendar-url');
+        const copyButton = document.getElementById('copy-url');
+        const copyStatus = document.getElementById('copy-status');
+
+        copyButton.hidden = false;
+        copyButton.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(calendarUrl.textContent.trim());
+                copyStatus.textContent = 'URL copied.';
+            } catch {
+                const selection = window.getSelection();
+                const range = document.createRange();
+                range.selectNodeContents(calendarUrl);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                copyStatus.textContent = 'Could not copy automatically. Copy the selected URL manually.';
+            }
+        });
+    </script>
+</body>
+</html>
