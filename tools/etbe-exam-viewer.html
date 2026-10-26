@@ -4,6 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ETBE Exam Viewer</title>
+  <script>
+    try {
+      document.documentElement.dataset.theme = localStorage.getItem("etbe-exam-viewer-theme") === "dark" ? "dark" : "light";
+    } catch {
+      document.documentElement.dataset.theme = "light";
+    }
+  </script>
   <style>
     :root {
       color-scheme: light;
@@ -11,15 +18,44 @@
       --surface: #ffffff;
       --surface-2: #f1f1ee;
       --border: #d7d7d1;
+      --control-border: #b9b9b2;
       --text: #1f1f1c;
       --muted: #666660;
       --accent: #2f5fa7;
+      --accent-text: #ffffff;
       --accent-soft: #edf3fb;
       --ok: #26734d;
       --ok-bg: #edf8f2;
+      --ok-border: #b7ddc9;
       --bad: #a23b32;
       --bad-bg: #fff1ef;
+      --focus: rgba(47,95,167,.2);
+      --floating-bg: rgba(255,255,255,.96);
       --shadow: 0 1px 2px rgba(0,0,0,.05);
+      --floating-shadow: 0 6px 22px rgba(0,0,0,.08);
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #111210;
+      --surface: #181a18;
+      --surface-2: #20231f;
+      --border: #30342e;
+      --control-border: #454a42;
+      --text: #f0f1ec;
+      --muted: #a7ada3;
+      --accent: #8db7ff;
+      --accent-text: #101317;
+      --accent-soft: #19263a;
+      --ok: #77d29f;
+      --ok-bg: #14261d;
+      --ok-border: #28533b;
+      --bad: #f09a91;
+      --bad-bg: #2b1816;
+      --focus: rgba(141,183,255,.28);
+      --floating-bg: rgba(24,26,24,.96);
+      --shadow: 0 1px 2px rgba(0,0,0,.28);
+      --floating-shadow: 0 8px 28px rgba(0,0,0,.35);
     }
 
     * { box-sizing: border-box; }
@@ -41,11 +77,60 @@
 
     .topbar {
       display: flex;
-      gap: 12px;
-      align-items: center;
+      gap: 14px;
+      align-items: flex-start;
       justify-content: space-between;
-      flex-wrap: wrap;
       margin-bottom: 18px;
+    }
+
+    .topbar-controls {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .theme-toggle {
+      display: inline-grid;
+      grid-template-columns: repeat(2, 42px);
+      padding: 3px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .theme-button {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 36px;
+      padding: 0;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .theme-button:hover {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    .theme-button[aria-pressed="true"] {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .theme-button svg {
+      width: 19px;
+      height: 19px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
     }
 
     h1 {
@@ -62,7 +147,7 @@
     }
 
     .loader {
-      border: 1px dashed #aaa9a2;
+      border: 1px dashed var(--control-border);
       background: var(--surface);
       border-radius: 10px;
       padding: 18px;
@@ -86,7 +171,7 @@
 
     button, .file-label {
       appearance: none;
-      border: 1px solid #b9b9b2;
+      border: 1px solid var(--control-border);
       background: var(--surface);
       color: var(--text);
       border-radius: 8px;
@@ -94,6 +179,7 @@
       font: inherit;
       font-size: .94rem;
       cursor: pointer;
+      min-height: 42px;
     }
 
     button:hover, .file-label:hover {
@@ -102,7 +188,7 @@
 
     button.primary {
       background: var(--accent);
-      color: white;
+      color: var(--accent-text);
       border-color: var(--accent);
     }
 
@@ -165,6 +251,7 @@
       margin: 0 0 14px;
       font-weight: 600;
       white-space: pre-wrap;
+      overflow-wrap: anywhere;
     }
 
     .question-meta {
@@ -176,7 +263,7 @@
     .context {
       margin: 0 0 14px;
       padding: 12px 14px;
-      border-left: 3px solid #bcbcb5;
+      border-left: 3px solid var(--control-border);
       background: var(--surface-2);
       border-radius: 6px;
       white-space: pre-wrap;
@@ -212,6 +299,7 @@
       border-radius: 8px;
       padding: 9px 10px;
       cursor: pointer;
+      min-height: 44px;
     }
 
     .option:hover { background: var(--surface-2); }
@@ -230,7 +318,7 @@
 
     .option.correct-answer {
       background: var(--ok-bg);
-      border-color: #b7ddc9;
+      border-color: var(--ok-border);
     }
 
     textarea {
@@ -238,9 +326,9 @@
       width: 100%;
       min-height: 150px;
       resize: vertical;
-      border: 1px solid #bcbcb5;
+      border: 1px solid var(--control-border);
       border-radius: 8px;
-      background: white;
+      background: var(--surface);
       color: var(--text);
       padding: 12px;
       font: inherit;
@@ -248,7 +336,7 @@
     }
 
     textarea:focus, button:focus-visible, .file-label:focus-within, input:focus-visible {
-      outline: 3px solid rgba(47,95,167,.2);
+      outline: 3px solid var(--focus);
       outline-offset: 2px;
     }
 
@@ -262,9 +350,9 @@
       padding: 12px;
       border: 1px solid var(--border);
       border-radius: 10px;
-      background: rgba(255,255,255,.96);
-      box-shadow: 0 6px 22px rgba(0,0,0,.08);
-      backdrop-filter: blur(6px);
+      background: var(--floating-bg);
+      box-shadow: var(--floating-shadow);
+      backdrop-filter: blur(8px);
     }
 
     .actions .spacer { flex: 1; }
@@ -282,28 +370,169 @@
     }
 
     @media (max-width: 620px) {
+      html { font-size: 16px; }
+
       main {
-        width: min(100% - 20px, 960px);
-        margin-top: 18px;
+        width: calc(100% - 16px);
+        margin: 14px auto 28px;
       }
 
-      .question { padding: 16px; }
+      .topbar {
+        gap: 10px;
+        align-items: center;
+      }
+
+      h1 {
+        font-size: 1.28rem;
+        min-width: 0;
+      }
+
+      .topbar-controls {
+        gap: 7px;
+        flex: 0 0 auto;
+      }
+
+      .progress {
+        width: 100%;
+        order: 3;
+        text-align: right;
+        font-size: .86rem;
+      }
+
+      .theme-toggle {
+        grid-template-columns: repeat(2, 40px);
+      }
+
+      .theme-button {
+        width: 40px;
+        height: 36px;
+      }
+
+      .loader {
+        padding: 14px 12px;
+        margin-bottom: 16px;
+      }
+
+      .loader-row {
+        gap: 8px;
+      }
+
+      .file-label {
+        width: 100%;
+        text-align: center;
+      }
+
+      .question {
+        padding: 14px;
+        margin: 10px 0;
+        border-radius: 9px;
+      }
+
+      .question-head {
+        margin-bottom: 9px;
+      }
+
+      .prompt {
+        margin-bottom: 12px;
+      }
+
+      .option {
+        grid-template-columns: 24px minmax(0, 1fr);
+        gap: 7px;
+        padding: 9px 8px;
+      }
+
+      textarea {
+        min-height: 120px;
+        padding: 10px;
+      }
 
       .actions {
         bottom: 6px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 9px;
       }
 
+      .actions .spacer { display: none; }
+
       .actions button {
-        flex: 1 1 auto;
+        width: 100%;
+        min-width: 0;
+        padding-left: 9px;
+        padding-right: 9px;
+      }
+
+      .score {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        text-align: center;
+        margin: 0;
+        min-height: 0;
+      }
+
+      #checkBtn { grid-column: 1; }
+      #copyBtn { grid-column: 2; }
+      #resetBtn { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 390px) {
+      .topbar {
+        align-items: flex-start;
+      }
+
+      h1 {
+        font-size: 1.18rem;
+      }
+
+      .theme-toggle {
+        grid-template-columns: repeat(2, 38px);
+      }
+
+      .theme-button {
+        width: 38px;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      .score,
+      #checkBtn,
+      #copyBtn,
+      #resetBtn {
+        grid-column: 1;
       }
     }
+
   </style>
 </head>
 <body>
 <main>
   <div class="topbar">
     <h1 id="examTitle">ETBE Exam Viewer</h1>
-    <div class="progress" id="progress"></div>
+    <div class="topbar-controls">
+      <div class="progress" id="progress"></div>
+      <div class="theme-toggle" role="group" aria-label="Color theme">
+        <button class="theme-button" id="lightThemeBtn" type="button" aria-label="Use light theme" aria-pressed="true" title="Light theme">
+          <!-- Lucide Sun -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path><path d="M12 20v2"></path>
+            <path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path>
+            <path d="M2 12h2"></path><path d="M20 12h2"></path>
+            <path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>
+          </svg>
+        </button>
+        <button class="theme-button" id="darkThemeBtn" type="button" aria-label="Use dark theme" aria-pressed="false" title="Dark theme">
+          <!-- Lucide Moon -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
   </div>
 
   <section class="loader" id="dropZone" aria-label="Load exam">
@@ -378,6 +607,30 @@ const scoreEl = $("#score");
 const dropZone = $("#dropZone");
 const fileInput = $("#fileInput");
 const loadError = $("#loadError");
+
+const THEME_STORAGE_KEY = "etbe-exam-viewer-theme";
+const lightThemeBtn = $("#lightThemeBtn");
+const darkThemeBtn = $("#darkThemeBtn");
+
+function readTheme() {
+  try {
+    return localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
+  } catch {
+    return "light";
+  }
+}
+
+function applyTheme(theme, persist = true) {
+  const normalized = theme === "dark" ? "dark" : "light";
+  document.documentElement.dataset.theme = normalized;
+  lightThemeBtn.setAttribute("aria-pressed", String(normalized === "light"));
+  darkThemeBtn.setAttribute("aria-pressed", String(normalized === "dark"));
+  if (persist) {
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, normalized);
+    } catch {}
+  }
+}
 
 function storageKey() {
   return `etbe-exam-progress::${exam.id}`;
@@ -799,7 +1052,10 @@ dropZone.addEventListener("drop", event => {
 $("#checkBtn").addEventListener("click", checkMultipleChoice);
 $("#copyBtn").addEventListener("click", copyAnswers);
 $("#resetBtn").addEventListener("click", resetProgress);
+lightThemeBtn.addEventListener("click", () => applyTheme("light"));
+darkThemeBtn.addEventListener("click", () => applyTheme("dark"));
 
+applyTheme(readTheme(), false);
 loadExam(DEMO_EXAM);
 </script>
 </body>
