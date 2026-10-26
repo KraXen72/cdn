@@ -167,6 +167,37 @@
       white-space: pre-wrap;
     }
 
+    .question-meta {
+      margin: -6px 0 12px;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .context {
+      margin: 0 0 14px;
+      padding: 12px 14px;
+      border-left: 3px solid #bcbcb5;
+      background: var(--surface-2);
+      border-radius: 6px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    .explanation-label {
+      display: block;
+      margin: 14px 0 7px;
+      font-weight: 700;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .word-count {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: .84rem;
+      text-align: right;
+    }
+
     .options {
       display: grid;
       gap: 8px;
@@ -387,14 +418,20 @@ function validateExam(data) {
     if (ids.has(q.id)) throw new Error(`Duplicate question id: ${q.id}`);
     ids.add(q.id);
 
-    if (!["mcq", "open"].includes(q.type)) {
+    if (!["mcq", "open", "mixed"].includes(q.type)) {
       throw new Error(`Unsupported question type: ${q.type}`);
     }
     if (!q.prompt || typeof q.prompt !== "string") {
       throw new Error(`Question ${q.id} needs a prompt.`);
     }
+    if (q.context !== undefined && typeof q.context !== "string") {
+      throw new Error(`Question ${q.id} context must be a string.`);
+    }
+    if (q.wordLimit !== undefined && (!Number.isInteger(q.wordLimit) || q.wordLimit <= 0)) {
+      throw new Error(`Question ${q.id} wordLimit must be a positive integer.`);
+    }
 
-    if (q.type === "mcq") {
+    if (q.type === "mcq" || q.type === "mixed") {
       if (!Array.isArray(q.options) || q.options.length < 2) {
         throw new Error(`Question ${q.id} needs at least two options.`);
       }
@@ -420,6 +457,69 @@ function loadExam(data) {
   render();
 }
 
+function wordCount(text) {
+  const trimmed = (text || "").trim();
+  return trimmed ? trimmed.split(/\s+/).length : 0;
+}
+
+function appendWordCounter(container, textarea, q) {
+  if (!q.wordLimit) return;
+  const counter = document.createElement("div");
+  counter.className = "word-count";
+  const refresh = () => {
+    const count = wordCount(textarea.value);
+    counter.textContent = `${count}/${q.wordLimit} words`;
+  };
+  textarea.addEventListener("input", refresh);
+  refresh();
+  container.appendChild(counter);
+}
+
+function appendOptions(article, q, index, mixed = false) {
+  const options = document.createElement("div");
+  options.className = "options";
+
+  const mixedState = mixed
+    ? (state[q.id] && typeof state[q.id] === "object" ? state[q.id] : { choice: "", text: "" })
+    : null;
+
+  q.options.forEach(opt => {
+    const label = document.createElement("label");
+    label.className = "option";
+    label.dataset.option = opt.id;
+
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = q.id;
+    radio.value = opt.id;
+    radio.checked = mixed ? mixedState.choice === opt.id : state[q.id] === opt.id;
+    radio.addEventListener("change", () => {
+      if (mixed) {
+        const current = state[q.id] && typeof state[q.id] === "object"
+          ? state[q.id]
+          : { choice: "", text: "" };
+        state[q.id] = { ...current, choice: opt.id };
+      } else {
+        state[q.id] = opt.id;
+      }
+      checked = false;
+      clearCheckDisplay();
+      saveState();
+    });
+
+    const text = document.createElement("div");
+    const letter = document.createElement("span");
+    letter.className = "option-letter";
+    letter.textContent = `${opt.id})`;
+    text.append(letter, document.createTextNode(` ${opt.text}`));
+
+    label.append(radio, text);
+    options.appendChild(label);
+  });
+
+  article.appendChild(options);
+}
+
 function render() {
   titleEl.textContent = exam.title;
   document.title = `${exam.title} — ETBE Exam`;
@@ -436,7 +536,7 @@ function render() {
 
     const number = document.createElement("div");
     number.className = "q-number";
-    number.textContent = `Question ${index + 1}`;
+    number.textContent = q.label ? `Question ${q.label}` : `Question ${index + 1}`;
     head.appendChild(number);
 
     const result = document.createElement("span");
@@ -444,53 +544,66 @@ function render() {
     result.hidden = true;
     head.appendChild(result);
 
+    article.appendChild(head);
+
+    if (q.context) {
+      const context = document.createElement("div");
+      context.className = "context";
+      context.textContent = q.context;
+      article.appendChild(context);
+    }
+
     const prompt = document.createElement("p");
     prompt.className = "prompt";
     prompt.textContent = q.prompt;
+    article.appendChild(prompt);
 
-    article.append(head, prompt);
+    const metaBits = [];
+    if (q.points !== undefined) metaBits.push(`${q.points} points`);
+    if (q.weight) metaBits.push(String(q.weight));
+    if (q.wordLimit) metaBits.push(`suggested max ${q.wordLimit} words`);
+    if (metaBits.length) {
+      const meta = document.createElement("div");
+      meta.className = "question-meta";
+      meta.textContent = metaBits.join(" · ");
+      article.appendChild(meta);
+    }
 
     if (q.type === "mcq") {
-      const options = document.createElement("div");
-      options.className = "options";
+      appendOptions(article, q, index, false);
+    } else if (q.type === "mixed") {
+      appendOptions(article, q, index, true);
 
-      q.options.forEach(opt => {
-        const label = document.createElement("label");
-        label.className = "option";
-        label.dataset.option = opt.id;
+      const explainLabel = document.createElement("label");
+      explainLabel.className = "explanation-label";
+      explainLabel.textContent = q.explanationLabel || "Justification";
+      article.appendChild(explainLabel);
 
-        const radio = document.createElement("input");
-        radio.type = "radio";
-        radio.name = q.id;
-        radio.value = opt.id;
-        radio.checked = state[q.id] === opt.id;
-        radio.addEventListener("change", () => {
-          state[q.id] = opt.id;
-          checked = false;
-          clearCheckDisplay();
-          saveState();
-        });
-
-        const text = document.createElement("div");
-        const letter = document.createElement("span");
-        letter.className = "option-letter";
-        letter.textContent = `${opt.id})`;
-        text.append(letter, document.createTextNode(` ${opt.text}`));
-
-        label.append(radio, text);
-        options.appendChild(label);
+      const textarea = document.createElement("textarea");
+      const current = state[q.id] && typeof state[q.id] === "object"
+        ? state[q.id]
+        : { choice: "", text: "" };
+      textarea.value = current.text || "";
+      textarea.setAttribute("aria-label", `Written justification for question ${q.label || index + 1}`);
+      textarea.addEventListener("input", () => {
+        const now = state[q.id] && typeof state[q.id] === "object"
+          ? state[q.id]
+          : { choice: "", text: "" };
+        state[q.id] = { ...now, text: textarea.value };
+        saveState();
       });
-
-      article.appendChild(options);
+      article.appendChild(textarea);
+      appendWordCounter(article, textarea, q);
     } else {
       const textarea = document.createElement("textarea");
-      textarea.value = state[q.id] || "";
-      textarea.setAttribute("aria-label", `Answer to question ${index + 1}`);
+      textarea.value = typeof state[q.id] === "string" ? state[q.id] : "";
+      textarea.setAttribute("aria-label", `Answer to question ${q.label || index + 1}`);
       textarea.addEventListener("input", () => {
         state[q.id] = textarea.value;
         saveState();
       });
       article.appendChild(textarea);
+      appendWordCounter(article, textarea, q);
     }
 
     questionsEl.appendChild(article);
@@ -502,6 +615,11 @@ function render() {
 function isAnswered(q) {
   const value = state[q.id];
   if (q.type === "mcq") return typeof value === "string" && value.length > 0;
+  if (q.type === "mixed") {
+    return value && typeof value === "object"
+      && typeof value.choice === "string" && value.choice.length > 0
+      && typeof value.text === "string" && value.text.trim().length > 0;
+  }
   return typeof value === "string" && value.trim().length > 0;
 }
 
@@ -526,13 +644,14 @@ function clearCheckDisplay() {
 function checkMultipleChoice() {
   clearCheckDisplay();
 
-  const mcqs = exam.questions.filter(q => q.type === "mcq");
+  const mcqs = exam.questions.filter(q => q.type === "mcq" || q.type === "mixed");
   let correctCount = 0;
 
   for (const q of mcqs) {
     const card = document.querySelector(`.question[data-id="${CSS.escape(q.id)}"]`);
     const result = card.querySelector(".result");
-    const selected = state[q.id];
+    const raw = state[q.id];
+    const selected = q.type === "mixed" ? (raw && typeof raw === "object" ? raw.choice : "") : raw;
     const correct = decodeAnswer(q.answer);
 
     if (!selected) {
@@ -567,7 +686,19 @@ function exportText() {
   ];
 
   exam.questions.forEach((q, index) => {
-    lines.push(`${index + 1}. ${q.prompt}`);
+    const label = q.label || String(index + 1);
+    lines.push(`${label}. ${q.prompt}`);
+    if (q.context) {
+      lines.push("");
+      lines.push("Context:");
+      lines.push(q.context);
+    }
+
+    const metaBits = [];
+    if (q.points !== undefined) metaBits.push(`${q.points} points`);
+    if (q.weight) metaBits.push(String(q.weight));
+    if (q.wordLimit) metaBits.push(`${q.wordLimit} words`);
+    if (metaBits.length) lines.push(`[${metaBits.join(" · ")}]`);
 
     if (q.type === "mcq") {
       q.options.forEach(opt => lines.push(`   ${opt.id}) ${opt.text}`));
@@ -578,9 +709,21 @@ function exportText() {
       } else {
         lines.push(`My answer: ${selected}`);
       }
+    } else if (q.type === "mixed") {
+      q.options.forEach(opt => lines.push(`   ${opt.id}) ${opt.text}`));
+      const current = state[q.id] && typeof state[q.id] === "object"
+        ? state[q.id]
+        : { choice: "", text: "" };
+      const selected = current.choice || "[unanswered]";
+      const selectedOption = q.options.find(o => o.id === selected);
+      lines.push(selectedOption
+        ? `My choice: ${selected}) ${selectedOption.text}`
+        : `My choice: ${selected}`);
+      lines.push("My justification:");
+      lines.push((current.text || "").trim() || "[unanswered]");
     } else {
       lines.push("My answer:");
-      lines.push((state[q.id] || "").trim() || "[unanswered]");
+      lines.push((typeof state[q.id] === "string" ? state[q.id] : "").trim() || "[unanswered]");
     }
 
     lines.push("");
