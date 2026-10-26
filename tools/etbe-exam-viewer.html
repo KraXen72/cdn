@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ETBE Exam Viewer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f7f5;
+      --surface: #ffffff;
+      --surface-2: #f1f1ee;
+      --border: #d7d7d1;
+      --text: #1f1f1c;
+      --muted: #666660;
+      --accent: #2f5fa7;
+      --accent-soft: #edf3fb;
+      --ok: #26734d;
+      --ok-bg: #edf8f2;
+      --bad: #a23b32;
+      --bad-bg: #fff1ef;
+      --shadow: 0 1px 2px rgba(0,0,0,.05);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { font-size: 17px; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    main {
+      width: min(960px, calc(100% - 32px));
+      margin: 34px auto 64px;
+    }
+
+    .topbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: 1.55rem;
+      line-height: 1.2;
+      margin: 0;
+      letter-spacing: -.02em;
+    }
+
+    .progress {
+      font-size: .95rem;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .loader {
+      border: 1px dashed #aaa9a2;
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 22px;
+      text-align: center;
+      transition: .15s ease;
+    }
+
+    .loader.dragover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .loader-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button, .file-label {
+      appearance: none;
+      border: 1px solid #b9b9b2;
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 9px 13px;
+      font: inherit;
+      font-size: .94rem;
+      cursor: pointer;
+    }
+
+    button:hover, .file-label:hover {
+      background: var(--surface-2);
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    button.primary:hover { filter: brightness(.96); }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    input[type="file"] { display: none; }
+
+    .hint {
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .question {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 14px 0;
+    }
+
+    .question-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .q-number {
+      font-weight: 700;
+      font-size: .95rem;
+      color: var(--muted);
+    }
+
+    .result {
+      font-size: .88rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .result.correct {
+      color: var(--ok);
+      background: var(--ok-bg);
+    }
+
+    .result.incorrect {
+      color: var(--bad);
+      background: var(--bad-bg);
+    }
+
+    .prompt {
+      margin: 0 0 14px;
+      font-weight: 600;
+      white-space: pre-wrap;
+    }
+
+    .options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .option {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      align-items: start;
+      gap: 8px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 9px 10px;
+      cursor: pointer;
+    }
+
+    .option:hover { background: var(--surface-2); }
+
+    .option input {
+      margin: 5px 0 0;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+
+    .option-letter {
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
+    .option.correct-answer {
+      background: var(--ok-bg);
+      border-color: #b7ddc9;
+    }
+
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 150px;
+      resize: vertical;
+      border: 1px solid #bcbcb5;
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      padding: 12px;
+      font: inherit;
+      line-height: 1.5;
+    }
+
+    textarea:focus, button:focus-visible, .file-label:focus-within, input:focus-visible {
+      outline: 3px solid rgba(47,95,167,.2);
+      outline-offset: 2px;
+    }
+
+    .actions {
+      position: sticky;
+      bottom: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 6px 22px rgba(0,0,0,.08);
+      backdrop-filter: blur(6px);
+    }
+
+    .actions .spacer { flex: 1; }
+
+    .score {
+      align-self: center;
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    .error {
+      color: var(--bad);
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 620px) {
+      main {
+        width: min(100% - 20px, 960px);
+        margin-top: 18px;
+      }
+
+      .question { padding: 16px; }
+
+      .actions {
+        bottom: 6px;
+      }
+
+      .actions button {
+        flex: 1 1 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <div class="topbar">
+    <h1 id="examTitle">ETBE Exam Viewer</h1>
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <section class="loader" id="dropZone" aria-label="Load exam">
+    <div class="loader-row">
+      <span>Drop an exam JSON here</span>
+      <label class="file-label">
+        Choose JSON
+        <input id="fileInput" type="file" accept=".json,application/json">
+      </label>
+    </div>
+    <div id="loadError" class="error" hidden></div>
+  </section>
+
+  <section id="questions"></section>
+
+  <div class="actions" id="actions" hidden>
+    <button id="checkBtn" class="primary">Check multiple choice</button>
+    <button id="copyBtn">Copy answers</button>
+    <span class="spacer"></span>
+    <span class="score" id="score"></span>
+    <button id="resetBtn">Reset progress</button>
+  </div>
+</main>
+
+<script>
+"use strict";
+
+const DEMO_EXAM = {
+  id: "viewer-demo-v1",
+  title: "Viewer Demo",
+  questions: [
+    {
+      id: "q1",
+      type: "mcq",
+      prompt: "Which option is used here only to demonstrate automatic multiple-choice checking?",
+      options: [
+        { id: "A", text: "Option A" },
+        { id: "B", text: "Option B" },
+        { id: "C", text: "Option C" },
+        { id: "D", text: "Option D" }
+      ],
+      answer: "Qg=="
+    },
+    {
+      id: "q2",
+      type: "mcq",
+      prompt: "Progress should persist after refreshing this page.",
+      options: [
+        { id: "A", text: "True" },
+        { id: "B", text: "False" }
+      ],
+      answer: "QQ=="
+    },
+    {
+      id: "q3",
+      type: "open",
+      prompt: "Write a short test answer here. It should also persist after refresh."
+    }
+  ]
+};
+
+let exam = null;
+let state = {};
+let checked = false;
+
+const $ = (selector) => document.querySelector(selector);
+const questionsEl = $("#questions");
+const titleEl = $("#examTitle");
+const progressEl = $("#progress");
+const actionsEl = $("#actions");
+const scoreEl = $("#score");
+const dropZone = $("#dropZone");
+const fileInput = $("#fileInput");
+const loadError = $("#loadError");
+
+function storageKey() {
+  return `etbe-exam-progress::${exam.id}`;
+}
+
+function loadState() {
+  try {
+    state = JSON.parse(localStorage.getItem(storageKey()) || "{}");
+  } catch {
+    state = {};
+  }
+}
+
+function saveState() {
+  localStorage.setItem(storageKey(), JSON.stringify(state));
+  updateProgress();
+}
+
+function decodeAnswer(value) {
+  try {
+    return atob(value);
+  } catch {
+    return "";
+  }
+}
+
+function validateExam(data) {
+  if (!data || typeof data !== "object") throw new Error("Invalid JSON.");
+  if (!data.id || typeof data.id !== "string") throw new Error("Exam needs a string id.");
+  if (!data.title || typeof data.title !== "string") throw new Error("Exam needs a title.");
+  if (!Array.isArray(data.questions) || data.questions.length === 0) {
+    throw new Error("Exam needs a non-empty questions array.");
+  }
+
+  const ids = new Set();
+  for (const q of data.questions) {
+    if (!q.id || typeof q.id !== "string") throw new Error("Every question needs a string id.");
+    if (ids.has(q.id)) throw new Error(`Duplicate question id: ${q.id}`);
+    ids.add(q.id);
+
+    if (!["mcq", "open"].includes(q.type)) {
+      throw new Error(`Unsupported question type: ${q.type}`);
+    }
+    if (!q.prompt || typeof q.prompt !== "string") {
+      throw new Error(`Question ${q.id} needs a prompt.`);
+    }
+
+    if (q.type === "mcq") {
+      if (!Array.isArray(q.options) || q.options.length < 2) {
+        throw new Error(`Question ${q.id} needs at least two options.`);
+      }
+      if (!q.answer || typeof q.answer !== "string") {
+        throw new Error(`Question ${q.id} needs a base64 answer.`);
+      }
+      const optionIds = q.options.map(o => o.id);
+      const correct = decodeAnswer(q.answer);
+      if (!optionIds.includes(correct)) {
+        throw new Error(`Question ${q.id} has an invalid encoded answer.`);
+      }
+    }
+  }
+}
+
+function loadExam(data) {
+  validateExam(data);
+  exam = data;
+  checked = false;
+  scoreEl.textContent = "";
+  loadError.hidden = true;
+  loadState();
+  render();
+}
+
+function render() {
+  titleEl.textContent = exam.title;
+  document.title = `${exam.title} — ETBE Exam`;
+  questionsEl.innerHTML = "";
+  actionsEl.hidden = false;
+
+  exam.questions.forEach((q, index) => {
+    const article = document.createElement("article");
+    article.className = "question";
+    article.dataset.id = q.id;
+
+    const head = document.createElement("div");
+    head.className = "question-head";
+
+    const number = document.createElement("div");
+    number.className = "q-number";
+    number.textContent = `Question ${index + 1}`;
+    head.appendChild(number);
+
+    const result = document.createElement("span");
+    result.className = "result";
+    result.hidden = true;
+    head.appendChild(result);
+
+    const prompt = document.createElement("p");
+    prompt.className = "prompt";
+    prompt.textContent = q.prompt;
+
+    article.append(head, prompt);
+
+    if (q.type === "mcq") {
+      const options = document.createElement("div");
+      options.className = "options";
+
+      q.options.forEach(opt => {
+        const label = document.createElement("label");
+        label.className = "option";
+        label.dataset.option = opt.id;
+
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = q.id;
+        radio.value = opt.id;
+        radio.checked = state[q.id] === opt.id;
+        radio.addEventListener("change", () => {
+          state[q.id] = opt.id;
+          checked = false;
+          clearCheckDisplay();
+          saveState();
+        });
+
+        const text = document.createElement("div");
+        const letter = document.createElement("span");
+        letter.className = "option-letter";
+        letter.textContent = `${opt.id})`;
+        text.append(letter, document.createTextNode(` ${opt.text}`));
+
+        label.append(radio, text);
+        options.appendChild(label);
+      });
+
+      article.appendChild(options);
+    } else {
+      const textarea = document.createElement("textarea");
+      textarea.value = state[q.id] || "";
+      textarea.setAttribute("aria-label", `Answer to question ${index + 1}`);
+      textarea.addEventListener("input", () => {
+        state[q.id] = textarea.value;
+        saveState();
+      });
+      article.appendChild(textarea);
+    }
+
+    questionsEl.appendChild(article);
+  });
+
+  updateProgress();
+}
+
+function isAnswered(q) {
+  const value = state[q.id];
+  if (q.type === "mcq") return typeof value === "string" && value.length > 0;
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function updateProgress() {
+  if (!exam) return;
+  const answered = exam.questions.filter(isAnswered).length;
+  progressEl.textContent = `${answered}/${exam.questions.length} answered`;
+}
+
+function clearCheckDisplay() {
+  scoreEl.textContent = "";
+  document.querySelectorAll(".result").forEach(el => {
+    el.hidden = true;
+    el.textContent = "";
+    el.className = "result";
+  });
+  document.querySelectorAll(".option.correct-answer").forEach(el => {
+    el.classList.remove("correct-answer");
+  });
+}
+
+function checkMultipleChoice() {
+  clearCheckDisplay();
+
+  const mcqs = exam.questions.filter(q => q.type === "mcq");
+  let correctCount = 0;
+
+  for (const q of mcqs) {
+    const card = document.querySelector(`.question[data-id="${CSS.escape(q.id)}"]`);
+    const result = card.querySelector(".result");
+    const selected = state[q.id];
+    const correct = decodeAnswer(q.answer);
+
+    if (!selected) {
+      result.textContent = "Unanswered";
+      result.classList.add("incorrect");
+      result.hidden = false;
+      continue;
+    }
+
+    if (selected === correct) {
+      correctCount++;
+      result.textContent = "Correct";
+      result.classList.add("correct");
+    } else {
+      result.textContent = "Incorrect";
+      result.classList.add("incorrect");
+      const correctOption = card.querySelector(`.option[data-option="${CSS.escape(correct)}"]`);
+      if (correctOption) correctOption.classList.add("correct-answer");
+    }
+    result.hidden = false;
+  }
+
+  scoreEl.textContent = `MC: ${correctCount}/${mcqs.length}`;
+  checked = true;
+}
+
+function exportText() {
+  const lines = [
+    exam.title,
+    "=".repeat(exam.title.length),
+    ""
+  ];
+
+  exam.questions.forEach((q, index) => {
+    lines.push(`${index + 1}. ${q.prompt}`);
+
+    if (q.type === "mcq") {
+      q.options.forEach(opt => lines.push(`   ${opt.id}) ${opt.text}`));
+      const selected = state[q.id] || "[unanswered]";
+      const selectedOption = q.options.find(o => o.id === selected);
+      if (selectedOption) {
+        lines.push(`My answer: ${selected}) ${selectedOption.text}`);
+      } else {
+        lines.push(`My answer: ${selected}`);
+      }
+    } else {
+      lines.push("My answer:");
+      lines.push((state[q.id] || "").trim() || "[unanswered]");
+    }
+
+    lines.push("");
+  });
+
+  return lines.join("\n");
+}
+
+async function copyAnswers() {
+  const text = exportText();
+  try {
+    await navigator.clipboard.writeText(text);
+    const old = $("#copyBtn").textContent;
+    $("#copyBtn").textContent = "Copied";
+    setTimeout(() => $("#copyBtn").textContent = old, 1200);
+  } catch {
+    const temp = document.createElement("textarea");
+    temp.value = text;
+    temp.style.position = "fixed";
+    temp.style.opacity = "0";
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand("copy");
+    temp.remove();
+  }
+}
+
+function resetProgress() {
+  if (!confirm("Reset all saved answers for this exam?")) return;
+  localStorage.removeItem(storageKey());
+  state = {};
+  checked = false;
+  render();
+}
+
+async function readExamFile(file) {
+  loadError.hidden = true;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    loadExam(data);
+  } catch (err) {
+    loadError.textContent = err?.message || "Could not load exam.";
+    loadError.hidden = false;
+  }
+}
+
+fileInput.addEventListener("change", () => {
+  const file = fileInput.files?.[0];
+  if (file) readExamFile(file);
+  fileInput.value = "";
+});
+
+["dragenter", "dragover"].forEach(type => {
+  dropZone.addEventListener(type, event => {
+    event.preventDefault();
+    dropZone.classList.add("dragover");
+  });
+});
+
+["dragleave", "drop"].forEach(type => {
+  dropZone.addEventListener(type, event => {
+    event.preventDefault();
+    dropZone.classList.remove("dragover");
+  });
+});
+
+dropZone.addEventListener("drop", event => {
+  const file = event.dataTransfer?.files?.[0];
+  if (file) readExamFile(file);
+});
+
+$("#checkBtn").addEventListener("click", checkMultipleChoice);
+$("#copyBtn").addEventListener("click", copyAnswers);
+$("#resetBtn").addEventListener("click", resetProgress);
+
+loadExam(DEMO_EXAM);
+</script>
+</body>
+</html>
