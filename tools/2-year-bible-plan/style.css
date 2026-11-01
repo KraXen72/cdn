@@ -150,7 +150,7 @@ ul {
   cursor: pointer;
 }
 .check {
-  --checkbox-size: 21px;
+  --checkbox-size: 19px;
   appearance: none;
   display: inline-block;
   position: relative;
