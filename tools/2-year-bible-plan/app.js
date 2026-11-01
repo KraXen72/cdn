@@ -124,9 +124,9 @@ function changeScope(input) {
     input.dataset.type === "part" &&
     !confirm(
       name +
-        ": naozaj chceš " +
-        (checked ? "označiť" : "odznačiť") +
-        " všetky čítania?",
+        ": mark all readings as " +
+        (checked ? "read" : "unread") +
+        "?",
     )
   ) {
     refresh();
@@ -175,11 +175,11 @@ async function importProgress(file) {
     }
     if (
       !confirm(
-        "Import nahradí aktuálny postup (" +
+        "Import will replace your current progress (" +
           progress.size +
-          " čítaní) zálohou (" +
+          " readings) with this backup (" +
           value.completed.length +
-          " čítaní). Pokračovať?",
+          " readings). Continue?",
       )
     )
       return;
