@@ -3,49 +3,45 @@
 const STORE_KEY = "kraxen-bible-plan-progress-v1";
 const APP_ID = "kraxen-2-year-bible-plan";
 const partId = Number(document.body.dataset.part);
+const total = Number(document.body.dataset.total);
+const partEnds = document.body.dataset.partEnds.split(",").map(Number);
 const root = document.getElementById("content");
-const totalCount = document.getElementById("total-count");
-const totalBar = document.getElementById("total-bar");
 const status = document.getElementById("save-status");
 const fileInput = document.getElementById("import-file");
 const toast = document.getElementById("toast");
+const backupMenu = document.getElementById("backup-menu");
+const readingInputs = [...root.querySelectorAll('[data-type="reading"]')];
+const scopeInputs = [
+  ...root.querySelectorAll('.check:not([data-type="reading"])'),
+];
+const idsOf = (input) => input.dataset.ids.split(",").map(Number);
 
-let plan;
-let readings;
 let progress = new Set();
 let previousProgress = null;
-let lastToastTimer = null;
-const pad = number => String(number).padStart(2, "0");
-const numDate = date => {
-  const [year,month,day] = date.split("-");
-  return Number(day) + ". " + Number(month) + ". " + year;
-};
-const range = (start,end) => numDate(start) + " až " + numDate(end);
-const escapeHTML = value => String(value).replace(/[&<>"']/g, ch =>
-  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
-const firstIncomplete = () => readings.find(r => !progress.has(r.id));
-const allIn = ids => ids.every(id => progress.has(id));
-const checkedIn = ids => ids.reduce((total,id) => total + Number(progress.has(id)),0);
-const monthReadings = month => month.weeks.flatMap(week => week.readings);
-const monthIds = month => monthReadings(month).map(reading => reading.id);
-const partIds = part => part.months.flatMap(monthIds);
-const weekIds = week => week.readings.map(reading => reading.id);
+let toastTimer;
+
+/** Validate both legacy local saves and portable backups against the built plan. */
+function validProgress(value) {
+  return (
+    value?.version === 1 &&
+    Array.isArray(value.completed) &&
+    value.completed.every(
+      (id) => Number.isInteger(id) && id >= 1 && id <= total,
+    ) &&
+    new Set(value.completed).size === value.completed.length
+  );
+}
 
 function readLocal() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (!raw) return new Set();
-    const parsed = JSON.parse(raw);
-    if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.completed)) {
-      throw new Error("Unsupported saved progress");
-    }
-    if (!parsed.completed.every(x => Number.isInteger(x) && x >= 1 && x <= plan.assignments)) {
-      throw new Error("Invalid saved progress");
-    }
-    return new Set(parsed.completed);
-  } catch (error) {
-    status.textContent = "Uložený stav sa nepodarilo načítať";
-    status.classList.add("error");
+    const value = JSON.parse(raw);
+    if (!validProgress(value)) throw new Error("Invalid saved progress");
+    return new Set(value.completed);
+  } catch {
+    status.textContent =
+      "Uložený stav sa nepodarilo načítať. Skontroluj zálohu.";
     status.hidden = false;
     return new Set();
   }
@@ -53,301 +49,179 @@ function readLocal() {
 
 function persist() {
   try {
-    localStorage.setItem(STORE_KEY,JSON.stringify({version:1,completed:[...progress].sort((a,b)=>a-b)}));
-    status.textContent = "Uložené v tomto prehliadači";
-    status.classList.remove("error");
+    const completed = [...progress].sort((a, b) => a - b);
+    localStorage.setItem(STORE_KEY, JSON.stringify({ version: 1, completed }));
     status.hidden = true;
     return true;
-  } catch (error) {
+  } catch {
     status.textContent = "Chyba ukladania. Exportuj zálohu.";
-    status.classList.add("error");
     status.hidden = false;
     return false;
   }
 }
 
-function showToast(message,undo=false) {
-  toast.replaceChildren();
-  const span=document.createElement("span");
-  span.textContent=message;
-  toast.append(span);
-  if(undo) {
-    const button=document.createElement("button");
-    button.type="button";
-    button.textContent="Späť";
-    button.addEventListener("click",()=>{
-      if(!previousProgress) return;
-      progress = previousProgress;
-      previousProgress=null;
-      persist();
-      refresh();
+function hideToast() {
+  toast.hidden = true;
+}
+
+function showToast(message, undo = false) {
+  const text = document.createElement("span");
+  text.textContent = message;
+  toast.replaceChildren(text);
+  if (undo) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Späť";
+    button.addEventListener("click", () => {
+      if (!previousProgress) return;
+      if (!replaceProgress(new Set(previousProgress))) return;
+      previousProgress = null;
       hideToast();
     });
     toast.append(button);
   }
-  toast.hidden=false;
-  clearTimeout(lastToastTimer);
-  lastToastTimer=setTimeout(hideToast,5000);
+  toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 5000);
 }
-function hideToast() { toast.hidden=true; }
 
-function setChecked(ids,value,label) {
-  previousProgress=new Set(progress);
-  ids.forEach(id=>value?progress.add(id):progress.delete(id));
-  if(!persist()) {
-    // Keep the visible state consistent with what can actually be recovered.
-    progress=previousProgress;
-    previousProgress=null;
+/** Commit a change only when it can be saved, retaining one level of undo. */
+function replaceProgress(next) {
+  const before = progress;
+  progress = next;
+  if (!persist()) {
+    progress = before;
     refresh();
     showToast("Zmeny sa nepodarilo uložiť");
+    return false;
+  }
+  previousProgress = before;
+  refresh();
+  return true;
+}
+
+/** Restore reading and parent checkbox states, including partially read sections. */
+function refresh() {
+  document.getElementById("total-count").textContent =
+    progress.size + " / " + total;
+  for (const input of readingInputs) {
+    input.checked = progress.has(Number(input.dataset.id));
+  }
+  for (const input of scopeInputs) {
+    const ids = idsOf(input);
+    const count = ids.filter((id) => progress.has(id)).length;
+    input.checked = count === ids.length;
+    input.indeterminate = count > 0 && count < ids.length;
+    input.title = count + " / " + ids.length;
+  }
+}
+
+function changeScope(input) {
+  const ids = idsOf(input);
+  const checked = input.checked;
+  const name = input.getAttribute("aria-label");
+  if (
+    input.dataset.type === "part" &&
+    !confirm(
+      name +
+        ": naozaj chceš " +
+        (checked ? "označiť" : "odznačiť") +
+        " všetky čítania?",
+    )
+  ) {
+    refresh();
     return;
   }
-  refresh();
-  if(ids.length>1) showToast(label + (value?" označené":" odznačené"),true);
+
+  const next = new Set(progress);
+  for (const id of ids) {
+    if (checked) next.add(id);
+    else next.delete(id);
+  }
+  if (!replaceProgress(next)) return;
+  if (ids.length > 1)
+    showToast(name + (checked ? " označené" : " odznačené"), true);
   else hideToast();
 }
 
-function sectionCheckbox(type,id,ids,label) {
-  const check=document.createElement("input");
-  check.type="checkbox";
-  check.className="check scope-check";
-  check.setAttribute("aria-label",label);
-  check.dataset.type=type;
-  check.dataset.id=String(id);
-  check.dataset.ids=ids.join(",");
-  return check;
-}
-
-function monthNode(month) {
-  const node=document.createElement("section");
-  node.className="month";
-  node.id="month-"+month.id;
-  const header=document.createElement("div");
-  header.className="month-header";
-  const ids=monthIds(month);
-  header.append(sectionCheckbox("month",month.id,ids,"Označiť celý mesiac "+month.id));
-  const heading=document.createElement("div");
-  heading.className="month-heading";
-  heading.innerHTML='<span class="month-title">Mesiac '+pad(month.id)+'</span><span class="month-date">'+escapeHTML(range(month.start,month.end))+'</span>';
-  const tally=document.createElement("span");
-  tally.className="section-count";
-  tally.dataset.countIds=ids.join(",");
-  header.append(heading,tally);
-  node.append(header);
-  const body=document.createElement("div");
-  body.className="month-body";
-  body.id="month-body-"+month.id;
-  for(const week of month.weeks) body.append(weekNode(week));
-  node.append(body);
-  return node;
-}
-
-function weekNode(week) {
-  const node=document.createElement("section");
-  node.className="week";
-  node.id="week-"+week.id;
-  const heading=document.createElement("div");
-  heading.className="week-header";
-  const ids=weekIds(week);
-  heading.append(sectionCheckbox("week",week.id,ids,"Označiť celý týždeň "+week.id));
-  const label=document.createElement("div");
-  label.className="week-name";
-  const title=document.createElement("h3");
-  title.textContent="Týždeň "+pad(week.id);
-  const date=document.createElement("strong");
-  date.className="week-date";
-  date.textContent=range(week.start,week.end);
-  label.append(title,date);
-  const tally=document.createElement("span");
-  tally.className="section-count";
-  tally.dataset.countIds=ids.join(",");
-  heading.append(label,tally);
-  node.append(heading);
-  const note=document.createElement("blockquote");
-  note.className="week-note";
-  note.textContent=week.note;
-  node.append(note);
-  const list=document.createElement("div");
-  list.className="readings";
-  for(const reading of week.readings) {
-    const row=document.createElement("label");
-    row.className="reading";
-    row.id="reading-"+reading.id;
-    const input=document.createElement("input");
-    input.type="checkbox";
-    input.className="check reading-check";
-    input.dataset.type="reading";
-    input.dataset.id=String(reading.id);
-    const text=document.createElement("span");
-    text.className="reading-ref";
-    text.textContent=reading.reference;
-    row.append(input,text);
-    list.append(row);
-  }
-  node.append(list);
-  return node;
-}
-
-function render() {
-  const part=plan.parts[partId-1];
-  const ids=partIds(part);
-  document.getElementById("part-checkbox-wrap").replaceChildren(
-    sectionCheckbox("part",partId,ids,"Označiť celú časť "+partId)
-  );
-  root.replaceChildren(...part.months.map(monthNode));
-  refresh();
-}
-
-function refresh() {
-  const part=plan.parts[partId-1];
-  const done=progress.size;
-  totalCount.textContent=done+" / "+plan.assignments;
-  totalBar.style.width=100*done/plan.assignments+"%";
-  document.getElementById("total-track").setAttribute("aria-valuenow",String(done));
-  for(const checkbox of document.querySelectorAll("input.check")) {
-    if(checkbox.dataset.type==="reading") {
-      checkbox.checked=progress.has(Number(checkbox.dataset.id));
-    } else {
-      const ids=checkbox.dataset.ids.split(",").map(Number);
-      const count=checkedIn(ids);
-      checkbox.checked=count===ids.length;
-      checkbox.indeterminate=count>0 && count<ids.length;
-      checkbox.title=count+" / "+ids.length;
-    }
-  }
-  for(const span of document.querySelectorAll("[data-count-ids]")) {
-    const ids=span.dataset.countIds.split(",").map(Number);
-    span.textContent=checkedIn(ids)+"/"+ids.length;
-  }
-  for(const row of document.querySelectorAll(".reading")) {
-    const done=progress.has(Number(row.id.slice(8)));
-    row.classList.toggle("done",done);
-    row.classList.remove("next");
-  }
-  const next=firstIncomplete();
-  if(next) {
-    const nextRow=document.getElementById("reading-"+next.id);
-    if(nextRow) nextRow.classList.add("next");
-  }
-}
-
-function findPosition(readingId) {
-  for(const part of plan.parts)
-    for(const month of part.months)
-      for(const week of month.weeks)
-        if(week.readings.some(r=>r.id===readingId))
-          return {part:part.id,month:month.id,week:week.id};
-  return null;
-}
-function openAt(readingId) {
-  const position=findPosition(readingId);
-  if(!position) return;
-  if(position.part!==partId) {
-    location.href="part-"+position.part+".html#reading-"+readingId;
-    return;
-  }
-  requestAnimationFrame(()=>{
-    const target=document.getElementById("reading-"+readingId);
-    target?.scrollIntoView({block:"center",behavior:"smooth"});
-  });
-}
-function changeScope(input) {
-  if(input.dataset.type==="reading") {
-    setChecked([Number(input.dataset.id)],input.checked,"Čítanie");
-    return;
-  }
-  const ids=input.dataset.ids.split(",").map(Number);
-  const value=input.checked;
-  const name=input.dataset.type==="week"?"Týždeň "+input.dataset.id:
-    input.dataset.type==="month"?"Mesiac "+input.dataset.id:"Časť "+input.dataset.id;
-  if(input.dataset.type==="part" && !confirm(name+": naozaj chceš "+(value?"označiť":"odznačiť")+" všetky čítania?")) {
-    refresh();
-    return;
-  }
-  setChecked(ids,value,name);
-}
 function exportProgress() {
-  const payload={
-    app:APP_ID,
-    version:1,
-    exportedAt:new Date().toISOString(),
-    completed:[...progress].sort((a,b)=>a-b)
+  const payload = {
+    app: APP_ID,
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    completed: [...progress].sort((a, b) => a - b),
   };
-  const blob=new Blob([JSON.stringify(payload,null,2)+"\n"],{type:"application/json"});
-  const link=document.createElement("a");
-  const url=URL.createObjectURL(blob);
-  link.href=url;
-  link.download="bible-reading-progress-"+new Date().toISOString().slice(0,10)+".json";
+  const blob = new Blob([JSON.stringify(payload, null, 2) + "\n"], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download =
+    "bible-reading-progress-" + new Date().toISOString().slice(0, 10) + ".json";
   document.body.append(link);
   link.click();
   link.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-  document.getElementById("backup-menu").open=false;
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  backupMenu.open = false;
 }
+
 async function importProgress(file) {
-  if(!file) return;
+  if (!file) return;
   try {
-    const value=JSON.parse(await file.text());
-    if(value?.app!==APP_ID || value?.version!==1 || !Array.isArray(value.completed) ||
-      !value.completed.every(x=>Number.isInteger(x)&&x>=1&&x<=plan.assignments) ||
-      new Set(value.completed).size!==value.completed.length) {
+    const value = JSON.parse(await file.text());
+    if (value?.app !== APP_ID || !validProgress(value)) {
       throw new Error("Neplatný formát zálohy alebo ID čítania");
     }
-    if(!confirm("Import nahradí aktuálny postup ("+progress.size+" čítaní) zálohou ("+
-      value.completed.length+" čítaní). Pokračovať?")) return;
-    previousProgress=new Set(progress);
-    progress=new Set(value.completed);
-    if(!persist()) {
-      progress=previousProgress;
-      previousProgress=null;
-      throw new Error("Úložisko nie je dostupné");
-    }
-    render();
-    showToast("Záloha obnovená",true);
-  } catch(error) {
-    alert("Import zlyhal: "+error.message);
+    if (
+      !confirm(
+        "Import nahradí aktuálny postup (" +
+          progress.size +
+          " čítaní) zálohou (" +
+          value.completed.length +
+          " čítaní). Pokračovať?",
+      )
+    )
+      return;
+    if (replaceProgress(new Set(value.completed)))
+      showToast("Záloha obnovená", true);
+  } catch (error) {
+    alert("Import zlyhal: " + error.message);
   } finally {
-    fileInput.value="";
-    document.getElementById("backup-menu").open=false;
+    fileInput.value = "";
+    backupMenu.open = false;
   }
 }
 
-async function init() {
-  try {
-    const response=await fetch("./plan.json",{cache:"no-cache"});
-    if(!response.ok) throw new Error("HTTP "+response.status);
-    plan=await response.json();
-    if(plan.version!==1||plan.assignments!==518||plan.parts?.length!==4) throw new Error("Invalid plan data");
-    readings=plan.parts.flatMap(part=>part.months.flatMap(month=>month.weeks.flatMap(week=>week.readings)));
-    if(readings.length!==518||readings.some((r,i)=>r.id!==i+1)) throw new Error("Invalid reading IDs");
-    progress=readLocal();
-    render();
-    if(location.hash.startsWith("#reading-")){
-      const id=Number(location.hash.slice(9));
-      if(Number.isInteger(id)&&id>=1&&id<=518)openAt(id);
-    }
-  } catch(error) {
-    root.textContent="Plán sa nepodarilo načítať. Skontroluj pripojenie a obnov stránku.";
-    status.textContent=error.message;
-    status.classList.add("error");
-    status.hidden = false;
+/** Enhance the static document; reading content never depends on JavaScript. */
+function init() {
+  progress = readLocal();
+  if (partId === 0) {
+    let next = 1;
+    while (next <= total && progress.has(next)) next++;
+    const partIndex = partEnds.findIndex((end) => next <= end);
+    const part = partIndex === -1 ? partEnds.length : partIndex + 1;
+    location.replace("./part-" + part + ".html");
     return;
   }
-  const partSelect=document.getElementById("part-select");
-  partSelect.value=String(partId);
-  partSelect.addEventListener("change",()=>{
-    const value=Number(partSelect.value);
-    if(value>=1 && value<=4)location.href="./part-"+value+".html";
+
+  refresh();
+  for (const input of [...readingInputs, ...scopeInputs])
+    input.disabled = false;
+  document.querySelector(".progress-tools").hidden = false;
+  document.body.addEventListener("change", (event) => {
+    if (event.target.matches("input.check")) changeScope(event.target);
   });
-  document.body.addEventListener("change",event=>{
-    if(event.target.matches("input.check"))changeScope(event.target);
-  });
-  document.getElementById("export").addEventListener("click",exportProgress);
-  document.getElementById("import").addEventListener("click",()=>fileInput.click());
-  fileInput.addEventListener("change",()=>importProgress(fileInput.files?.[0]));
-  window.addEventListener("storage",event=>{
-    if(event.key!==STORE_KEY)return;
-    progress=readLocal();
+  document.getElementById("export").addEventListener("click", exportProgress);
+  document
+    .getElementById("import")
+    .addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", () =>
+    importProgress(fileInput.files?.[0]),
+  );
+  window.addEventListener("storage", (event) => {
+    if (event.key !== STORE_KEY && event.key !== null) return;
+    progress = readLocal();
     refresh();
   });
 }
