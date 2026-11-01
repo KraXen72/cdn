@@ -140,9 +140,8 @@ function refresh() {
     input.indeterminate = count > 0 && count < ids.length;
     input.title = count + " / " + ids.length;
   }
-  const unread = firstUnread();
-  jumpUnread.hidden = unread === null;
-  if (unread !== null) jumpUnread.href = readingUrl(unread);
+  const complete = progress.size === total;
+  if (jumpUnread.hidden !== complete) jumpUnread.hidden = complete;
 }
 
 function changeScope(input) {
@@ -234,12 +233,11 @@ function init() {
   for (const input of [...readingInputs, ...scopeInputs])
     input.disabled = false;
   document.querySelector(".progress-tools").hidden = false;
-  jumpUnread.addEventListener("click", (event) => {
+  jumpUnread.addEventListener("click", () => {
     const unread = firstUnread();
-    if (unread === null || !document.getElementById("reading-" + unread))
-      return;
-    event.preventDefault();
-    focusReading(unread);
+    if (unread === null) return;
+    if (document.getElementById("reading-" + unread)) focusReading(unread);
+    else location.assign(readingUrl(unread));
   });
   document.body.addEventListener("change", (event) => {
     if (event.target.matches("input.check")) changeScope(event.target);

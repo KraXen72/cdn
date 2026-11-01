@@ -15,9 +15,11 @@ async function testBiblePlan(page) {
   await page.goto(base + "part-1.html");
   await page.evaluate((key) => localStorage.removeItem(key), key);
   await page.reload();
+  await page.locator("#jump-unread").click();
   assert(
-    (await page.locator("#jump-unread").getAttribute("href")) ===
-      "./part-1.html#reading-1",
+    await page
+      .locator("#reading-1 input")
+      .evaluate((input) => input === document.activeElement),
     "initial unread target",
   );
   assert(
@@ -26,12 +28,23 @@ async function testBiblePlan(page) {
   );
   assert((await page.locator("h2").count()) === 6, "months");
   assert((await page.locator("h3").count()) === 26, "weeks");
+  await page.evaluate(() => {
+    window.jumpMutations = [];
+    window.jumpObserver = new MutationObserver((records) =>
+      window.jumpMutations.push(...records),
+    );
+    window.jumpObserver.observe(document.getElementById("jump-unread"), {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
+  });
   await page.locator("#reading-1 input").check();
   assert(
-    (await page.locator("#jump-unread").getAttribute("href")) ===
-      "./part-1.html#reading-2",
-    "unread target follows progress",
+    await page.evaluate(() => window.jumpMutations.length === 0),
+    "checkbox toggles leave the floating icon untouched",
   );
+  await page.evaluate(() => window.jumpObserver.disconnect());
   await page.locator("#jump-unread").click();
   assert(
     await page
