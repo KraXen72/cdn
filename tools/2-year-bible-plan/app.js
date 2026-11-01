@@ -9,7 +9,6 @@ const totalBar = document.getElementById("total-bar");
 const partCount = document.getElementById("part-count");
 const partBar = document.getElementById("part-bar");
 const status = document.getElementById("save-status");
-const jumpButton = document.getElementById("jump");
 const fileInput = document.getElementById("import-file");
 const toast = document.getElementById("toast");
 
@@ -235,11 +234,6 @@ function refresh() {
   if(next) {
     const nextRow=document.getElementById("reading-"+next.id);
     if(nextRow) nextRow.classList.add("next");
-    jumpButton.disabled=false;
-    jumpButton.title="Prejsť na čítanie "+next.id;
-  } else {
-    jumpButton.disabled=true;
-    jumpButton.title="Všetky čítania dokončené";
   }
 }
 
@@ -352,10 +346,6 @@ async function init() {
   });
   document.body.addEventListener("change",event=>{
     if(event.target.matches("input.check"))changeScope(event.target);
-  });
-  jumpButton.addEventListener("click",()=> {
-    const next=firstIncomplete();
-    if(next)openAt(next.id);
   });
   document.getElementById("export").addEventListener("click",exportProgress);
   document.getElementById("import").addEventListener("click",()=>fileInput.click());

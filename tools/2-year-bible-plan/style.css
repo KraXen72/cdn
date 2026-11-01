@@ -37,7 +37,7 @@ svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-linecap:round;st
 .part-tab{min-width:0;text-decoration:none;color:var(--muted);font-size:14px;font-weight:600;text-align:center;padding:6px 3px;border:1px solid transparent;border-radius:6px}
 .part-tab:hover{color:var(--text);background:var(--bg2)}
 .part-tab.active{color:var(--cyan);background:var(--cyan-dark);border-color:#275e57}
-main{padding-top:52px;padding-bottom:76px}
+main{padding-top:84px;padding-bottom:76px}
 .eyebrow{font-size:13px;color:var(--purple);font-weight:760;letter-spacing:.1em;text-transform:uppercase}
 .title{font-size:clamp(27px,5vw,42px);letter-spacing:-.035em;line-height:1.15;margin:5px 0 7px;font-weight:720}
 .period{font-size:15px;color:var(--muted);margin:0 0 21px}
@@ -85,12 +85,12 @@ main{padding-top:52px;padding-bottom:76px}
 .toast button{border:0;border-radius:5px;background:var(--cyan-dark);color:var(--cyan);font-weight:650;padding:6px 10px}
 @media(max-width:600px){
   .shell{padding-left:16px;padding-right:16px}
-  .brand span{max-width:132px;overflow:hidden;text-overflow:ellipsis}
+  .brand{font-size:15px}
+  .brand span{max-width:calc(100vw - 119px);overflow:hidden;text-overflow:ellipsis}
   .action span{display:none}
-  .action.primary span{display:inline;font-size:14px}
   .action{padding:8px}
   .topline{height:52px}
-  main{padding-top:44px}
+  main{padding-top:84px}
   .dashboard{padding:14px}
   .month-header{gap:10px;padding:13px 12px}
   .month-body{padding:0 13px}
