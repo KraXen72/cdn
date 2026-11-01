@@ -6,8 +6,6 @@ const partId = Number(document.body.dataset.part);
 const root = document.getElementById("content");
 const totalCount = document.getElementById("total-count");
 const totalBar = document.getElementById("total-bar");
-const partCount = document.getElementById("part-count");
-const partBar = document.getElementById("part-bar");
 const status = document.getElementById("save-status");
 const fileInput = document.getElementById("import-file");
 const toast = document.getElementById("toast");
@@ -193,8 +191,6 @@ function weekNode(week) {
 function render() {
   const part=plan.parts[partId-1];
   const ids=partIds(part);
-  document.getElementById("period").textContent=range(part.months[0].start,part.months.at(-1).end);
-  document.getElementById("part-title").textContent="Časť "+partId+" zo 4";
   document.getElementById("part-checkbox-wrap").replaceChildren(
     sectionCheckbox("part",partId,ids,"Označiť celú časť "+partId)
   );
@@ -204,12 +200,10 @@ function render() {
 
 function refresh() {
   const part=plan.parts[partId-1];
-  const pids=partIds(part);
   const done=progress.size;
   totalCount.textContent=done+" / "+plan.assignments;
-  partCount.textContent=checkedIn(pids)+" / "+pids.length;
   totalBar.style.width=100*done/plan.assignments+"%";
-  partBar.style.width=100*checkedIn(pids)/pids.length+"%";
+  document.getElementById("total-track").setAttribute("aria-valuenow",String(done));
   for(const checkbox of document.querySelectorAll("input.check")) {
     if(checkbox.dataset.type==="reading") {
       checkbox.checked=progress.has(Number(checkbox.dataset.id));
@@ -339,10 +333,11 @@ async function init() {
     status.hidden = false;
     return;
   }
-  document.querySelectorAll(".part-tab").forEach(tab=> {
-    const active=Number(tab.dataset.part)===partId;
-    tab.classList.toggle("active",active);
-    if(active)tab.setAttribute("aria-current","page");
+  const partSelect=document.getElementById("part-select");
+  partSelect.value=String(partId);
+  partSelect.addEventListener("change",()=>{
+    const value=Number(partSelect.value);
+    if(value>=1 && value<=4)location.href="./part-"+value+".html";
   });
   document.body.addEventListener("change",event=>{
     if(event.target.matches("input.check"))changeScope(event.target);

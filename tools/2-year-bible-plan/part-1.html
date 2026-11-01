@@ -13,50 +13,41 @@
 </head>
 <body data-part="1">
   <header class="topbar">
-    <div class="shell">
-      <div class="topline">
-        <a class="brand" href="./" aria-label="2-Year Bible Reading Plan, úvod"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-2.8-2-5.4-2.2-9-1.7v13.3c3.5-.5 6.4-.2 9 1.5m0-13.1c2.8-2 5.4-2.2 9-1.7v13.3c-3.5-.5-6.4-.2-9 1.5M12 7v13.1"/></svg><span>2-Year Bible Reading Plan</span></a>
-        <div class="actions">
-          <details class="menu" id="backup-menu">
-            <summary class="action" aria-label="Záloha a nastavenia" title="Záloha a nastavenia"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5h.01M12 12h.01M12 19h.01" stroke-width="3"/></svg><span>Záloha</span></summary>
-            <div class="menu-panel">
-              <button type="button" id="export">Exportovať postup</button>
-              <button type="button" id="import">Importovať zálohu</button>
-              <a href="https://www.blueletterbible.org/assets-v3/pdf/dbrp/2Yr_CanonicalFiveDayPlan.pdf" target="_blank" rel="noopener noreferrer">Zdrojový plán</a>
-            </div>
-          </details>
+    <div class="shell bar-row">
+      <a class="brand" href="./" aria-label="2-Year Bible Reading Plan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-2.8-2-5.4-2.2-9-1.7v13.3c3.5-.5 6.4-.2 9 1.5m0-13.1c2.8-2 5.4-2.2 9-1.7v13.3c-3.5-.5-6.4-.2-9 1.5M12 7v13.1"/></svg><span>2-Year Bible Reading Plan</span></a>
+      <details class="menu" id="backup-menu">
+        <summary class="icon-button" aria-label="Záloha a ďalšie možnosti" title="Možnosti"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="12" cy="19" r="1.3"/></svg></summary>
+        <div class="menu-panel">
+          <button type="button" id="export">Exportovať postup</button>
+          <button type="button" id="import">Importovať zálohu</button>
+          <a href="https://www.blueletterbible.org/assets-v3/pdf/dbrp/2Yr_CanonicalFiveDayPlan.pdf" target="_blank" rel="noopener noreferrer">Zdrojový plán</a>
         </div>
-      </div>
-      <nav class="tabbar" aria-label="Časti plánu">
-        <a class="part-tab" data-part="1" href="./part-1.html">Časť 1</a>
-        <a class="part-tab" data-part="2" href="./part-2.html">Časť 2</a>
-        <a class="part-tab" data-part="3" href="./part-3.html">Časť 3</a>
-        <a class="part-tab" data-part="4" href="./part-4.html">Časť 4</a>
-      </nav>
+      </details>
     </div>
   </header>
   <main class="shell">
-    <div class="eyebrow">2-ročný plán · 5 čítaní týždenne</div>
-    <h1 class="title" id="part-title">Časť 1 zo 4</h1>
-    <p class="period" id="period">Načítava sa…</p>
-
-    <div class="dashboard" aria-label="Postup čítania">
-      <div class="dashboard-grid">
-        <div class="metric">
-          <div class="metric-top"><span>Celý plán</span><strong id="total-count">0 / 518</strong></div>
-          <div class="bar"><div class="bar-fill" id="total-bar"></div></div>
-        </div>
-        <div class="metric">
-          <div class="metric-top"><span>Táto časť</span><strong id="part-count">0 / 130</strong></div>
-          <div class="bar"><div class="bar-fill purple" id="part-bar"></div></div>
-        </div>
+    <div class="overview">
+      <div class="overview-row">
+        <label class="part-picker">
+          <select id="part-select" aria-label="Vybrať časť">
+            <option value="1" selected>Časť 1 / 4</option>
+            <option value="2">Časť 2 / 4</option>
+            <option value="3">Časť 3 / 4</option>
+            <option value="4">Časť 4 / 4</option>
+          </select>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </label>
+        <span class="total-progress" id="total-count">0 / 518</span>
       </div>
-      <p class="save-status" id="save-status" role="status" hidden></p>
+      <div class="progress-track" id="total-track" role="progressbar" aria-label="Celkový postup" aria-valuemin="0" aria-valuemax="518" aria-valuenow="0">
+        <div class="progress-fill" id="total-bar"></div>
+      </div>
+      <label class="bulk-control">
+        <span id="part-checkbox-wrap"></span>
+        <span>Označiť celú časť</span>
+      </label>
     </div>
-    <div class="part-control">
-      <span id="part-checkbox-wrap"></span>
-      <span class="scope-label">Označiť celú časť</span>
-    </div>
+    <p class="save-status" id="save-status" role="status" hidden></p>
     <div id="content" aria-live="off">Načítava sa plán…</div>
   </main>
   <div class="toast" id="toast" role="status" hidden></div>
