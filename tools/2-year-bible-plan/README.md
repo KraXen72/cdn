@@ -48,6 +48,8 @@ python -m http.server 8765
   confirmation; bulk changes and imports offer undo.
 - All four pages share progress. The index opens the part containing the first
   incomplete reading. Completing the whole plan opens Part 4.
+- A small floating button at the bottom right jumps to the next unread passage,
+  including across parts. It hides when the plan is complete.
 - Imports validate the format and reading IDs, and ask before replacing progress.
   Failed saves roll back the visible change and display an error.
 - IDs follow the original five-reading weekly order, ending with three readings

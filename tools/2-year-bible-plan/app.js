@@ -10,6 +10,7 @@ const status = document.getElementById("save-status");
 const fileInput = document.getElementById("import-file");
 const toast = document.getElementById("toast");
 const backupMenu = document.getElementById("backup-menu");
+const jumpUnread = document.getElementById("jump-unread");
 const readingInputs = [...root.querySelectorAll('[data-type="reading"]')];
 const scopeInputs = [
   ...root.querySelectorAll('.check:not([data-type="reading"])'),
@@ -100,6 +101,31 @@ function replaceProgress(next) {
   return true;
 }
 
+function firstUnread() {
+  for (let id = 1; id <= total; id++) {
+    if (!progress.has(id)) return id;
+  }
+  return null;
+}
+
+function readingUrl(id) {
+  const part = partEnds.findIndex((end) => id <= end) + 1;
+  return "./part-" + part + ".html#reading-" + id;
+}
+
+/** Center and focus a passage, respecting the reader's motion preference. */
+function focusReading(id) {
+  const reading = document.getElementById("reading-" + id);
+  if (!reading) return;
+  reading.querySelector("input").focus({ preventScroll: true });
+  reading.scrollIntoView({
+    block: "center",
+    behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "instant"
+      : "smooth",
+  });
+}
+
 /** Restore reading and parent checkbox states, including partially read sections. */
 function refresh() {
   document.getElementById("total-count").textContent =
@@ -114,6 +140,9 @@ function refresh() {
     input.indeterminate = count > 0 && count < ids.length;
     input.title = count + " / " + ids.length;
   }
+  const unread = firstUnread();
+  jumpUnread.hidden = unread === null;
+  if (unread !== null) jumpUnread.href = readingUrl(unread);
 }
 
 function changeScope(input) {
@@ -123,10 +152,7 @@ function changeScope(input) {
   if (
     input.dataset.type === "part" &&
     !confirm(
-      name +
-        ": mark all readings as " +
-        (checked ? "read" : "unread") +
-        "?",
+      name + ": mark all readings as " + (checked ? "read" : "unread") + "?",
     )
   ) {
     refresh();
@@ -197,11 +223,10 @@ async function importProgress(file) {
 function init() {
   progress = readLocal();
   if (partId === 0) {
-    let next = 1;
-    while (next <= total && progress.has(next)) next++;
-    const partIndex = partEnds.findIndex((end) => next <= end);
-    const part = partIndex === -1 ? partEnds.length : partIndex + 1;
-    location.replace("./part-" + part + ".html");
+    const unread = firstUnread();
+    location.replace(
+      unread === null ? "./part-4.html" : readingUrl(unread).split("#")[0],
+    );
     return;
   }
 
@@ -209,6 +234,13 @@ function init() {
   for (const input of [...readingInputs, ...scopeInputs])
     input.disabled = false;
   document.querySelector(".progress-tools").hidden = false;
+  jumpUnread.addEventListener("click", (event) => {
+    const unread = firstUnread();
+    if (unread === null || !document.getElementById("reading-" + unread))
+      return;
+    event.preventDefault();
+    focusReading(unread);
+  });
   document.body.addEventListener("change", (event) => {
     if (event.target.matches("input.check")) changeScope(event.target);
   });
@@ -224,5 +256,7 @@ function init() {
     progress = readLocal();
     refresh();
   });
+  const target = /^#reading-(\d+)$/.exec(location.hash);
+  if (target) requestAnimationFrame(() => focusReading(Number(target[1])));
 }
 init();

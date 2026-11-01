@@ -27,6 +27,9 @@
   </header>
   <p id="save-status" role="status" hidden></p>
   <main class="markdown-rendered" id="content">$content</main>
+  <a id="jump-unread" href="#" aria-label="Jump to next unread passage" title="Jump to next unread passage" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v13m-5-5 5 5 5-5M5 21h14"/></svg>
+  </a>
   <div class="toast" id="toast" role="status" hidden></div>
   <input id="import-file" type="file" accept="application/json,.json" hidden>
   <script src="./app.js"></script>

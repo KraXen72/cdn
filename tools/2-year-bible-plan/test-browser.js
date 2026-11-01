@@ -16,12 +16,29 @@ async function testBiblePlan(page) {
   await page.evaluate((key) => localStorage.removeItem(key), key);
   await page.reload();
   assert(
+    (await page.locator("#jump-unread").getAttribute("href")) ===
+      "./part-1.html#reading-1",
+    "initial unread target",
+  );
+  assert(
     (await page.locator("[data-type=reading]").count()) === 130,
     "static reading count",
   );
   assert((await page.locator("h2").count()) === 6, "months");
   assert((await page.locator("h3").count()) === 26, "weeks");
   await page.locator("#reading-1 input").check();
+  assert(
+    (await page.locator("#jump-unread").getAttribute("href")) ===
+      "./part-1.html#reading-2",
+    "unread target follows progress",
+  );
+  await page.locator("#jump-unread").click();
+  assert(
+    await page
+      .locator("#reading-2 input")
+      .evaluate((input) => input === document.activeElement),
+    "jump focuses the unread passage",
+  );
   assert(
     await page.locator("#week-1 input").evaluate((e) => e.indeterminate),
     "mixed week",
@@ -59,6 +76,11 @@ async function testBiblePlan(page) {
     (await page.locator("[data-type=reading]:checked").count()) === 130,
     "part toggles descendants",
   );
+  await page.locator("#jump-unread").click();
+  await page.waitForURL("**/part-2.html#reading-131");
+  await page.waitForFunction(
+    () => document.activeElement?.dataset.id === "131",
+  );
   await page.goto(base);
   await page.waitForURL("**/part-2.html");
   assert(
@@ -91,13 +113,11 @@ async function testBiblePlan(page) {
     version: 1,
     completed: [519],
   };
-  await page
-    .locator("#import-file")
-    .setInputFiles({
-      name: "invalid.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(invalid)),
-    });
+  await page.locator("#import-file").setInputFiles({
+    name: "invalid.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(invalid)),
+  });
   await page.waitForFunction(() => window.testAlerts.length === 1);
   assert(
     (await page.evaluate(() => window.testAlerts[0])).startsWith(
@@ -117,6 +137,29 @@ async function testBiblePlan(page) {
     () => !document.querySelector("#reading-131 input").checked,
   );
   await other.close();
+
+  const saved = await page.evaluate((key) => localStorage.getItem(key), key);
+  await page.evaluate(
+    (key) =>
+      localStorage.setItem(
+        key,
+        JSON.stringify({
+          version: 1,
+          completed: Array.from({ length: 518 }, (_, i) => i + 1),
+        }),
+      ),
+    key,
+  );
+  await page.reload();
+  assert(
+    await page.locator("#jump-unread").isHidden(),
+    "completed plan hides jump button",
+  );
+  await page.evaluate(({ key, saved }) => localStorage.setItem(key, saved), {
+    key,
+    saved,
+  });
+  await page.reload();
 
   await page.goto(base + "part-4.html");
   assert(
@@ -143,6 +186,10 @@ async function testBiblePlan(page) {
     .newContext({ javaScriptEnabled: false });
   const staticPage = await staticContext.newPage();
   await staticPage.goto(base + "part-1.html");
+  assert(
+    await staticPage.locator("#jump-unread").isHidden(),
+    "jump button hidden without JavaScript",
+  );
   assert(
     (await staticPage.locator("[data-type=reading]").count()) === 130,
     "complete content without JS",
