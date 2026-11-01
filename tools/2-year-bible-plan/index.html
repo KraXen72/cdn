@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#100F0F">
+<title>Čítanie Biblie</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<script>
+try {
+  const p=JSON.parse(localStorage.getItem("kraxen-bible-plan-progress-v1")||"{}");
+  const done=new Set(Array.isArray(p.completed)?p.completed:[]);
+  let next=1;
+  while(next<=518 && done.has(next))next++;
+  const part=Math.min(4,Math.floor((next-1)/130)+1);
+  location.replace("./part-"+part+".html");
+} catch(e) { location.replace("./part-1.html"); }
+</script>
+</head>
+<body style="background:#100F0F;color:#CECDC3;font:16px system-ui;padding:24px">
+<a style="color:#3AA99F" href="./part-1.html">Otvoriť plán čítania Biblie</a>
+</body>
+</html>

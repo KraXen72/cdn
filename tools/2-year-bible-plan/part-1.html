@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#100F0F">
+  <meta name="description" content="Dvojročný plán čítania Biblie, 518 čítaní, s priebežným ukladaním a zálohami.">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./style.css">
+  <title>Časť 1 | Čítanie Biblie</title>
+  <script defer src="./app.js"></script>
+</head>
+<body data-part="1">
+  <header class="topbar">
+    <div class="shell">
+      <div class="topline">
+        <a class="brand" href="./" aria-label="Čítanie Biblie, úvod"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-2.8-2-5.4-2.2-9-1.7v13.3c3.5-.5 6.4-.2 9 1.5m0-13.1c2.8-2 5.4-2.2 9-1.7v13.3c-3.5-.5-6.4-.2-9 1.5M12 7v13.1"/></svg><span>Čítanie Biblie</span></a>
+        <div class="actions">
+          <button class="action primary" id="jump" type="button" title="Prejsť na ďalšie čítanie" aria-label="Prejsť na ďalšie čítanie"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg><span>Pokračovať</span></button>
+          <details class="menu" id="backup-menu">
+            <summary class="action" aria-label="Záloha a nastavenia" title="Záloha a nastavenia"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5h.01M12 12h.01M12 19h.01" stroke-width="3"/></svg><span>Záloha</span></summary>
+            <div class="menu-panel">
+              <button type="button" id="export">Exportovať postup</button>
+              <button type="button" id="import">Importovať zálohu</button>
+              <a href="https://www.blueletterbible.org/assets-v3/pdf/dbrp/2Yr_CanonicalFiveDayPlan.pdf" target="_blank" rel="noopener noreferrer">Zdrojový plán</a>
+            </div>
+          </details>
+        </div>
+      </div>
+      <nav class="tabbar" aria-label="Časti plánu">
+        <a class="part-tab" data-part="1" href="./part-1.html">Časť 1</a>
+        <a class="part-tab" data-part="2" href="./part-2.html">Časť 2</a>
+        <a class="part-tab" data-part="3" href="./part-3.html">Časť 3</a>
+        <a class="part-tab" data-part="4" href="./part-4.html">Časť 4</a>
+      </nav>
+    </div>
+  </header>
+  <main class="shell">
+    <div class="eyebrow">2-ročný plán · 5 čítaní týždenne</div>
+    <h1 class="title" id="part-title">Časť 1 zo 4</h1>
+    <p class="period" id="period">Načítava sa…</p>
+
+    <div class="dashboard" aria-label="Postup čítania">
+      <div class="dashboard-grid">
+        <div class="metric">
+          <div class="metric-top"><span>Celý plán</span><strong id="total-count">0 / 518</strong></div>
+          <div class="bar"><div class="bar-fill" id="total-bar"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-top"><span>Táto časť</span><strong id="part-count">0 / 130</strong></div>
+          <div class="bar"><div class="bar-fill purple" id="part-bar"></div></div>
+        </div>
+      </div>
+      <p class="save-status" id="save-status" role="status">Postup sa ukladá iba v tomto prehliadači.</p>
+    </div>
+    <div class="part-control">
+      <span id="part-checkbox-wrap"></span>
+      <span class="scope-label">Označiť celú časť</span>
+      <span class="aside">Kliknutím označíš alebo odznačíš všetky čítania v tejto časti.</span>
+    </div>
+    <div id="content" aria-live="off">Načítava sa plán…</div>
+    <footer>
+      Čítania: <a href="https://www.blueletterbible.org/assets-v3/pdf/dbrp/2Yr_CanonicalFiveDayPlan.pdf" target="_blank" rel="noopener noreferrer">Blue Letter Bible</a>.
+      Týždenné poznámky sú doplneným sprievodným textom. Dátumy sú orientačné.
+    </footer>
+  </main>
+  <div class="toast" id="toast" role="status" hidden></div>
+  <input id="import-file" type="file" accept="application/json,.json" hidden>
+</body>
+</html>

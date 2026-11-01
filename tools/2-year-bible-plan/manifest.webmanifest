@@ -1,0 +1,19 @@
+{
+  "id": "/cdn/tools/2-year-bible-plan/",
+  "name": "Čítanie Biblie | Dvojročný plán",
+  "short_name": "Čítanie Biblie",
+  "lang": "sk",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#100F0F",
+  "theme_color": "#100F0F",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
