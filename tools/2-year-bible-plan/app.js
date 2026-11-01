@@ -13,16 +13,9 @@ const jumpButton = document.getElementById("jump");
 const fileInput = document.getElementById("import-file");
 const toast = document.getElementById("toast");
 
-const SVG = {
-  book: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-2.8-2-5.4-2.2-9-1.7v13.3c3.5-.5 6.4-.2 9 1.5m0-13.1c2.8-2 5.4-2.2 9-1.7v13.3c-3.5-.5-6.4-.2-9 1.5M12 7v13.1"/></svg>',
-  chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>',
-  arrow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>'
-};
-
 let plan;
 let readings;
 let progress = new Set();
-let openMonths = new Set();
 let previousProgress = null;
 let lastToastTimer = null;
 const pad = number => String(number).padStart(2, "0");
@@ -56,6 +49,7 @@ function readLocal() {
   } catch (error) {
     status.textContent = "Uložený stav sa nepodarilo načítať";
     status.classList.add("error");
+    status.hidden = false;
     return new Set();
   }
 }
@@ -65,10 +59,12 @@ function persist() {
     localStorage.setItem(STORE_KEY,JSON.stringify({version:1,completed:[...progress].sort((a,b)=>a-b)}));
     status.textContent = "Uložené v tomto prehliadači";
     status.classList.remove("error");
+    status.hidden = true;
     return true;
   } catch (error) {
     status.textContent = "Chyba ukladania. Exportuj zálohu.";
     status.classList.add("error");
+    status.hidden = false;
     return false;
   }
 }
@@ -133,22 +129,17 @@ function monthNode(month) {
   header.className="month-header";
   const ids=monthIds(month);
   header.append(sectionCheckbox("month",month.id,ids,"Označiť celý mesiac "+month.id));
-  const toggle=document.createElement("button");
-  toggle.type="button";
-  toggle.className="month-toggle";
-  toggle.dataset.month=String(month.id);
-  toggle.setAttribute("aria-expanded",String(openMonths.has(month.id)));
-  toggle.setAttribute("aria-controls","month-body-"+month.id);
-  toggle.innerHTML='<span class="month-title">Mesiac '+pad(month.id)+'</span><span class="month-date">'+escapeHTML(range(month.start,month.end))+'</span>'+SVG.chevron;
+  const heading=document.createElement("div");
+  heading.className="month-heading";
+  heading.innerHTML='<span class="month-title">Mesiac '+pad(month.id)+'</span><span class="month-date">'+escapeHTML(range(month.start,month.end))+'</span>';
   const tally=document.createElement("span");
   tally.className="section-count";
   tally.dataset.countIds=ids.join(",");
-  header.append(toggle,tally);
+  header.append(heading,tally);
   node.append(header);
   const body=document.createElement("div");
   body.className="month-body";
   body.id="month-body-"+month.id;
-  body.hidden=!openMonths.has(month.id);
   for(const week of month.weeks) body.append(weekNode(week));
   node.append(body);
   return node;
@@ -267,13 +258,6 @@ function openAt(readingId) {
     location.href="part-"+position.part+".html#reading-"+readingId;
     return;
   }
-  if(!openMonths.has(position.month)) {
-    openMonths.add(position.month);
-    const body=document.getElementById("month-body-"+position.month);
-    const button=document.querySelector('[data-month="'+position.month+'"]');
-    body.hidden=false;
-    button.setAttribute("aria-expanded","true");
-  }
   requestAnimationFrame(()=>{
     const target=document.getElementById("reading-"+readingId);
     target?.scrollIntoView({block:"center",behavior:"smooth"});
@@ -330,11 +314,6 @@ async function importProgress(file) {
       previousProgress=null;
       throw new Error("Úložisko nie je dostupné");
     }
-    const first=firstIncomplete();
-    if(first) {
-      const position=findPosition(first.id);
-      if(position.part===partId)openMonths.add(position.month);
-    }
     render();
     showToast("Záloha obnovená",true);
   } catch(error) {
@@ -354,9 +333,6 @@ async function init() {
     readings=plan.parts.flatMap(part=>part.months.flatMap(month=>month.weeks.flatMap(week=>week.readings)));
     if(readings.length!==518||readings.some((r,i)=>r.id!==i+1)) throw new Error("Invalid reading IDs");
     progress=readLocal();
-    const first=firstIncomplete();
-    const position=first?findPosition(first.id):null;
-    openMonths.add(position?.part===partId?position.month:plan.parts[partId-1].months[0].id);
     render();
     if(location.hash.startsWith("#reading-")){
       const id=Number(location.hash.slice(9));
@@ -366,9 +342,9 @@ async function init() {
     root.textContent="Plán sa nepodarilo načítať. Skontroluj pripojenie a obnov stránku.";
     status.textContent=error.message;
     status.classList.add("error");
+    status.hidden = false;
     return;
   }
-  document.getElementById("part-number").textContent=String(partId);
   document.querySelectorAll(".part-tab").forEach(tab=> {
     const active=Number(tab.dataset.part)===partId;
     tab.classList.toggle("active",active);
@@ -376,16 +352,6 @@ async function init() {
   });
   document.body.addEventListener("change",event=>{
     if(event.target.matches("input.check"))changeScope(event.target);
-  });
-  root.addEventListener("click",event=>{
-    const toggle=event.target.closest("[data-month]");
-    if(!toggle)return;
-    const id=Number(toggle.dataset.month);
-    const expanded=!openMonths.has(id);
-    if(expanded)openMonths.add(id);
-    else openMonths.delete(id);
-    document.getElementById("month-body-"+id).hidden=!expanded;
-    toggle.setAttribute("aria-expanded",String(expanded));
   });
   jumpButton.addEventListener("click",()=> {
     const next=firstIncomplete();
